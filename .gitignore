@@ -8,3 +8,6 @@ desktop.ini
 .idea/
 *.swp
 *.swo
+
+# Teamwork agent internal logs & transcripts
+.agents/

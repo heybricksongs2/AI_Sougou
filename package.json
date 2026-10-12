@@ -1,0 +1,22 @@
+{
+  "name": "neon-runner-60s",
+  "version": "1.0.0",
+  "description": "Production-quality 60-second 2D jump-action / runner browser game with headless simulation core",
+  "type": "module",
+  "scripts": {
+    "test": "agy-node --test tests/e2e/*.test.js",
+    "test:node": "node --test tests/e2e/*.test.js",
+    "test:agy": "agy-node --test tests/e2e/*.test.js",
+    "test:all": "agy-node --test tests/**/*.test.js"
+  },
+  "keywords": [
+    "game",
+    "runner",
+    "2d",
+    "canvas",
+    "headless",
+    "node-test",
+    "github-pages"
+  ],
+  "license": "MIT"
+}

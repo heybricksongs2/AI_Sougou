@@ -2,46 +2,139 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My GitHub Pages Site</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="High-octane 60-second 2D cyber-neon runner browser game">
+  <title>⚡ NEON RUNNER 60s ⚡</title>
+  <link rel="icon" type="image/svg+xml" href="./apple.svg">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <header>
-    <div class="container">
-      <h1>Welcome to My GitHub Pages</h1>
-      <p>GitHub Pages で公開されたウェブサイトへようこそ！</p>
-    </div>
-  </header>
+  <div id="game-wrapper">
+    <!-- Top Cyber-Neon HUD -->
+    <header class="game-hud">
+      <div class="hud-group hud-left">
+        <div class="hud-badge timer-badge">
+          <span class="hud-label">TIME</span>
+          <span id="hud-timer" class="hud-value">60.0s</span>
+        </div>
+        <div class="hud-badge speed-badge">
+          <span class="hud-label">SPEED</span>
+          <span id="hud-speed" class="hud-value">1.0x</span>
+        </div>
+      </div>
 
-  <main class="container">
-    <section class="card">
-      <h2>🚀 このサイトについて</h2>
-      <p>このページは GitHub Pages を利用してホスティングされています。HTML、CSS、JavaScript を使ったシンプルな構成です。</p>
-    </section>
+      <div class="hud-group hud-center">
+        <h1 class="hud-logo">⚡ NEON RUNNER ⚡</h1>
+      </div>
 
-    <section class="card">
-      <h2>✨ 特徴</h2>
-      <ul>
-        <li>GitHub リポジトリと直結した手軽なホスティング</li>
-        <li>SSL (HTTPS) に自動対応</li>
-        <li>コミットをプッシュするだけで自動更新</li>
-      </ul>
-    </section>
+      <div class="hud-group hud-right">
+        <div class="hud-badge score-badge">
+          <span class="hud-label">SCORE</span>
+          <span id="hud-score" class="hud-value">0</span>
+        </div>
+        <div class="hud-badge high-badge">
+          <span class="hud-label">BEST</span>
+          <span id="hud-high" class="hud-value">0</span>
+        </div>
+        <div class="hud-badge lives-badge">
+          <span class="hud-label">LIVES</span>
+          <span id="hud-lives" class="hud-value">❤️❤️❤️</span>
+        </div>
+      </div>
+    </header>
 
-    <section class="card">
-      <h2>⚡ インタラクティブ機能</h2>
-      <p id="counter-text">ボタンをクリックした回数: <span id="click-count">0</span></p>
-      <button id="count-button" class="btn">クリック！</button>
-    </section>
-  </main>
+    <!-- 16:9 Responsive Canvas Viewport & Overlays -->
+    <main class="canvas-container">
+      <canvas id="game-canvas" width="960" height="540"></canvas>
 
-  <footer>
-    <div class="container">
-      <p>&copy; 2026 My GitHub Pages Project. Built with HTML &amp; CSS.</p>
-    </div>
-  </footer>
+      <!-- Overlay Screen Manager -->
+      <div id="overlay-container" class="overlay-container active">
+        <!-- 1. Start / Instructions Screen -->
+        <div id="screen-start" class="screen-view active">
+          <h2 class="neon-title cyan-glow">NEON RUNNER 60s</h2>
+          <p class="neon-subtitle">60秒間生き残り、サイバースペースの果てへ到達せよ！</p>
+          
+          <div class="controls-guide-grid">
+            <div class="guide-card">
+              <div class="guide-icon">💻 PC CONTROLS</div>
+              <ul class="guide-list">
+                <li><span class="key-badge">SPACE</span> / <span class="key-badge">↑</span> : ジャンプ / 2段ジャンプ</li>
+                <li><span class="key-badge">↓</span> : しゃがみ / 急降下</li>
+                <li><span class="key-badge">P</span> / <span class="key-badge">ESC</span> : 一時停止</li>
+              </ul>
+            </div>
+            <div class="guide-card">
+              <div class="guide-icon">📱 MOBILE CONTROLS</div>
+              <ul class="guide-list">
+                <li><span class="tap-badge">画面タップ</span> : ジャンプ</li>
+                <li><span class="tap-badge">下スワイプ</span> : しゃがみ</li>
+              </ul>
+            </div>
+          </div>
 
-  <script src="main.js"></script>
+          <p class="mission-hint">障害物を回避し、スター (+250pt) を回収してハイスコアを目指せ！</p>
+          <button id="btn-start" class="glow-btn btn-cyan">START RUN [SPACE]</button>
+        </div>
+
+        <!-- 2. Pause Screen -->
+        <div id="screen-pause" class="screen-view">
+          <h2 class="neon-title amber-glow">SYSTEM PAUSED</h2>
+          <p class="neon-subtitle">一時停止中</p>
+          <div class="summary-stats-box">
+            <div class="stat-line">REMAINING TIME: <span id="pause-time" class="stat-val">60.0s</span></div>
+            <div class="stat-line">CURRENT SCORE: <span id="pause-score" class="stat-val">0</span></div>
+          </div>
+          <div class="btn-group">
+            <button id="btn-resume" class="glow-btn btn-cyan">RESUME [P]</button>
+            <button id="btn-pause-restart" class="sub-btn">RESTART RUN</button>
+          </div>
+        </div>
+
+        <!-- 3. Game Over Screen -->
+        <div id="screen-gameover" class="screen-view">
+          <h2 class="neon-title magenta-glow">SYSTEM FAILURE</h2>
+          <p class="neon-subtitle">シグナル途絶: クラッシュ</p>
+          <div class="summary-stats-box">
+            <div class="stat-line">SURVIVED: <span id="gameover-time" class="stat-val">0.0s / 60.0s</span></div>
+            <div class="stat-line">FINAL SCORE: <span id="gameover-score" class="stat-val highlight-score">0</span></div>
+            <div class="stat-line">BEST RECORD: <span id="gameover-best" class="stat-val">0</span></div>
+          </div>
+          <div id="gameover-new-record" class="record-badge hidden">★ NEW HIGH SCORE! ★</div>
+          <button id="btn-restart" class="glow-btn btn-magenta">RETRY RUN [ENTER / SPACE]</button>
+        </div>
+
+        <!-- 4. Victory Screen -->
+        <div id="screen-victory" class="screen-view">
+          <h2 class="neon-title green-glow">MISSION ACCOMPLISHED! 🏆</h2>
+          <p class="neon-subtitle">60秒間のハイパースピードを完走！ 生存成功！</p>
+          
+          <div class="rank-container">
+            <div class="rank-badge-box">
+              <span class="rank-label">CLEAR RANK</span>
+              <span id="victory-rank" class="rank-badge rank-s">S</span>
+              <span id="victory-rank-title" class="rank-title">CYBER LEGEND</span>
+            </div>
+          </div>
+
+          <div class="summary-stats-box">
+            <div class="stat-line">SURVIVAL BONUS: <span class="stat-val bonus-val">+5,000 PTS</span></div>
+            <div class="stat-line">FINAL SCORE: <span id="victory-score" class="stat-val highlight-score">0</span></div>
+            <div class="stat-line">ALL-TIME BEST: <span id="victory-best" class="stat-val">0</span></div>
+          </div>
+          <div id="victory-new-record" class="record-badge hidden">★ NEW HIGH SCORE! ★</div>
+          <button id="btn-victory-restart" class="glow-btn btn-green">PLAY AGAIN [ENTER / SPACE]</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Footer -->
+    <footer class="game-footer">
+      <div class="footer-hint">PC: [SPACE] Jump / [↓] Duck / [P] Pause · Mobile: Tap Screen</div>
+      <button id="sound-toggle" class="sub-btn">🔊 サウンド: ON</button>
+    </footer>
+  </div>
+
+  <!-- Entry Script (ES Module) -->
+  <script type="module" src="./main.js"></script>
 </body>
 </html>

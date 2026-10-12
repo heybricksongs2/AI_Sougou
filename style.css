@@ -1,121 +1,551 @@
+/* ==========================================================================
+   Cyber-Neon Theme & Responsive 16:9 Layout (style.css)
+   ========================================================================== */
+
 :root {
-  --primary-color: #2563eb;
-  --primary-hover: #1d4ed8;
-  --bg-color: #f8fafc;
-  --card-bg: #ffffff;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
+  --bg-dark: #07080e;
+  --panel-bg: rgba(14, 17, 30, 0.92);
+  --panel-border: rgba(0, 243, 255, 0.35);
+  --neon-cyan: #00f3ff;
+  --neon-magenta: #ff007f;
+  --neon-yellow: #ffe600;
+  --neon-green: #39ff14;
+  --neon-amber: #ffaa00;
+  --text-main: #ffffff;
+  --text-dim: #94a3b8;
+  --font-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: var(--font-base);
+  overflow: hidden;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  line-height: 1.6;
-  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#game-wrapper {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 980px;
+  padding: 8px 12px;
 }
 
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
-header {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  color: #ffffff;
-  padding: 3.5rem 0;
-  text-align: center;
-}
-
-header h1 {
-  font-size: 2.25rem;
-  margin-bottom: 0.5rem;
-}
-
-header p {
-  color: #94a3b8;
-  font-size: 1.1rem;
-}
-
-main {
-  flex: 1;
-  padding-top: 2rem;
-  padding-bottom: 2rem;
+/* --------------------------------------------------------------------------
+   HUD Header
+   -------------------------------------------------------------------------- */
+.game-hud {
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.card h2 {
-  font-size: 1.35rem;
-  margin-bottom: 0.75rem;
-  color: var(--text-main);
-}
-
-.card ul {
-  padding-left: 1.5rem;
-  color: var(--text-muted);
-}
-
-.card ul li {
-  margin-bottom: 0.5rem;
-}
-
-.btn {
-  display: inline-block;
-  margin-top: 1rem;
-  padding: 0.65rem 1.4rem;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  padding: 6px 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.12);
+  gap: 8px;
 }
 
-.btn:hover {
-  background-color: var(--primary-hover);
+.hud-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.btn:active {
-  transform: scale(0.98);
+.hud-logo {
+  font-size: 1.15rem;
+  letter-spacing: 2px;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px var(--neon-cyan);
+  font-weight: 800;
+  white-space: nowrap;
 }
 
-#counter-text {
-  font-size: 1.1rem;
-  font-weight: 500;
+.hud-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-weight: 700;
 }
 
-#click-count {
-  font-weight: bold;
-  color: var(--primary-color);
+.hud-label {
+  font-size: 0.65rem;
+  letter-spacing: 1px;
 }
 
-footer {
-  background: var(--card-bg);
-  border-top: 1px solid var(--border-color);
-  padding: 1.5rem 0;
+.hud-value {
+  color: var(--neon-yellow);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+#hud-timer {
+  color: var(--neon-cyan);
+  font-variant-numeric: tabular-nums;
+}
+
+#hud-timer.time-critical {
+  color: var(--neon-magenta);
+  text-shadow: 0 0 10px var(--neon-magenta);
+  animation: pulseCrit 0.5s infinite alternate;
+}
+
+@keyframes pulseCrit {
+  from { transform: scale(1); }
+  to { transform: scale(1.12); }
+}
+
+#hud-speed {
+  color: var(--neon-green);
+}
+
+#hud-lives {
+  letter-spacing: 2px;
+  font-size: 0.85rem;
+}
+
+/* --------------------------------------------------------------------------
+   16:9 Canvas Viewport Container
+   -------------------------------------------------------------------------- */
+.canvas-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: calc(100vh - 120px);
+  border: 2px solid var(--neon-cyan);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 25px rgba(0, 243, 255, 0.25), inset 0 0 15px rgba(0, 243, 255, 0.1);
+  background: #05060b;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none; /* Crucial: prevent iOS pull-down refresh & gesture lag */
+}
+
+/* --------------------------------------------------------------------------
+   Overlays & Screen Views
+   -------------------------------------------------------------------------- */
+.overlay-container {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 6, 11, 0.88);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+  padding: 16px;
+}
+
+.overlay-container.active {
+  display: flex;
+}
+
+.screen-view {
+  display: none;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  color: var(--text-muted);
+  max-width: 620px;
+  width: 100%;
+  animation: screenFadeIn 0.22s ease-out;
+}
+
+.screen-view.active {
+  display: flex;
+}
+
+@keyframes screenFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.neon-title {
+  font-size: 1.85rem;
+  letter-spacing: 3px;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.cyan-glow {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 14px var(--neon-cyan);
+}
+
+.magenta-glow {
+  color: var(--neon-magenta);
+  text-shadow: 0 0 14px var(--neon-magenta);
+}
+
+.amber-glow {
+  color: var(--neon-amber);
+  text-shadow: 0 0 14px var(--neon-amber);
+}
+
+.green-glow {
+  color: var(--neon-green);
+  text-shadow: 0 0 14px var(--neon-green);
+}
+
+.neon-subtitle {
+  color: var(--text-dim);
   font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+/* Controls Grid */
+.controls-guide-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.guide-card {
+  background: rgba(18, 22, 40, 0.8);
+  border: 1px solid rgba(0, 243, 255, 0.25);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.guide-icon {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--neon-cyan);
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+.guide-list {
+  list-style: none;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: #e2e8f0;
+}
+
+.key-badge, .tap-badge {
+  background: rgba(0, 243, 255, 0.15);
+  border: 1px solid var(--neon-cyan);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  color: var(--neon-cyan);
+  font-size: 0.75rem;
+}
+
+.mission-hint {
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  margin-bottom: 18px;
+  line-height: 1.4;
+}
+
+/* Summary Box */
+.summary-stats-box {
+  background: rgba(18, 22, 40, 0.85);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  border-radius: 8px;
+  padding: 12px 20px;
+  width: 80%;
+  max-width: 380px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.stat-val {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.highlight-score {
+  color: var(--neon-yellow);
+  font-size: 1.1rem;
+}
+
+.bonus-val {
+  color: var(--neon-green);
+}
+
+.record-badge {
+  color: var(--neon-yellow);
+  background: rgba(255, 230, 0, 0.15);
+  border: 1px solid var(--neon-yellow);
+  padding: 4px 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+  animation: pulseRecord 0.7s infinite alternate;
+}
+
+@keyframes pulseRecord {
+  from { transform: scale(0.98); box-shadow: 0 0 6px rgba(255, 230, 0, 0.4); }
+  to { transform: scale(1.04); box-shadow: 0 0 16px rgba(255, 230, 0, 0.8); }
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Rank Badge Styles */
+.rank-container {
+  margin-bottom: 12px;
+}
+
+.rank-badge-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.rank-label {
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+}
+
+.rank-badge {
+  font-size: 3.2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.rank-badge.rank-s {
+  color: var(--neon-yellow);
+  text-shadow: 0 0 20px var(--neon-yellow), 0 0 40px var(--neon-green);
+}
+
+.rank-badge.rank-a {
+  color: var(--neon-green);
+  text-shadow: 0 0 20px var(--neon-green);
+}
+
+.rank-badge.rank-b {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 15px var(--neon-cyan);
+}
+
+.rank-badge.rank-c {
+  color: #94a3b8;
+  text-shadow: 0 0 10px #94a3b8;
+}
+
+.rank-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--neon-cyan);
+}
+
+/* Buttons */
+.glow-btn {
+  background: transparent;
+  padding: 10px 28px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  border-radius: 30px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.18s ease;
+  outline: none;
+}
+
+.btn-cyan {
+  color: var(--neon-cyan);
+  border: 2px solid var(--neon-cyan);
+  box-shadow: 0 0 14px rgba(0, 243, 255, 0.35);
+}
+
+.btn-cyan:hover {
+  background: var(--neon-cyan);
+  color: #05060b;
+  box-shadow: 0 0 26px var(--neon-cyan);
+  transform: scale(1.04);
+}
+
+.btn-magenta {
+  color: var(--neon-magenta);
+  border: 2px solid var(--neon-magenta);
+  box-shadow: 0 0 14px rgba(255, 0, 127, 0.35);
+}
+
+.btn-magenta:hover {
+  background: var(--neon-magenta);
+  color: #05060b;
+  box-shadow: 0 0 26px var(--neon-magenta);
+  transform: scale(1.04);
+}
+
+.btn-green {
+  color: var(--neon-green);
+  border: 2px solid var(--neon-green);
+  box-shadow: 0 0 14px rgba(57, 255, 20, 0.35);
+}
+
+.btn-green:hover {
+  background: var(--neon-green);
+  color: #05060b;
+  box-shadow: 0 0 26px var(--neon-green);
+  transform: scale(1.04);
+}
+
+.glow-btn:active {
+  transform: scale(0.97);
+}
+
+.btn-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+.game-footer {
+  width: 100%;
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+
+.footer-hint {
+  letter-spacing: 0.5px;
+}
+
+.sub-btn {
+  background: transparent;
+  border: 1px solid #475569;
+  color: #94a3b8;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.15s ease;
+}
+
+.sub-btn:hover {
+  border-color: var(--neon-cyan);
+  color: var(--neon-cyan);
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Breakpoints for Mobile Viewports
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  #game-wrapper {
+    padding: 4px 6px;
+  }
+
+  .game-hud {
+    padding: 4px 8px;
+    gap: 4px;
+  }
+
+  .hud-logo {
+    display: none; /* Hide logo on compact mobile to give room to HUD badges */
+  }
+
+  .hud-group {
+    gap: 8px;
+  }
+
+  .hud-badge {
+    font-size: 0.65rem;
+  }
+
+  .hud-value {
+    font-size: 0.82rem;
+  }
+
+  .neon-title {
+    font-size: 1.35rem;
+    margin-bottom: 4px;
+  }
+
+  .neon-subtitle {
+    font-size: 0.75rem;
+    margin-bottom: 8px;
+  }
+
+  .controls-guide-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .guide-card {
+    padding: 6px 8px;
+  }
+
+  .guide-list {
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+
+  .mission-hint {
+    display: none;
+  }
+
+  .glow-btn {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+  }
+
+  .rank-badge {
+    font-size: 2.4rem;
+  }
+
+  .summary-stats-box {
+    width: 95%;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+  }
+
+  .footer-hint {
+    display: none;
+  }
 }
