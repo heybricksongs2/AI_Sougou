@@ -900,8 +900,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const zone = document.createElement('div');
       zone.className = 'hover-target-zone';
-      if (isHard) zone.style.height = '36px';
-      zone.textContent = '🎯';
+      if (isHard) zone.style.height = '42px';
+      
+      const zoneIcon = document.createElement('span');
+      zoneIcon.textContent = '🎯';
+      const progressTrack = document.createElement('div');
+      progressTrack.className = 'hover-progress-track';
+      const progressFill = document.createElement('div');
+      progressFill.className = 'hover-progress-fill';
+      progressTrack.appendChild(progressFill);
+      zone.appendChild(zoneIcon);
+      zone.appendChild(progressTrack);
 
       const rocket = document.createElement('div');
       rocket.className = 'hover-rocket';
@@ -917,10 +926,11 @@ document.addEventListener('DOMContentLoaded', () => {
       gimmickContainer.appendChild(stage);
       gimmickContainer.appendChild(thrustBtn);
 
-      let altitude = 10;
+      let altitude = 15;
       let velocity = 0;
       let isThrusting = false;
       let insideTime = 0;
+      const targetDuration = isHard ? 650 : 500; // 0.5秒キープでクリア！
 
       function onStart(e) { e.preventDefault(); isThrusting = true; playSound('tap'); }
       function onEnd(e) { e.preventDefault(); isThrusting = false; }
@@ -932,27 +942,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
       function hoverPhysics() {
         if (!isPlaying || currentLock.type !== lock.type) return;
-        if (isThrusting) velocity += 0.8;
-        else velocity -= 0.6; // gravity
+        if (isThrusting) velocity += 0.55;
+        else velocity -= 0.35; // マイルドな重力
 
+        velocity *= 0.95; // 空気抵抗で急な吹っ飛びを抑制
         altitude += velocity;
         if (altitude < 10) { altitude = 10; velocity = 0; }
         if (altitude > 140) { altitude = 140; velocity = 0; }
         rocket.style.bottom = altitude + 'px';
 
-        // Check if rocket is inside zone (zone is around altitude 70-115)
-        const targetMin = isHard ? 80 : 65;
-        const targetMax = isHard ? 105 : 115;
+        // ゾーン内外判定 (ゾーン高度: 60〜110付近)
+        const targetMin = isHard ? 75 : 60;
+        const targetMax = isHard ? 110 : 115;
+
         if (altitude >= targetMin && altitude <= targetMax) {
-          zone.style.background = 'rgba(46, 213, 115, 0.6)';
-          insideTime += 16;
-          if (insideTime >= 850) { // 0.85s keep!
+          zone.classList.add('active-in');
+          insideTime += 16.6;
+          const pct = Math.min(100, (insideTime / targetDuration) * 100);
+          progressFill.style.width = pct + '%';
+
+          if (insideTime >= targetDuration) { // 0.5秒達成！
             resolveLockSuccess();
             return;
           }
         } else {
-          zone.style.background = 'rgba(46, 213, 115, 0.25)';
-          insideTime = Math.max(0, insideTime - 8);
+          zone.classList.remove('active-in');
+          insideTime = Math.max(0, insideTime - 10);
+          const pct = Math.min(100, (insideTime / targetDuration) * 100);
+          progressFill.style.width = pct + '%';
         }
 
         activeAnimationId = requestAnimationFrame(hoverPhysics);
@@ -964,34 +981,95 @@ document.addEventListener('DOMContentLoaded', () => {
       const area = document.createElement('div');
       area.className = 'star-trace-area';
 
-      area.innerHTML = `
-        <svg class="star-trace-svg" viewBox="0 0 180 180">
-          <polygon points="90,15 112,65 168,68 125,105 138,160 90,130 42,160 55,105 12,68 68,65"
-            fill="none" stroke="#ced6e0" stroke-width="8" stroke-linejoin="round" />
-        </svg>
-      `;
+      // 星の5頂点座標 (190x190)
+      const starPoints = [
+        { x: 95, y: 22 },   // P0 (上)
+        { x: 148, y: 165 }, // P1 (右下)
+        { x: 12, y: 74 },   // P2 (左上)
+        { x: 178, y: 74 },  // P3 (右上)
+        { x: 42, y: 165 }   // P4 (左下)
+      ];
 
+      // ステップインジケータ (進捗アイコン)
+      const stepInd = document.createElement('div');
+      stepInd.className = 'star-step-indicator';
+      const starIcons = [];
+      for (let i = 0; i < 5; i++) {
+        const span = document.createElement('span');
+        span.textContent = '☆';
+        stepInd.appendChild(span);
+        starIcons.push(span);
+      }
+      starIcons[0].textContent = '⭐';
+      area.appendChild(stepInd);
+
+      // SVG星の背景線 ＋ 通過済み軌跡
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'star-trace-svg');
+      svg.setAttribute('viewBox', '0 0 190 190');
+
+      const bgPolygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      bgPolygon.setAttribute('points', '95,22 148,165 12,74 178,74 42,165');
+      bgPolygon.setAttribute('fill', 'rgba(255, 255, 255, 0.05)');
+      bgPolygon.setAttribute('stroke', '#ced6e0');
+      bgPolygon.setAttribute('stroke-width', '10');
+      bgPolygon.setAttribute('stroke-linejoin', 'round');
+      bgPolygon.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(bgPolygon);
+
+      // 通過済みライン
+      const trailPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      trailPath.setAttribute('d', `M ${starPoints[0].x} ${starPoints[0].y}`);
+      trailPath.setAttribute('fill', 'none');
+      trailPath.setAttribute('stroke', '#ffa502');
+      trailPath.setAttribute('stroke-width', '8');
+      trailPath.setAttribute('stroke-linejoin', 'round');
+      trailPath.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(trailPath);
+
+      area.appendChild(svg);
+
+      // 5つの頂点マーカー
+      const markerEls = starPoints.map((pt, idx) => {
+        const marker = document.createElement('div');
+        marker.className = 'star-point-marker';
+        marker.style.left = pt.x + 'px';
+        marker.style.top = pt.y + 'px';
+        marker.textContent = (idx === 0) ? '✔' : '';
+        if (idx === 0) marker.classList.add('completed');
+        area.appendChild(marker);
+        return marker;
+      });
+
+      let targetPtIdx = 1;
+      markerEls[targetPtIdx].classList.add('active-target');
+
+      // スライドノブ
       const knob = document.createElement('div');
       knob.className = 'star-knob';
       knob.textContent = '⭐';
-      knob.style.top = '10px';
-      knob.style.left = '70px';
-
+      knob.style.left = starPoints[0].x + 'px';
+      knob.style.top = starPoints[0].y + 'px';
       area.appendChild(knob);
+
       gimmickContainer.appendChild(area);
 
-      // 星の5頂点
-      const starPoints = [
-        { x: 90, y: 15 },
-        { x: 138, y: 160 },
-        { x: 12, y: 68 },
-        { x: 168, y: 68 },
-        { x: 42, y: 160 }
-      ];
-      let targetPtIdx = 1;
-
       let isDragging = false;
-      function onStart() { isDragging = true; playSound('tap'); }
+
+      function updateTrail() {
+        let d = `M ${starPoints[0].x} ${starPoints[0].y}`;
+        for (let i = 1; i < targetPtIdx; i++) {
+          d += ` L ${starPoints[i].x} ${starPoints[i].y}`;
+        }
+        trailPath.setAttribute('d', d);
+      }
+
+      function onStart(e) {
+        e.preventDefault();
+        isDragging = true;
+        playSound('tap');
+      }
+
       function onMove(e) {
         if (!isDragging) return;
         const cur = e.touches ? e.touches[0] : e;
@@ -999,32 +1077,56 @@ document.addEventListener('DOMContentLoaded', () => {
         const rx = cur.clientX - rect.left;
         const ry = cur.clientY - rect.top;
 
-        knob.style.left = (rx - 21) + 'px';
-        knob.style.top = (ry - 21) + 'px';
+        knob.style.left = rx + 'px';
+        knob.style.top = ry + 'px';
 
         const target = starPoints[targetPtIdx];
         if (Math.hypot(rx - target.x, ry - target.y) < 32) {
           playSound('tap');
+          markerEls[targetPtIdx].classList.remove('active-target');
+          markerEls[targetPtIdx].classList.add('completed');
+          markerEls[targetPtIdx].textContent = '✔';
+          if (starIcons[targetPtIdx]) starIcons[targetPtIdx].textContent = '⭐';
+
           targetPtIdx++;
+          updateTrail();
+
           if (targetPtIdx >= starPoints.length) {
             isDragging = false;
-            resolveLockSuccess();
+            knob.style.left = target.x + 'px';
+            knob.style.top = target.y + 'px';
+            setTimeout(() => resolveLockSuccess(), 120);
+          } else {
+            markerEls[targetPtIdx].classList.add('active-target');
           }
         }
       }
+
       function onEnd() {
         if (isDragging) {
           isDragging = false;
+          // スタート地点にリセット
           targetPtIdx = 1;
-          knob.style.top = '10px';
-          knob.style.left = '70px';
+          markerEls.forEach((m, i) => {
+            m.className = 'star-point-marker';
+            m.textContent = (i === 0) ? '✔' : '';
+            if (i === 0) m.classList.add('completed');
+            if (i === 1) m.classList.add('active-target');
+          });
+          starIcons.forEach((s, i) => {
+            s.textContent = (i === 0) ? '⭐' : '☆';
+          });
+          knob.style.left = starPoints[0].x + 'px';
+          knob.style.top = starPoints[0].y + 'px';
+          updateTrail();
           triggerMistake();
         }
       }
+
       knob.addEventListener('mousedown', onStart);
-      knob.addEventListener('touchstart', onStart, { passive: true });
+      knob.addEventListener('touchstart', onStart, { passive: false });
       addTrackedListener(window, 'mousemove', onMove);
-      addTrackedListener(window, 'touchmove', onMove, { passive: true });
+      addTrackedListener(window, 'touchmove', onMove, { passive: false });
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 

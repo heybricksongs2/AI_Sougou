@@ -644,33 +644,92 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  touch-action: none;
 }
 
 .star-trace-svg {
   width: 100%;
   height: 100%;
   pointer-events: none;
+  overflow: visible;
 }
 
 .star-knob {
   position: absolute;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--yellow-accent);
   border: 3px solid var(--text-dark);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   cursor: grab;
-  box-shadow: 0 4px 0 var(--text-dark);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  z-index: 10;
+  transform: translate(-50%, -50%);
+  touch-action: none;
+}
+
+.star-knob:active {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.star-point-marker {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #747d8c;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 900;
+  pointer-events: none;
+  z-index: 4;
+  transition: all 0.2s ease;
+}
+
+.star-point-marker.active-target {
+  width: 32px;
+  height: 32px;
+  background: #ffa502;
+  border-color: #ffffff;
+  box-shadow: 0 0 16px #ffa502, 0 0 24px #ff4757;
+  animation: pulse-star-target 0.6s infinite alternate;
+  z-index: 6;
+}
+
+@keyframes pulse-star-target {
+  from { transform: translate(-50%, -50%) scale(1); }
+  to { transform: translate(-50%, -50%) scale(1.25); }
+}
+
+.star-point-marker.completed {
+  background: #2ed573;
+  border-color: #ffffff;
+  color: #ffffff;
+  box-shadow: 0 0 8px #2ed573;
+}
+
+.star-step-indicator {
+  position: absolute;
+  top: -24px;
+  display: flex;
+  gap: 6px;
+  font-size: 1rem;
+  pointer-events: none;
 }
 
 /* 14 & 27. 高度キープホバー */
 .hover-stage {
   position: relative;
-  width: 130px;
+  width: 140px;
   height: 180px;
   background: #f1f2f6;
   border: 4px solid var(--text-dark);
@@ -688,14 +747,42 @@ body {
   top: 50px;
   left: 8px;
   right: 8px;
-  height: 54px;
-  background: rgba(46, 213, 115, 0.3);
+  height: 56px;
+  background: rgba(46, 213, 115, 0.25);
   border: 3px dashed var(--secondary-accent);
   border-radius: 16px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  font-size: 1.3rem;
+  padding: 4px 8px;
+  font-size: 1.2rem;
+  transition: background 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease;
+  overflow: hidden;
+}
+
+.hover-target-zone.active-in {
+  background: rgba(46, 213, 115, 0.55);
+  border-style: solid;
+  border-color: #2ed573;
+  box-shadow: 0 0 16px rgba(46, 213, 115, 0.7);
+}
+
+.hover-progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: auto;
+}
+
+.hover-progress-fill {
+  width: 0%;
+  height: 100%;
+  background: #ffffff;
+  box-shadow: 0 0 8px #ffffff;
+  transition: width 0.05s linear;
 }
 
 .hover-rocket {
@@ -710,19 +797,30 @@ body {
   justify-content: center;
   align-items: center;
   font-size: 1.6rem;
-  transition: bottom 0.05s linear;
+  transition: bottom 0.04s linear;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 5;
 }
 
 .hover-thrust-btn {
-  width: 120px;
-  padding: 10px;
+  width: 130px;
+  padding: 12px;
   border-radius: 20px;
   background: var(--blue-accent);
   color: white;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
+  font-weight: 900;
   border: 3px solid var(--text-dark);
-  box-shadow: 0 4px 0 var(--text-dark);
+  box-shadow: 0 5px 0 var(--text-dark);
   cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hover-thrust-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 var(--text-dark);
 }
 
 /* 19. モールス信号 */
