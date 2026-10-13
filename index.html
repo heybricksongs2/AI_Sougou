@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>LOCK LOCKER LOCKEST</title>
-  <link rel="stylesheet" href="style.css?v=lockest_9">
+  <link rel="stylesheet" href="style.css?v=lockest_10">
 </head>
 <body>
   <!-- 背景パーティクル & メカニカル鍵背景 -->
@@ -153,7 +153,7 @@
           </svg>
         </div>
         <h1 class="game-title title-logo-glow">LOCK LOCKER LOCKEST</h1>
-        <div class="title-subtitle-badge">ULTIMATE SPEED PUZZLE</div>
+        <div class="title-subtitle-badge">爆速鍵開けパズル</div>
         
         <!-- ノンバーバル説明: 単一枠内のシームレスなステップ表示（二重枠を廃止） -->
         <div class="lock-tutorial-bar">
@@ -166,9 +166,11 @@
           </div>
           <span class="tuto-arrow">➔</span>
           <div class="tuto-flow-item">
-            <svg class="tuto-lock-svg" viewBox="0 0 24 24" width="22" height="22">
+            <svg class="tuto-lock-svg" viewBox="0 0 24 24" width="22" height="22" style="overflow: visible;">
+              <g transform="translate(0, -2.5) rotate(-32 7 9.5)">
+                <path d="M7 9.5V5.5a5 5 0 0 1 10 0v1" fill="none" stroke="#747d8c" stroke-width="2.5" stroke-linecap="round"/>
+              </g>
               <rect x="4" y="10" width="16" height="12" rx="3" fill="#2ed573" stroke="#2f3542" stroke-width="2"/>
-              <path d="M7 10V7a5 5 0 0 1 10 0" fill="none" stroke="#747d8c" stroke-width="2.5" stroke-linecap="round"/>
               <circle cx="12" cy="15" r="1.8" fill="#2f3542"/>
             </svg>
           </div>
@@ -188,7 +190,7 @@
           <div class="hold-progress-fill" id="hold-progress-fill"></div>
           <div class="hold-inner-wrap">
             <div class="hold-idle-state" id="hold-idle-state">
-              <span class="hold-label">HOLD TO START</span>
+              <span class="hold-label">長押しでスタート</span>
             </div>
             <div class="hold-active-state" id="hold-active-state">
               <span class="hold-countdown-num" id="hold-countdown-num">3</span>
@@ -254,6 +256,6 @@
     </div>
   </div>
 
-  <script src="main.js?v=lockest_9"></script>
+  <script src="main.js?v=lockest_10"></script>
 </body>
 </html>
