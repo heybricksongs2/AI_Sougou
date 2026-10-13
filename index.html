@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>🔐 LOCK LOCKER LOCKEST 🔓</title>
-  <link rel="stylesheet" href="style.css?v=lockest_8">
+  <title>LOCK LOCKER LOCKEST</title>
+  <link rel="stylesheet" href="style.css?v=lockest_9">
 </head>
 <body>
   <!-- 背景パーティクル & メカニカル鍵背景 -->
@@ -21,7 +21,7 @@
   <div id="danger-vignette"></div>
   <div id="screen-flash-overlay"></div>
 
-  <!-- 残り3,2,1秒 緊迫感パルスオーバーレイ (90%透過ダークレッド & 脈動カウント) -->
+  <!-- 残り3,2,1秒 緊迫感パルスオーバーレイ (透明背景・数字のみ薄く重ねる) -->
   <div id="urgent-countdown-overlay" class="urgent-countdown-overlay">
     <div id="urgent-count-num" class="urgent-count-num">3</div>
   </div>
@@ -43,33 +43,74 @@
         <span id="unlocked-count" class="hud-value">0</span>
       </div>
       <div class="hud-btn-group">
-        <button id="sound-btn" class="icon-btn" aria-label="Sound Toggle">🔊</button>
-        <button id="debug-btn" class="icon-btn" aria-label="Debug Panel">🛠️</button>
+        <button id="sound-btn" class="icon-btn" aria-label="Sound Toggle">
+          <svg class="hud-svg-icon sound-icon-on" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+        </button>
+        <button id="debug-btn" class="icon-btn" aria-label="Debug Panel">
+          <svg class="hud-svg-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </button>
       </div>
     </header>
 
-    <!-- 鍵スタックエリア（立体カード構造） -->
+    <!-- 鍵スタックエリア（完全中央配置の左右対称SVGシャックル） -->
     <main id="lock-stage">
-      <!-- 背後の鍵（次の鍵：少し薄く、小さく奥にスタンバイ） -->
+      <!-- 背後の鍵（次の鍵） -->
       <div id="next-lock-card" class="lock-card preview-card">
-        <div class="card-shackle"></div>
+        <div class="card-shackle-wrap">
+          <svg class="shackle-svg" viewBox="0 0 100 85" width="100" height="85">
+            <defs>
+              <linearGradient id="shackleMetalNext" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#8395a7" />
+                <stop offset="30%" stop-color="#c8d6e5" />
+                <stop offset="50%" stop-color="#ffffff" />
+                <stop offset="70%" stop-color="#c8d6e5" />
+                <stop offset="100%" stop-color="#576574" />
+              </linearGradient>
+            </defs>
+            <path d="M 18 85 V 36 C 18 16 32 6 50 6 C 68 6 82 16 82 36 V 85" 
+                  fill="none" stroke="url(#shackleMetalNext)" stroke-width="15" stroke-linecap="round" />
+            <path d="M 18 85 V 36 C 18 16 32 6 50 6 C 68 6 82 16 82 36 V 85" 
+                  fill="none" stroke="#222f3e" stroke-width="2" stroke-linecap="round" opacity="0.3" />
+          </svg>
+        </div>
         <div class="card-body">
           <div class="card-badge" id="next-lock-badge">NEXT</div>
         </div>
       </div>
 
-      <!-- 手前の鍵（今解く鍵：アクティブ） -->
+      <!-- 手前の鍵（アクティブな鍵） -->
       <div id="current-lock-card" class="lock-card active-card">
-        <div class="card-shackle" id="current-shackle"></div>
+        <div class="card-shackle-wrap" id="current-shackle">
+          <svg class="shackle-svg" viewBox="0 0 100 85" width="100" height="85">
+            <defs>
+              <linearGradient id="shackleMetalCur" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#8395a7" />
+                <stop offset="25%" stop-color="#c8d6e5" />
+                <stop offset="50%" stop-color="#ffffff" />
+                <stop offset="75%" stop-color="#c8d6e5" />
+                <stop offset="100%" stop-color="#576574" />
+              </linearGradient>
+            </defs>
+            <path d="M 18 85 V 36 C 18 16 32 6 50 6 C 68 6 82 16 82 36 V 85" 
+                  fill="none" stroke="url(#shackleMetalCur)" stroke-width="15" stroke-linecap="round" />
+            <path d="M 18 85 V 36 C 18 16 32 6 50 6 C 68 6 82 16 82 36 V 85" 
+                  fill="none" stroke="#222f3e" stroke-width="2" stroke-linecap="round" opacity="0.3" />
+          </svg>
+        </div>
         <div class="card-body">
           <div class="lock-header">
             <span id="lock-level-badge" class="level-badge">Lv.1</span>
             <span id="lock-difficulty" class="difficulty-stars">★☆☆☆☆</span>
           </div>
 
-          <!-- ギミック操作エリア（ピクトグラム・図形による直感UI） -->
+          <!-- ギミック操作エリア -->
           <div id="gimmick-container" class="gimmick-area">
-            <!-- JavaScriptで言語不要の直感ギミックUIを挿入 -->
           </div>
         </div>
       </div>
@@ -155,11 +196,13 @@
           </div>
         </button>
 
-        <button id="start-debug-btn" class="debug-start-link">🛠️ DEBUG MODE</button>
+        <button id="start-debug-btn" class="debug-start-link">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>DEBUG MODE
+        </button>
       </div>
     </div>
 
-    <!-- リザルト画面オーバーレイ（絵文字削除・タイトル戻るボタン） -->
+    <!-- リザルト画面オーバーレイ（絵文字削除・SVGホームアイコン付きボタン） -->
     <div id="result-overlay" class="screen-overlay">
       <div class="overlay-card pop-up">
         <div id="result-rank-badge" class="rank-badge">RANK S</div>
@@ -181,31 +224,36 @@
           </div>
         </div>
 
-        <button id="retry-btn" class="pop-btn primary-btn">TITLE 🏠</button>
+        <button id="retry-btn" class="pop-btn primary-btn">
+          <span>TITLE</span>
+          <svg class="btn-home-svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="vertical-align: -3px; margin-left: 6px;">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+        </button>
       </div>
     </div>
 
-    <!-- デバッグパネル -->
+    <!-- デバッグパネル（絵文字完全排除・クリーンUI） -->
     <div id="debug-panel" class="debug-panel">
       <div class="debug-header">
-        <span class="debug-title">🛠️ DEBUG PANEL</span>
+        <span class="debug-title">DEBUG PANEL</span>
         <button id="debug-close-btn" class="debug-close">✕</button>
       </div>
       <div class="debug-controls">
         <div class="debug-row">
           <select id="debug-level-select"></select>
-          <button id="debug-jump-btn" class="debug-action-btn primary">JUMP 🚀</button>
+          <button id="debug-jump-btn" class="debug-action-btn primary">JUMP</button>
         </div>
         <div class="debug-row-btns">
-          <button id="debug-pass-btn" class="debug-action-btn">PASS 🔓</button>
-          <button id="debug-freeze-btn" class="debug-action-btn">FREEZE ⏱️</button>
-          <button id="debug-add-time-btn" class="debug-action-btn">+10s ⏳</button>
-          <button id="debug-gameover-btn" class="debug-action-btn danger">END 💀</button>
+          <button id="debug-pass-btn" class="debug-action-btn">PASS</button>
+          <button id="debug-freeze-btn" class="debug-action-btn">FREEZE</button>
+          <button id="debug-add-time-btn" class="debug-action-btn">+10s</button>
+          <button id="debug-gameover-btn" class="debug-action-btn danger">END</button>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="main.js?v=lockest_8"></script>
+  <script src="main.js?v=lockest_9"></script>
 </body>
 </html>

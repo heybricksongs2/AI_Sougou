@@ -187,12 +187,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
   soundBtn.addEventListener('click', () => {
     soundEnabled = !soundEnabled;
-    soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+    soundBtn.innerHTML = soundEnabled ? SOUND_ON_SVG : SOUND_OFF_SVG;
   });
 
   // ==========================================
   // 環境非依存・高品質ベクター＆DOM生成ヘルパー
   // ==========================================
+
+  const SOUND_ON_SVG = `
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+    </svg>
+  `;
+  const SOUND_OFF_SVG = `
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+    </svg>
+  `;
+  const CHECKER_FLAG_SVG = `
+    <svg viewBox="0 0 24 24" width="28" height="28" style="display:block;">
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" fill="#2ed573" stroke="#2f3542" stroke-width="2.2"/>
+      <line x1="4" y1="22" x2="4" y2="15" stroke="#2f3542" stroke-width="2.6" stroke-linecap="round"/>
+    </svg>
+  `;
+  const MINI_CHECK_SVG = `
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#2ed573" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align: middle;">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  `;
+  const CHECK_MARK_SVG = `
+    <svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="#2ed573" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  `;
+  const TARGET_ZONE_SVG = `
+    <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#ff4757" stroke-width="2.2" style="display:block;">
+      <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6" fill="#ff4757" opacity="0.3"/><circle cx="12" cy="12" r="2.2" fill="#ff4757"/>
+    </svg>
+  `;
+  const STAR_SVG = `
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="#ffd32a" stroke="#2f3542" stroke-width="1.8" style="display:block;">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+  `;
+  const HAND_STOP_SVG = `
+    <svg viewBox="0 0 24 24" width="48" height="48" fill="#ff4757" stroke="#2f3542" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
+      <path d="M18 11V6a2 2 0 0 0-4 0v4"/><path d="M14 10V4a2 2 0 0 0-4 0v7"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-5.9-2.3L2.3 14c-.4-.4-.3-1 .2-1.3.4-.3 1-.2 1.3.2L6 15"/>
+    </svg>
+  `;
+  const BOLT_SVG = `
+    <svg viewBox="0 0 24 24" width="38" height="38" fill="#ffd32a" stroke="#2f3542" stroke-width="1.8" stroke-linejoin="round" style="display:block;">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>
+  `;
 
   // 1. ゴールドキーSVG (端末による絵文字の傾き・サイズ差を解消)
   const KEY_SVG = `
@@ -355,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function cleanupCurrentGimmick() {
     cleanActiveAnimations();
     cleanActiveListeners();
-    currentShackle.style.transform = 'translateY(0)';
+    currentShackle.style.transform = '';
     gimmickContainer.innerHTML = '';
   }
 
@@ -772,7 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const watermark = document.createElement('div');
       watermark.className = 'gesture-target-watermark';
-      watermark.textContent = '✔';
+      watermark.innerHTML = CHECK_MARK_SVG;
 
       const gCanvas = document.createElement('canvas');
       gCanvas.className = 'gesture-canvas';
@@ -1002,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
       zone.className = 'hover-target-zone';
       
       const zoneIcon = document.createElement('span');
-      zoneIcon.textContent = '🎯';
+      zoneIcon.innerHTML = TARGET_ZONE_SVG;
       const progressTrack = document.createElement('div');
       progressTrack.className = 'hover-progress-track';
       const progressFill = document.createElement('div');
@@ -1131,7 +1179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         marker.className = 'star-point-marker';
         marker.style.left = pt.x + 'px';
         marker.style.top = pt.y + 'px';
-        marker.textContent = (idx === 0) ? '✔' : '';
+        marker.innerHTML = (idx === 0) ? MINI_CHECK_SVG : '';
         if (idx === 0) marker.classList.add('completed');
         area.appendChild(marker);
         return marker;
@@ -1181,7 +1229,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (targetPtIdx < 5) {
             markerEls[targetPtIdx].classList.remove('active-target');
             markerEls[targetPtIdx].classList.add('completed');
-            markerEls[targetPtIdx].textContent = '✔';
+            markerEls[targetPtIdx].innerHTML = MINI_CHECK_SVG;
           }
           if (starIconContainers[targetPtIdx - 1]) {
             starIconContainers[targetPtIdx - 1].innerHTML = getStarSvg(true);
@@ -1208,7 +1256,7 @@ document.addEventListener('DOMContentLoaded', () => {
           targetPtIdx = 1;
           markerEls.forEach((m, i) => {
             m.className = 'star-point-marker';
-            m.textContent = (i === 0) ? '✔' : '';
+            m.innerHTML = (i === 0) ? MINI_CHECK_SVG : '';
             if (i === 0) m.classList.add('completed');
             if (i === 1) m.classList.add('active-target');
           });
@@ -1425,7 +1473,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lastAngle = angle;
 
         const progress = Math.min(1, Math.abs(totalRotated) / (Math.PI * 1.85));
-        currentShackle.style.transform = `translateY(${-progress * 18}px)`;
+        currentShackle.style.transform = `translateX(-50%) translateY(${-progress * 18}px)`;
 
         const pct = Math.floor(progress * 100);
         center.textContent = (progress >= 0.98) ? 'OPEN' : `${pct}%`;
@@ -1455,7 +1503,7 @@ document.addEventListener('DOMContentLoaded', () => {
           currentDeg = 0;
           lastStepSound = 0;
           rim.style.transform = 'rotate(0deg)';
-          currentShackle.style.transform = 'translateY(0)';
+          currentShackle.style.transform = '';
           center.textContent = '0%';
           center.style.background = '#ffa502';
           triggerMistake();
@@ -1476,7 +1524,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const handIcon = document.createElement('div');
       handIcon.className = 'wait-still-hand';
-      handIcon.textContent = '✋';
+      handIcon.innerHTML = HAND_STOP_SVG;
 
       const track = document.createElement('div');
       track.className = 'wait-still-progress-track';
@@ -1683,7 +1731,7 @@ document.addEventListener('DOMContentLoaded', () => {
       zone.style.height = '36px';
       
       const zoneIcon = document.createElement('span');
-      zoneIcon.textContent = '🎯';
+      zoneIcon.innerHTML = TARGET_ZONE_SVG;
       const progressTrack = document.createElement('div');
       progressTrack.className = 'hover-progress-track';
       const progressFill = document.createElement('div');
@@ -1811,8 +1859,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const btn = document.createElement('button');
       btn.className = 'super-arcade-btn';
-      btn.textContent = '●';
-      btn.style.fontSize = '2.5rem';
+      btn.innerHTML = BOLT_SVG;
 
       btn.addEventListener('click', () => {
         playSound('tap');
@@ -2362,10 +2409,10 @@ document.addEventListener('DOMContentLoaded', () => {
   setupActionButton(debugFreezeBtn, () => {
     isTimeFrozen = !isTimeFrozen;
     if (isTimeFrozen) {
-      debugFreezeBtn.textContent = 'FROZEN 🟢';
+      debugFreezeBtn.textContent = 'FROZEN';
       debugFreezeBtn.classList.add('frozen');
     } else {
-      debugFreezeBtn.textContent = 'FREEZE ⏱️';
+      debugFreezeBtn.textContent = 'FREEZE';
       debugFreezeBtn.classList.remove('frozen');
     }
   });
