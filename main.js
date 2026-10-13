@@ -223,6 +223,21 @@ document.addEventListener('DOMContentLoaded', () => {
   let nextLock = null;
   let warningBeepTimer = 0;
   let activeAnimationId = null;
+  let activeWindowListeners = [];
+
+  function addTrackedListener(target, type, handler, options) {
+    target.addEventListener(type, handler, options);
+    activeWindowListeners.push({ target, type, handler, options });
+  }
+
+  function cleanActiveListeners() {
+    for (const item of activeWindowListeners) {
+      try {
+        item.target.removeEventListener(item.type, item.handler, item.options);
+      } catch (e) {}
+    }
+    activeWindowListeners = [];
+  }
 
   function cleanActiveAnimations() {
     if (activeAnimationId) {
@@ -231,10 +246,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function cleanupCurrentGimmick() {
+    cleanActiveAnimations();
+    cleanActiveListeners();
+    gimmickContainer.innerHTML = '';
+  }
+
   // Render 30 Non-Verbal Gimmicks
   function renderGimmick(lock) {
-    cleanActiveAnimations();
-    gimmickContainer.innerHTML = '';
+    cleanupCurrentGimmick();
     lockLevelBadge.textContent = `Lv.${lock.level} ${lock.icon}`;
     lockDiff.textContent = lock.stars;
     lockFace.textContent = lock.face;
@@ -314,10 +334,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       knob.addEventListener('mousedown', onStart);
       knob.addEventListener('touchstart', onStart, { passive: true });
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: true });
-      window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
+      addTrackedListener(window, 'mousemove', onMove);
+      addTrackedListener(window, 'touchmove', onMove, { passive: true });
+      addTrackedListener(window, 'mouseup', onEnd);
+      addTrackedListener(window, 'touchend', onEnd);
 
     // 3. 鍵ドラッグ差し込み 🔑
     } else if (lock.type === 'key_drag') {
@@ -383,10 +403,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       keyItem.addEventListener('mousedown', onStart);
       keyItem.addEventListener('touchstart', onStart, { passive: true });
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: true });
-      window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
+      addTrackedListener(window, 'mousemove', onMove);
+      addTrackedListener(window, 'touchmove', onMove, { passive: true });
+      addTrackedListener(window, 'mouseup', onEnd);
+      addTrackedListener(window, 'touchend', onEnd);
 
     // 4 & 20. スライドして回転 🗝️ / 🔄
     } else if (lock.type === 'slide_twist' || lock.type === 'slide_twist_180') {
@@ -532,10 +552,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       knob.addEventListener('mousedown', onStart);
       knob.addEventListener('touchstart', onStart, { passive: true });
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: true });
-      window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
+      addTrackedListener(window, 'mousemove', onMove);
+      addTrackedListener(window, 'touchmove', onMove, { passive: true });
+      addTrackedListener(window, 'mouseup', onEnd);
+      addTrackedListener(window, 'touchend', onEnd);
 
     // 7 & 8. スライド右 ➡️ / スライド上 ⬆️
     } else if (lock.type === 'slide_right') {
@@ -579,10 +599,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       knob.addEventListener('mousedown', onStart);
       knob.addEventListener('touchstart', onStart, { passive: true });
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: true });
-      window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
+      addTrackedListener(window, 'mousemove', onMove);
+      addTrackedListener(window, 'touchmove', onMove, { passive: true });
+      addTrackedListener(window, 'mouseup', onEnd);
+      addTrackedListener(window, 'touchend', onEnd);
 
     } else if (lock.type === 'slide_up') {
       const track = document.createElement('div');
@@ -625,10 +645,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       knob.addEventListener('mousedown', onStart);
       knob.addEventListener('touchstart', onStart, { passive: true });
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: true });
-      window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
+      addTrackedListener(window, 'mousemove', onMove);
+      addTrackedListener(window, 'touchmove', onMove, { passive: true });
+      addTrackedListener(window, 'mouseup', onEnd);
+      addTrackedListener(window, 'touchend', onEnd);
 
     // 9. マークを書くやつ (✔ ジェスチャー) ✍️
     } else if (lock.type === 'gesture_mark') {
@@ -696,10 +716,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       gCanvas.addEventListener('mousedown', startDraw);
       gCanvas.addEventListener('touchstart', startDraw, { passive: true });
-      window.addEventListener('mousemove', moveDraw);
-      window.addEventListener('touchmove', moveDraw, { passive: true });
-      window.addEventListener('mouseup', endDraw);
-      window.addEventListener('touchend', endDraw);
+      addTrackedListener(window, 'mousemove', moveDraw);
+      addTrackedListener(window, 'touchmove', moveDraw, { passive: true });
+      addTrackedListener(window, 'mouseup', endDraw);
+      addTrackedListener(window, 'touchend', endDraw);
 
     // 10. いくつかのカギの中から正しい鍵穴の奴を選ぶ奴 🔍
     } else if (lock.type === 'match_key') {
@@ -907,8 +927,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       thrustBtn.addEventListener('mousedown', onStart);
       thrustBtn.addEventListener('touchstart', onStart, { passive: false });
-      window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
+      addTrackedListener(window, 'mouseup', onEnd);
+      addTrackedListener(window, 'touchend', onEnd);
 
       function hoverPhysics() {
         if (!isPlaying || currentLock.type !== lock.type) return;
@@ -1003,10 +1023,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       knob.addEventListener('mousedown', onStart);
       knob.addEventListener('touchstart', onStart, { passive: true });
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: true });
-      window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
+      addTrackedListener(window, 'mousemove', onMove);
+      addTrackedListener(window, 'touchmove', onMove, { passive: true });
+      addTrackedListener(window, 'mouseup', onEnd);
+      addTrackedListener(window, 'touchend', onEnd);
 
     // 16. ダイヤル式のカギ (数字ドラムを合わせる) 🔐
     } else if (lock.type === 'dial_code') {
@@ -1126,8 +1146,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       tapBtn.addEventListener('mousedown', onPressStart);
       tapBtn.addEventListener('touchstart', onPressStart, { passive: false });
-      window.addEventListener('mouseup', onPressEnd);
-      window.addEventListener('touchend', onPressEnd);
+      addTrackedListener(window, 'mouseup', onPressEnd);
+      addTrackedListener(window, 'touchend', onPressEnd);
 
       stage.appendChild(display);
       stage.appendChild(tapBtn);
@@ -1205,8 +1225,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       btn.addEventListener('mousedown', onStart);
       btn.addEventListener('touchstart', onStart, { passive: false });
-      window.addEventListener('mouseup', onCancel);
-      window.addEventListener('touchend', onCancel);
+      addTrackedListener(window, 'mouseup', onCancel);
+      addTrackedListener(window, 'touchend', onCancel);
       gimmickContainer.appendChild(btn);
 
     // 25. ダイヤル合わせ 🧭
@@ -1358,10 +1378,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       keyDragger.addEventListener('mousedown', onStart);
       keyDragger.addEventListener('touchstart', onStart, { passive: false });
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: false });
-      window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
+      addTrackedListener(window, 'mousemove', onMove);
+      addTrackedListener(window, 'touchmove', onMove, { passive: false });
+      addTrackedListener(window, 'mouseup', onEnd);
+      addTrackedListener(window, 'touchend', onEnd);
 
 
     // 28. 動くボタン滅茶苦茶小さいやつ 🐜
@@ -1408,6 +1428,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Success Trigger (+0.5s & Card Swap)
   function resolveLockSuccess() {
     cleanActiveAnimations();
+    cleanActiveListeners();
     playSound('unlock');
     currentShackle.classList.add('open');
     lockFace.textContent = getRandomFace('happy');
@@ -1469,6 +1490,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function startGame() {
     initAudio();
+    cleanupCurrentGimmick();
     isPlaying = true;
     remainingTime = 18.0;
     score = 0;
@@ -1498,7 +1520,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function endGame() {
     isPlaying = false;
-    cleanActiveAnimations();
+    cleanupCurrentGimmick();
     clearInterval(timerInterval);
 
     if (score > highScore) {
@@ -1535,6 +1557,28 @@ document.addEventListener('DOMContentLoaded', () => {
     resultOverlay.classList.add('active');
   }
 
-  startBtn.addEventListener('click', startGame);
-  retryBtn.addEventListener('click', startGame);
+  // Reliable touch & click handling for action buttons (start & retry)
+  function setupActionButton(btn, callback) {
+    if (!btn) return;
+    let isProcessing = false;
+
+    function handleAction(e) {
+      if (e) {
+        e.stopPropagation();
+      }
+      if (isProcessing) return;
+      isProcessing = true;
+      setTimeout(() => { isProcessing = false; }, 350);
+      callback();
+    }
+
+    btn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      handleAction(e);
+    }, { passive: false });
+    btn.addEventListener('click', handleAction);
+  }
+
+  setupActionButton(startBtn, startGame);
+  setupActionButton(retryBtn, startGame);
 });
