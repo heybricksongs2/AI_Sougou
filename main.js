@@ -1323,8 +1323,8 @@ document.addEventListener('DOMContentLoaded', () => {
       function bounceAnim() {
         if (!isPlaying || currentLock.type !== lock.type) return;
         x += vx; y += vy;
-        if (x <= 10 || x >= 240) vx = -vx;
-        if (y <= 10 || y >= 120) vy = -vy;
+        if (x <= 8 || x >= 210) vx = -vx;
+        if (y <= 8 || y >= 115) vy = -vy;
         btn.style.left = x + 'px';
         btn.style.top = y + 'px';
         activeAnimationId = requestAnimationFrame(bounceAnim);
@@ -1815,8 +1815,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Math.abs(vy) < 0.9) vy = Math.sign(vy || 1) * 0.9;
 
         x += vx; y += vy;
-        if (x <= 5 || x >= 280) vx = -vx;
-        if (y <= 5 || y >= 150) vy = -vy;
+        if (x <= 6 || x >= 235) vx = -vx;
+        if (y <= 6 || y >= 135) vy = -vy;
         btn.style.left = x + 'px';
         btn.style.top = y + 'px';
         activeAnimationId = requestAnimationFrame(tinyBounce);
