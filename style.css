@@ -463,54 +463,213 @@ body {
   box-shadow: 0 3px 0 var(--text-dark);
 }
 
-/* 3. 鍵ドラッグ */
+/* 3. 鍵ドラッグ (Keyhole & Key) */
 .key-drag-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  height: 180px;
+  height: 190px;
   width: 100%;
   position: relative;
 }
 
 .key-drop-target {
-  width: 76px;
-  height: 76px;
-  border-radius: 20px;
-  background: #f1f2f6;
-  border: 4px dashed var(--blue-accent);
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2f3542 30%, #1e272e 100%);
+  border: 4px solid #f1c40f;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), inset 0 2px 6px rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 2.4rem;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .key-drop-target.hovered {
-  background: rgba(46, 213, 115, 0.25);
   border-color: var(--secondary-accent);
-  transform: scale(1.1);
+  box-shadow: 0 0 16px var(--secondary-accent);
+  transform: scale(1.12);
+}
+
+.real-keyhole-svg {
+  width: 38px;
+  height: 48px;
 }
 
 .drag-key-item {
-  width: 74px;
-  height: 52px;
-  background: var(--yellow-accent);
+  width: 80px;
+  height: 56px;
+  background: linear-gradient(135deg, #f1c40f, #f39c12);
+  border: 3px solid var(--text-dark);
+  border-radius: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.2rem;
+  cursor: grab;
+  box-shadow: 0 5px 0 var(--text-dark);
+  position: absolute;
+  bottom: 8px;
+  touch-action: none;
+}
+
+.drag-key-item:active {
+  cursor: grabbing;
+}
+
+/* 4 & 20. タップ系 (ダブル / 3回タップ) - ボタンの外側に大きな光るドット */
+.multi-tap-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.multi-dot-row-outer {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+}
+
+.tap-dot-large {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #dfe4ea;
+  border: 3px solid var(--text-dark);
+  transition: all 0.15s ease;
+}
+
+.tap-dot-large.active {
+  background: var(--secondary-accent);
+  box-shadow: 0 0 14px var(--secondary-accent);
+  transform: scale(1.2);
+}
+
+.multi-tap-btn-clean {
+  width: 150px;
+  height: 100px;
+  border-radius: 28px;
+  background: var(--blue-accent);
+  border: 4px solid var(--text-dark);
+  color: #ffffff;
+  font-size: 1.8rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 0 var(--text-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.06s ease;
+  touch-action: manipulation;
+}
+
+.multi-tap-btn-clean:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--text-dark);
+}
+
+/* 7 & 25. 丸くスライドさせて戻す (Circle Loop Slide) */
+.loop-slide-stage {
+  position: relative;
+  width: 190px;
+  height: 190px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: none;
+}
+
+.loop-slide-track-svg {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.loop-knob {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary-accent);
+  border: 3px solid var(--text-dark);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.3rem;
+  color: #fff;
+  cursor: grab;
+  touch-action: none;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.loop-turn-indicator {
+  position: absolute;
+  font-size: 1.8rem;
+  pointer-events: none;
+  font-weight: 900;
+  color: var(--blue-accent);
+}
+
+/* 9. 鍵合わせ (6択グリッド・同色鍵) */
+.key-match-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.key-match-hole-target {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  background: #2f3542;
+  border: 3px solid #f1c40f;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.2rem;
+  color: #f1c40f;
+}
+
+.key-choices-grid-6 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 90%;
+  max-width: 280px;
+}
+
+.key-choice-gold-btn {
+  height: 60px;
+  background: linear-gradient(135deg, #f1c40f, #f39c12);
   border: 3px solid var(--text-dark);
   border-radius: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 2rem;
-  cursor: grab;
+  font-size: 1.8rem;
+  cursor: pointer;
   box-shadow: 0 4px 0 var(--text-dark);
-  position: absolute;
-  bottom: 6px;
+  touch-action: manipulation;
 }
 
-/* 4 & 20. スライドして回転 */
-.twist-stage {
+.key-choice-gold-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--text-dark);
+}
+
+/* 10. 3原色混色 (横長プレビュー欄) */
+.color-mix-stage {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -518,26 +677,166 @@ body {
   width: 100%;
 }
 
-.twist-lock-box {
-  width: 130px;
-  height: 90px;
+.color-mix-target-badge {
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: var(--text-muted);
+}
+
+.color-mix-target-circle {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 3px solid var(--text-dark);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+.color-mix-bar-container {
+  width: 85%;
+  height: 38px;
+  border-radius: 14px;
+  border: 3px solid var(--text-dark);
+  background: #dfe4ea;
+  overflow: hidden;
+  display: flex;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.color-mix-bar-fill {
+  width: 100%;
+  height: 100%;
+  transition: background 0.15s ease;
+}
+
+.color-mix-buttons-row {
+  display: flex;
+  gap: 12px;
+}
+
+.color-mix-pill-btn {
+  width: 66px;
+  height: 50px;
+  border-radius: 16px;
+  border: 3px solid var(--text-dark);
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--text-dark);
+  touch-action: manipulation;
+}
+
+.color-mix-pill-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--text-dark);
+}
+
+/* 11. すごろくマス ＆ サイコロ (sugoroku_dice) */
+.sugoroku-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.sugoroku-track {
+  display: flex;
+  gap: 6px;
   background: #f1f2f6;
-  border: 4px solid var(--text-dark);
-  border-radius: 24px;
+  padding: 8px 12px;
+  border-radius: 18px;
+  border: 3px solid var(--text-dark);
+}
+
+.sugoroku-tile {
+  width: 38px;
+  height: 48px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 2px solid var(--card-border);
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--text-muted);
 }
 
-.twistable-key {
-  font-size: 3.2rem;
-  cursor: grab;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  display: inline-block;
+.sugoroku-tile.active-goal {
+  background: #ffd32a;
+  border-color: #ffa502;
+  color: var(--text-dark);
+  box-shadow: 0 0 12px #ffa502;
+  animation: pulse-sugoroku 0.6s infinite alternate;
 }
 
-/* 5 & 21. タップ系 */
+@keyframes pulse-sugoroku {
+  from { transform: scale(1); }
+  to { transform: scale(1.15); }
+}
+
+.dice-choices-row {
+  display: flex;
+  gap: 8px;
+}
+
+.dice-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 3px solid var(--text-dark);
+  font-size: 2.2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--text-dark);
+  touch-action: manipulation;
+}
+
+.dice-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--text-dark);
+}
+
+/* 12. 特大連打ボタン (Rapid Mash) */
+.rapid-mash-big-btn {
+  width: 210px;
+  height: 120px;
+  border-radius: 32px;
+  background: radial-gradient(circle, #ffa502 0%, #ff7f50 100%);
+  color: #ffffff;
+  border: 5px solid var(--text-dark);
+  font-size: 3.5rem;
+  cursor: pointer;
+  box-shadow: 0 8px 0 var(--text-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: manipulation;
+  transition: transform 0.05s ease;
+}
+
+.rapid-mash-big-btn:active {
+  transform: translateY(5px);
+  box-shadow: 0 3px 0 var(--text-dark);
+}
+
+.rapid-mash-gauge-track {
+  width: 88%;
+  height: 24px;
+  border-radius: 12px;
+  background: #dfe4ea;
+  border: 3px solid var(--text-dark);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.rapid-mash-gauge-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #ffa502, #2ed573);
+  transition: width 0.05s linear;
+}
 .multi-tap-btn {
   width: 125px;
   height: 125px;
