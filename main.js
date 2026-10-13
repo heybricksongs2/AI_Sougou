@@ -1785,6 +1785,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 🛠️ DEBUG MODE CONTROLS
   const debugBtn = document.getElementById('debug-btn');
+  const startDebugBtn = document.getElementById('start-debug-btn');
   const debugPanel = document.getElementById('debug-panel');
   const debugCloseBtn = document.getElementById('debug-close-btn');
   const debugLevelSelect = document.getElementById('debug-level-select');
@@ -1809,8 +1810,10 @@ document.addEventListener('DOMContentLoaded', () => {
     debugPanel.classList.toggle('active');
   }
 
-  if (debugBtn) debugBtn.addEventListener('click', toggleDebug);
-  if (debugCloseBtn) debugCloseBtn.addEventListener('click', toggleDebug);
+  // タッチ・クリック両対応で確実に開閉
+  setupActionButton(debugBtn, toggleDebug);
+  setupActionButton(startDebugBtn, toggleDebug);
+  setupActionButton(debugCloseBtn, toggleDebug);
 
   // キーボード 'D' キーでデバッグパネル開閉
   window.addEventListener('keydown', (e) => {
@@ -1825,69 +1828,59 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ステージジャンプ (任意のLvへ即時移動)
-  if (debugJumpBtn) {
-    debugJumpBtn.addEventListener('click', () => {
-      initAudio();
-      const targetLevel = parseInt(debugLevelSelect.value, 10);
-      const targetDef = LOCK_DEFINITIONS.find(d => d.level === targetLevel);
-      if (!targetDef) return;
+  setupActionButton(debugJumpBtn, () => {
+    initAudio();
+    const targetLevel = parseInt(debugLevelSelect.value, 10);
+    const targetDef = LOCK_DEFINITIONS.find(d => d.level === targetLevel);
+    if (!targetDef) return;
 
-      if (!isPlaying) {
-        startGame();
-      }
+    if (!isPlaying) {
+      startGame();
+    }
 
-      currentLock = {
-        ...targetDef,
-        round: 1,
-        points: targetDef.basePoints,
-        face: getRandomFace('normal')
-      };
-      renderGimmick(currentLock);
-      playSound('tap');
-    });
-  }
+    currentLock = {
+      ...targetDef,
+      round: 1,
+      points: targetDef.basePoints,
+      face: getRandomFace('normal')
+    };
+    renderGimmick(currentLock);
+    playSound('tap');
+  });
 
   // PASS (強制解錠)
-  if (debugPassBtn) {
-    debugPassBtn.addEventListener('click', () => {
-      if (!isPlaying) return;
-      resolveLockSuccess();
-    });
-  }
+  setupActionButton(debugPassBtn, () => {
+    if (!isPlaying) return;
+    resolveLockSuccess();
+  });
 
   // FREEZE (タイマー停止/再開)
-  if (debugFreezeBtn) {
-    debugFreezeBtn.addEventListener('click', () => {
-      isTimeFrozen = !isTimeFrozen;
-      if (isTimeFrozen) {
-        debugFreezeBtn.textContent = 'FROZEN 🟢';
-        debugFreezeBtn.classList.add('frozen');
-      } else {
-        debugFreezeBtn.textContent = 'FREEZE ⏱️';
-        debugFreezeBtn.classList.remove('frozen');
-      }
-    });
-  }
+  setupActionButton(debugFreezeBtn, () => {
+    isTimeFrozen = !isTimeFrozen;
+    if (isTimeFrozen) {
+      debugFreezeBtn.textContent = 'FROZEN 🟢';
+      debugFreezeBtn.classList.add('frozen');
+    } else {
+      debugFreezeBtn.textContent = 'FREEZE ⏱️';
+      debugFreezeBtn.classList.remove('frozen');
+    }
+  });
 
   // +10s (時間追加)
-  if (debugAddTimeBtn) {
-    debugAddTimeBtn.addEventListener('click', () => {
-      remainingTime += 10.0;
-      timeDisplay.textContent = remainingTime.toFixed(1);
-      timeAddedAnim.textContent = '+10s';
-      timeAddedAnim.classList.remove('animate');
-      void timeAddedAnim.offsetWidth;
-      timeAddedAnim.classList.add('animate');
-      setTimeout(() => { timeAddedAnim.textContent = '+1.0s'; }, 700);
-      playSound('unlock');
-    });
-  }
+  setupActionButton(debugAddTimeBtn, () => {
+    remainingTime += 10.0;
+    timeDisplay.textContent = remainingTime.toFixed(1);
+    timeAddedAnim.textContent = '+10s';
+    timeAddedAnim.classList.remove('animate');
+    void timeAddedAnim.offsetWidth;
+    timeAddedAnim.classList.add('animate');
+    setTimeout(() => { timeAddedAnim.textContent = '+1.0s'; }, 700);
+    playSound('unlock');
+  });
 
   // GAME OVER (強制終了)
-  if (debugGameoverBtn) {
-    debugGameoverBtn.addEventListener('click', () => {
-      if (!isPlaying) return;
-      endGame();
-    });
-  }
+  setupActionButton(debugGameoverBtn, () => {
+    if (!isPlaying) return;
+    endGame();
+  });
 });
