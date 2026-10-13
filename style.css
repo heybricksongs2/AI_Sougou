@@ -1994,3 +1994,209 @@ body {
 
 
 
+
+
+/* ==========================================================
+   最新ギミック改修スタイル (Wait, Electric Shock, Super Mash, Color Adjust)
+   ========================================================== */
+
+/* 1. 待機ギミック (触るな！1.5秒キープ) */
+.wait-still-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  user-select: none;
+  touch-action: none;
+}
+
+.wait-still-hand {
+  font-size: 3.8rem;
+  animation: pulse-wait-hand 0.8s infinite alternate ease-in-out;
+  user-select: none;
+  pointer-events: none;
+}
+
+@keyframes pulse-wait-hand {
+  from { transform: scale(1); filter: drop-shadow(0 0 4px rgba(255, 71, 87, 0.4)); }
+  to { transform: scale(1.12); filter: drop-shadow(0 0 16px rgba(255, 71, 87, 0.9)); }
+}
+
+.wait-still-progress-track {
+  width: 82%;
+  height: 22px;
+  background: #dfe4ea;
+  border-radius: 12px;
+  border: 3px solid var(--text-dark);
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+}
+
+.wait-still-progress-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #1e90ff, #2ed573);
+  transition: width 0.05s linear;
+}
+
+/* 2. イライラ棒のビリビリ電撃アニメーション */
+.irira-maze-svg .electric-zap-path {
+  stroke-dasharray: 10 6;
+  animation: electric-zap-dash 0.35s linear infinite;
+}
+
+@keyframes electric-zap-dash {
+  to { stroke-dashoffset: -32; }
+}
+
+.irira-maze-svg .electric-zap-glow {
+  animation: electric-zap-flicker 0.2s infinite alternate ease-in-out;
+}
+
+@keyframes electric-zap-flicker {
+  0% { stroke: #ffa502; filter: drop-shadow(0 0 6px #ffa502); opacity: 0.9; }
+  50% { stroke: #ff4757; filter: drop-shadow(0 0 14px #ff4757); opacity: 1; }
+  100% { stroke: #ffd32a; filter: drop-shadow(0 0 18px #ffd32a); opacity: 0.95; }
+}
+
+/* 3. 超連打マイナス飛び出しゲージ ＆ リアルアーケード押しボタン */
+.super-mash-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.super-mash-track-wrapper {
+  position: relative;
+  width: 80%;
+  height: 24px;
+  background: #dfe4ea;
+  border-radius: 14px;
+  border: 4px solid var(--text-dark);
+  overflow: visible !important; /* マイナス飛び出しを許容 */
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.super-mash-fill-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #ffa502, #2ed573);
+  transition: width 0.04s linear, left 0.04s linear;
+}
+
+.super-mash-fill-bar.negative {
+  background: #ff4757 !important;
+  box-shadow: 0 0 12px rgba(255, 71, 87, 0.9);
+}
+
+.super-arcade-btn {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ff6b81 0%, #ff4757 60%, #c0392b 100%);
+  border: 7px solid #2f3542;
+  box-shadow: 0 10px 0 #1e272e, 0 14px 18px rgba(0,0,0,0.4), inset 0 4px 6px rgba(255,255,255,0.4);
+  color: #ffffff;
+  font-size: 3.4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.04s ease, box-shadow 0.04s ease;
+  user-select: none;
+}
+
+.super-arcade-btn:active {
+  transform: translateY(7px);
+  box-shadow: 0 3px 0 #1e272e, 0 6px 10px rgba(0,0,0,0.4), inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* 4. カラー二択の配置再調整 */
+.color-match-wrap {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 20px !important;
+  width: 100% !important;
+  padding: 8px 0 !important;
+}
+
+.color-target-display {
+  width: 72px !important;
+  height: 72px !important;
+  border-radius: 50% !important;
+  border: 4px solid var(--text-dark) !important;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.25) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.choice-row {
+  display: flex !important;
+  gap: 16px !important;
+  width: 85% !important;
+  max-width: 260px !important;
+  justify-content: center !important;
+}
+
+.color-choice-btn {
+  flex: 1 !important;
+  height: 72px !important;
+  border-radius: 22px !important;
+  border: 4px solid var(--text-dark) !important;
+  cursor: pointer !important;
+  box-shadow: 0 6px 0 var(--text-dark) !important;
+  transition: transform 0.08s ease !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  touch-action: manipulation !important;
+}
+
+.color-choice-btn:active {
+  transform: translateY(4px) !important;
+  box-shadow: 0 2px 0 var(--text-dark) !important;
+}
+
+
+/* ==========================================================
+   環境依存のないサイコロ・ドット描画スタイル
+   ========================================================== */
+.dice-face-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 30px;
+  height: 30px;
+  pointer-events: none;
+}
+
+.dice-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dice-pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2f3542;
+}
+
+.dice-pip.center-red {
+  background: #ff4757;
+  width: 9px;
+  height: 9px;
+}

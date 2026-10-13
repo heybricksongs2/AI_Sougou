@@ -1,4 +1,4 @@
-// POP LOCK RUSH! - 30 Ultimate Creative Gimmicks
+// POP LOCK RUSH! - 24 Ultimate Refined Gimmicks (Cross-Platform Polished)
 document.addEventListener('DOMContentLoaded', () => {
   // スマホの長押しコンテキストメニューを完全抑止
   document.addEventListener('contextmenu', (e) => e.preventDefault(), { passive: false });
@@ -137,7 +137,79 @@ document.addEventListener('DOMContentLoaded', () => {
     soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
   });
 
-  // 30 Ultimate Gimmicks: Level 1 to 30 (絵文字削除・順序再構成)
+  // ==========================================
+  // 環境非依存・高品質ベクター＆DOM生成ヘルパー
+  // ==========================================
+
+  // 1. ゴールドキーSVG (端末による絵文字の傾き・サイズ差を解消)
+  const KEY_SVG = `
+    <svg viewBox="0 0 36 36" width="32" height="32" style="display:block;">
+      <circle cx="12" cy="12" r="7" fill="none" stroke="#2f3542" stroke-width="3" />
+      <circle cx="12" cy="12" r="3.5" fill="#2f3542" />
+      <path d="M 17 17 L 30 30 M 23 23 L 27 19 M 27 27 L 31 23" stroke="#2f3542" stroke-width="3.5" stroke-linecap="round" />
+    </svg>
+  `;
+
+  // 2. 垂直ロケットSVG (傾きのブレがなく判定と完全一致)
+  const ROCKET_SVG = `
+    <svg viewBox="0 0 32 46" width="32" height="46" style="display:block; overflow:visible;">
+      <path d="M 16 2 C 10 12 9 26 9 34 L 23 34 C 23 26 22 12 16 2 Z" fill="#ffffff" stroke="#2f3542" stroke-width="2.5" />
+      <path d="M 16 2 C 12 8 11 13 11 16 L 21 16 C 21 13 20 8 16 2 Z" fill="#ff4757" />
+      <circle cx="16" cy="23" r="3.5" fill="#1e90ff" stroke="#2f3542" stroke-width="1.5" />
+      <path d="M 9 27 L 3 36 L 9 34 Z" fill="#ff4757" stroke="#2f3542" stroke-width="2" />
+      <path d="M 23 27 L 29 36 L 23 34 Z" fill="#ff4757" stroke="#2f3542" stroke-width="2" />
+      <path d="M 11 35 Q 16 46 21 35 Z" fill="#ffa502" />
+    </svg>
+  `;
+
+  // 3. 星SVG (フォント依存によるベースラインのズレを解消)
+  function getStarSvg(isFilled) {
+    return `
+      <svg viewBox="0 0 24 24" width="22" height="22" style="display:inline-block; vertical-align:middle;">
+        <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" 
+                 fill="${isFilled ? '#ffa502' : '#dfe4ea'}" 
+                 stroke="#2f3542" stroke-width="1.8" stroke-linejoin="round" />
+      </svg>
+    `;
+  }
+
+  // 4. 本物のサイコロ生成 (Unicode特殊文字豆腐化を完全防止)
+  function createDiceFaceElement(num) {
+    const grid = document.createElement('div');
+    grid.className = 'dice-face-grid';
+
+    // 3x3 の位置マップ (row, col)
+    // 0,0: 左上  0,1: 上中  0,2: 右上
+    // 1,0: 左中  1,1: 中央  1,2: 右中
+    // 2,0: 左下  2,1: 下中  2,2: 右下
+    const pipPositions = {
+      1: [[1, 1]],
+      2: [[0, 0], [2, 2]],
+      3: [[0, 0], [1, 1], [2, 2]],
+      4: [[0, 0], [0, 2], [2, 0], [2, 2]],
+      5: [[0, 0], [0, 2], [1, 1], [2, 0], [2, 2]],
+      6: [[0, 0], [0, 2], [1, 0], [1, 2], [2, 0], [2, 2]]
+    };
+
+    const activePips = pipPositions[num] || [];
+
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'dice-cell';
+        const hasPip = activePips.some(([pr, pc]) => pr === r && pc === c);
+        if (hasPip) {
+          const pip = document.createElement('div');
+          pip.className = 'dice-pip' + (num === 1 ? ' center-red' : '');
+          cell.appendChild(pip);
+        }
+        grid.appendChild(cell);
+      }
+    }
+    return grid;
+  }
+
+  // 24 精鋭ギミック定義
   const LOCK_DEFINITIONS = [
     { level: 1,  type: 'giant_button',          stars: '★☆☆☆☆', basePoints: 100 },
     { level: 2,  type: 'switch_slide',          stars: '★☆☆☆☆', basePoints: 120 },
@@ -153,22 +225,16 @@ document.addEventListener('DOMContentLoaded', () => {
     { level: 12, type: 'rapid_mash',            stars: '★★★★☆', basePoints: 340 },
     { level: 13, type: 'hover_thrust',          stars: '★★★★☆', basePoints: 370 },
     { level: 14, type: 'star_trace',            stars: '★★★★☆', basePoints: 400 },
-    { level: 15, type: 'dial_code',             stars: '★★★★☆', basePoints: 430 },
-    { level: 16, type: 'moving_btn',            stars: '★★★★☆', basePoints: 460 },
-    { level: 17, type: 'switch_slide_rev',      stars: '★★★★☆', basePoints: 490 },
-    { level: 18, type: 'morse_code',            stars: '★★★★★', basePoints: 520 },
-    { level: 19, type: 'wheel_turn',            stars: '★★★★★', basePoints: 550 },
-    { level: 20, type: 'triple_tap',            stars: '★★★★★', basePoints: 580 },
-    { level: 21, type: 'color_choice_2',        stars: '★★★★★', basePoints: 610 },
-    { level: 22, type: 'shape_choice_2',        stars: '★★★★★', basePoints: 640 },
-    { level: 23, type: 'fingerprint',           stars: '★★★★★', basePoints: 670 },
-    { level: 24, type: 'dial_turn',             stars: '★★★★★', basePoints: 700 },
-    { level: 25, type: 'circle_loop_slide_hard',stars: '★★★★★', basePoints: 730 },
-    { level: 26, type: 'irira_key_maze',        stars: '★★★★★', basePoints: 760 },
-    { level: 27, type: 'hover_thrust_hard',     stars: '★★★★★', basePoints: 800 },
-    { level: 28, type: 'tiny_moving_btn',       stars: '★★★★★', basePoints: 850 },
-    { level: 29, type: 'super_mash',            stars: '★★★★★', basePoints: 900 },
-    { level: 30, type: 'star_trace_fast',       stars: '★★★★★', basePoints: 1000 }
+    { level: 15, type: 'dial_code',             stars: '★★★★☆', basePoints: 440 },
+    { level: 16, type: 'moving_btn',            stars: '★★★★☆', basePoints: 480 },
+    { level: 17, type: 'morse_code',            stars: '★★★★★', basePoints: 520 },
+    { level: 18, type: 'wheel_turn',            stars: '★★★★★', basePoints: 560 },
+    { level: 19, type: 'wait_still',            stars: '★★★★★', basePoints: 600 },
+    { level: 20, type: 'color_choice_2',        stars: '★★★★★', basePoints: 650 },
+    { level: 21, type: 'irira_key_maze',        stars: '★★★★★', basePoints: 720 },
+    { level: 22, type: 'hover_thrust_hard',     stars: '★★★★★', basePoints: 800 },
+    { level: 23, type: 'tiny_moving_btn',       stars: '★★★★★', basePoints: 880 },
+    { level: 24, type: 'super_mash',            stars: '★★★★★', basePoints: 1000 }
   ];
 
   // Queue System
@@ -237,46 +303,42 @@ document.addEventListener('DOMContentLoaded', () => {
   function cleanupCurrentGimmick() {
     cleanActiveAnimations();
     cleanActiveListeners();
+    currentShackle.style.transform = 'translateY(0)';
     gimmickContainer.innerHTML = '';
   }
 
-  // Render 30 Non-Verbal Gimmicks
+  // Render 24 Non-Verbal Gimmicks
   function renderGimmick(lock) {
     cleanupCurrentGimmick();
     lockLevelBadge.textContent = `Lv.${lock.level}`;
     lockDiff.textContent = lock.stars;
     currentShackle.classList.remove('open');
 
-    // 1. 特大ボタン
+    // 1. 特大ボタン (一撃タップ)
     if (lock.type === 'giant_button') {
       const btn = document.createElement('button');
       btn.className = 'giant-action-btn';
-      btn.textContent = '💥';
+      btn.textContent = 'PUSH';
+      btn.style.letterSpacing = '2px';
       btn.addEventListener('click', () => {
         playSound('tap');
         resolveLockSuccess();
       });
       gimmickContainer.appendChild(btn);
 
-    // 2 & 17. スイッチスライド
-    } else if (lock.type === 'switch_slide' || lock.type === 'switch_slide_rev') {
-      const isRev = (lock.type === 'switch_slide_rev');
+    // 2. スイッチスライド
+    } else if (lock.type === 'switch_slide') {
       const track = document.createElement('div');
-      track.className = `switch-slider-track ${isRev ? 'on' : ''}`;
+      track.className = 'switch-slider-track';
 
       const arrows = document.createElement('div');
       arrows.className = 'switch-arrows-hint';
-      arrows.textContent = isRev ? '◀◀' : '▶▶';
+      arrows.textContent = '▶▶';
 
       const knob = document.createElement('div');
       knob.className = 'switch-draggable-knob';
-      if (isRev) {
-        knob.style.right = '4px';
-        knob.textContent = '🔴';
-      } else {
-        knob.style.left = '4px';
-        knob.textContent = '⚪';
-      }
+      knob.style.left = '4px';
+      knob.textContent = '●';
 
       track.appendChild(arrows);
       track.appendChild(knob);
@@ -289,33 +351,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const curX = (e.touches ? e.touches[0].clientX : e.clientX);
         const rect = track.getBoundingClientRect();
         const maxDist = rect.width - 56;
-        if (!isRev) {
-          let diff = curX - rect.left - 24;
-          diff = Math.max(4, Math.min(maxDist, diff));
-          knob.style.left = diff + 'px';
-          if (diff >= maxDist - 6) {
-            isDragging = false;
-            track.classList.add('on');
-            knob.textContent = '🟢';
-            setTimeout(() => resolveLockSuccess(), 100);
-          }
-        } else {
-          let diff = rect.right - curX - 24;
-          diff = Math.max(4, Math.min(maxDist, diff));
-          knob.style.right = diff + 'px';
-          if (diff >= maxDist - 6) {
-            isDragging = false;
-            track.classList.remove('on');
-            knob.textContent = '🟢';
-            setTimeout(() => resolveLockSuccess(), 100);
-          }
+        let diff = curX - rect.left - 24;
+        diff = Math.max(4, Math.min(maxDist, diff));
+        knob.style.left = diff + 'px';
+        if (diff >= maxDist - 6) {
+          isDragging = false;
+          track.classList.add('on');
+          knob.style.color = '#2ed573';
+          setTimeout(() => resolveLockSuccess(), 100);
         }
       }
       function onEnd() {
         if (isDragging) {
           isDragging = false;
-          if (isRev) knob.style.right = '4px';
-          else knob.style.left = '4px';
+          knob.style.left = '4px';
           triggerMistake();
         }
       }
@@ -326,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 
-    // 3. 鍵ドラッグ差し込み (リアルな鍵穴、矢印なし)
+    // 3. 鍵ドラッグ差し込み (安定ベクターキー ＆ リアル鍵穴)
     } else if (lock.type === 'key_drag') {
       const container = document.createElement('div');
       container.className = 'key-drag-container';
@@ -342,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const keyItem = document.createElement('div');
       keyItem.className = 'drag-key-item';
-      keyItem.textContent = '🔑';
+      keyItem.innerHTML = KEY_SVG;
 
       container.appendChild(targetHole);
       container.appendChild(keyItem);
@@ -400,9 +449,8 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 
-    // 4 & 20. マルチタップ (ダブル / 3回) - ピース絵文字削除、ボタン外側に大きな光る点
-    } else if (lock.type === 'double_tap' || lock.type === 'triple_tap') {
-      const targetCount = (lock.type === 'triple_tap') ? 3 : 2;
+    // 4. ダブルタップ (ボタン外側に大きな光る点)
+    } else if (lock.type === 'double_tap') {
       let currentTaps = 0;
       let lastTapTime = 0;
 
@@ -412,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const dotRow = document.createElement('div');
       dotRow.className = 'multi-dot-row-outer';
       const dots = [];
-      for (let i = 0; i < targetCount; i++) {
+      for (let i = 0; i < 2; i++) {
         const d = document.createElement('div');
         d.className = 'tap-dot-large';
         dotRow.appendChild(d);
@@ -421,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const btn = document.createElement('button');
       btn.className = 'multi-tap-btn-clean';
-      btn.textContent = '👆';
+      btn.textContent = 'TAP';
 
       wrapper.appendChild(dotRow);
       wrapper.appendChild(btn);
@@ -432,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentTaps === 0 || now - lastTapTime < 550) {
           currentTaps++;
           dots[currentTaps - 1].classList.add('active');
-          if (currentTaps >= targetCount) setTimeout(() => resolveLockSuccess(), 80);
+          if (currentTaps >= 2) setTimeout(() => resolveLockSuccess(), 80);
         } else {
           currentTaps = 1;
           dots.forEach(d => d.classList.remove('active'));
@@ -442,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       gimmickContainer.appendChild(wrapper);
 
-    // 5. スライド右 (旧6と7を入れ替え)
+    // 5. スライド右
     } else if (lock.type === 'slide_right') {
       const track = document.createElement('div');
       track.className = 'slider-horizontal';
@@ -451,11 +499,14 @@ document.addEventListener('DOMContentLoaded', () => {
       arrows.textContent = '▶ ▶ ▶';
       const goal = document.createElement('div');
       goal.className = 'slider-goal-h right';
-      goal.textContent = '🔓';
+      goal.textContent = 'GOAL';
+      goal.style.fontSize = '0.9rem';
+      goal.style.fontWeight = '900';
       const knob = document.createElement('div');
       knob.className = 'slider-knob-h';
       knob.style.left = '6px';
-      knob.textContent = '👉';
+      knob.textContent = '▶';
+      knob.style.fontSize = '1.3rem';
       track.appendChild(arrows);
       track.appendChild(goal);
       track.appendChild(knob);
@@ -489,7 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 
-    // 6. カクカクっと2回スライド (L字クランク) (旧6と7を入れ替え)
+    // 6. カクカクっと2回スライド (L字クランク)
     } else if (lock.type === 'crank_slide') {
       const area = document.createElement('div');
       area.className = 'crank-slider-area';
@@ -502,11 +553,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const goal = document.createElement('div');
       goal.className = 'crank-goal';
-      goal.textContent = '🔓';
+      goal.textContent = '★';
 
       const knob = document.createElement('div');
       knob.className = 'crank-knob';
-      knob.textContent = '👉';
+      knob.textContent = '▶';
 
       area.appendChild(pathH);
       area.appendChild(pathV);
@@ -514,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
       area.appendChild(knob);
       gimmickContainer.appendChild(area);
 
-      let step = 0; // 0: moving right, 1: moving down
+      let step = 0;
       let isDragging = false;
 
       function onStart() { isDragging = true; playSound('tap'); }
@@ -530,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
           knob.style.left = x + 'px';
           if (x >= 98) {
             step = 1;
-            knob.textContent = '👇';
+            knob.textContent = '▼';
             playSound('tap');
           }
         } else if (step === 1) {
@@ -548,7 +599,7 @@ document.addEventListener('DOMContentLoaded', () => {
           step = 0;
           knob.style.left = '14px';
           knob.style.top = '14px';
-          knob.textContent = '👉';
+          knob.textContent = '▶';
           triggerMistake();
         }
       }
@@ -559,13 +610,11 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 
-    // 7 & 25. 丸くスライドさせて戻すと解除 (Circle Loop Slide)
-    } else if (lock.type === 'circle_loop_slide' || lock.type === 'circle_loop_slide_hard') {
-      const isHard = (lock.type === 'circle_loop_slide_hard');
+    // 7. 丸くスライドさせて戻すと解除 (Circle Loop Slide)
+    } else if (lock.type === 'circle_loop_slide') {
       const stage = document.createElement('div');
       stage.className = 'loop-slide-stage';
 
-      // SVG円弧レール (中心: 95, 95、半径 68、角度 180度〜0度の上部円弧)
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.setAttribute('class', 'loop-slide-track-svg');
       svg.setAttribute('viewBox', '0 0 190 190');
@@ -596,14 +645,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const knob = document.createElement('div');
       knob.className = 'loop-knob';
-      knob.textContent = '🔘';
+      knob.textContent = '●';
       knob.style.left = '27px';
       knob.style.top = '95px';
       stage.appendChild(knob);
 
       gimmickContainer.appendChild(stage);
 
-      let phase = 0; // 0: start -> reach other side, 1: reached other side -> return back to start
+      let phase = 0;
       let isDragging = false;
 
       function onStart(e) {
@@ -620,7 +669,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const cy = rect.top + 95;
         let angle = Math.atan2(cur.clientY - cy, cur.clientX - cx);
 
-        // 円弧上のクリップ (-Math.PI 〜 0 の上部半円)
         if (angle > 0) angle = (angle < Math.PI / 2) ? 0 : -Math.PI;
 
         const kx = 95 + 68 * Math.cos(angle);
@@ -629,19 +677,17 @@ document.addEventListener('DOMContentLoaded', () => {
         knob.style.top = ky + 'px';
 
         if (phase === 0) {
-          // 右端 (0度近傍) に到達したら折り返しフェーズへ！
           if (angle > -0.25) {
             phase = 1;
             turnIndicator.textContent = '↩';
             turnIndicator.style.color = '#ffa502';
-            knob.textContent = '🔄';
+            knob.style.background = '#ffa502';
             playSound('tap');
           }
         } else if (phase === 1) {
-          // 再び左端 (-Math.PI 近傍) に戻ってきたら解除！
           if (angle < -Math.PI + 0.3) {
             isDragging = false;
-            knob.textContent = '🟢';
+            knob.style.background = '#2ed573';
             resolveLockSuccess();
           }
         }
@@ -651,7 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isDragging) {
           isDragging = false;
           phase = 0;
-          knob.textContent = '🔘';
+          knob.style.background = 'var(--primary-accent)';
           turnIndicator.textContent = '↷';
           turnIndicator.style.color = 'var(--blue-accent)';
           knob.style.left = '27px';
@@ -737,7 +783,7 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', endDraw);
       addTrackedListener(window, 'touchend', endDraw);
 
-    // 9. 鍵合わせ (6択グリッド・全てゴールド同色鍵・刻印記号で照合)
+    // 9. 鍵合わせ (6択グリッド・全てゴールド同色鍵・刻印幾何記号で照合)
     } else if (lock.type === 'match_key') {
       const stage = document.createElement('div');
       stage.className = 'key-match-stage';
@@ -832,7 +878,6 @@ document.addEventListener('DOMContentLoaded', () => {
             barFill.style.background = blendedHex;
             isEvaluating = true;
 
-            // 0.5s間混ぜた色を表示し続ける
             setTimeout(() => {
               const [c1, c2] = selectedColors;
               const isCorrect = (targetRecipe.ingredients.includes(c1) && targetRecipe.ingredients.includes(c2) && c1 !== c2);
@@ -853,12 +898,12 @@ document.addEventListener('DOMContentLoaded', () => {
       stage.appendChild(buttonsRow);
       gimmickContainer.appendChild(stage);
 
-    // 11. すごろくマス ＆ サイコロ (sugoroku_dice)
+    // 11. すごろくマス ＆ 高品質サイコロ (絵文字不使用・正確なドット描画)
     } else if (lock.type === 'sugoroku_dice') {
       const stage = document.createElement('div');
       stage.className = 'sugoroku-stage';
 
-      const targetRoll = Math.floor(Math.random() * 6) + 1; // 1〜6
+      const targetRoll = Math.floor(Math.random() * 6) + 1;
 
       const track = document.createElement('div');
       track.className = 'sugoroku-track';
@@ -872,13 +917,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const diceRow = document.createElement('div');
       diceRow.className = 'dice-choices-row';
-      const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
-      diceFaces.forEach((face, idx) => {
-        const rollVal = idx + 1;
+      for (let rollVal = 1; rollVal <= 6; rollVal++) {
         const btn = document.createElement('button');
         btn.className = 'dice-btn';
-        btn.textContent = face;
+        btn.appendChild(createDiceFaceElement(rollVal));
         btn.addEventListener('click', () => {
           playSound('tap');
           if (rollVal === targetRoll) {
@@ -888,14 +931,14 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
         diceRow.appendChild(btn);
-      });
+      }
 
       stage.appendChild(diceRow);
       gimmickContainer.appendChild(stage);
 
-    // 12 & 29. 特大連打ボタン ＆ 超激連打 (rapid_mash / super_mash)
-    } else if (lock.type === 'rapid_mash' || lock.type === 'super_mash') {
-      const targetClicks = (lock.type === 'super_mash') ? 12 : 6;
+    // 12. 特大連打ボタン (rapid_mash)
+    } else if (lock.type === 'rapid_mash') {
+      const targetClicks = 6;
       let count = 0;
 
       const wrap = document.createElement('div');
@@ -912,7 +955,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const btn = document.createElement('button');
       btn.className = 'rapid-mash-big-btn';
-      btn.textContent = (lock.type === 'super_mash') ? '💥' : '⚡';
+      btn.textContent = 'MASH!';
+      btn.style.fontSize = '2.4rem';
+      btn.style.fontWeight = '900';
 
       btn.addEventListener('click', () => {
         count++;
@@ -925,15 +970,13 @@ document.addEventListener('DOMContentLoaded', () => {
       wrap.appendChild(btn);
       gimmickContainer.appendChild(wrap);
 
-    // 13 & 27. 長押し浮遊キープ (物理Rect当たり判定・0.5秒キープで解除)
-    } else if (lock.type === 'hover_thrust' || lock.type === 'hover_thrust_hard') {
-      const isHard = (lock.type === 'hover_thrust_hard');
+    // 13. 長押し高度キープ (0.5秒キープ・垂直ロケットSVG)
+    } else if (lock.type === 'hover_thrust') {
       const stage = document.createElement('div');
       stage.className = 'hover-stage';
 
       const zone = document.createElement('div');
       zone.className = 'hover-target-zone';
-      if (isHard) zone.style.height = '42px';
       
       const zoneIcon = document.createElement('span');
       zoneIcon.textContent = '🎯';
@@ -947,14 +990,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const rocket = document.createElement('div');
       rocket.className = 'hover-rocket';
-      rocket.textContent = isHard ? '🛸' : '🚀';
+      rocket.innerHTML = ROCKET_SVG;
 
       stage.appendChild(zone);
       stage.appendChild(rocket);
 
       const thrustBtn = document.createElement('button');
       thrustBtn.className = 'hover-thrust-btn';
-      thrustBtn.textContent = 'THRUST 💨';
+      thrustBtn.textContent = 'THRUST';
 
       gimmickContainer.appendChild(stage);
       gimmickContainer.appendChild(thrustBtn);
@@ -963,7 +1006,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let velocity = 0;
       let isThrusting = false;
       let insideTime = 0;
-      const targetDuration = isHard ? 650 : 500; // 0.5秒キープでクリア
+      const targetDuration = 500;
 
       function onStart(e) { e.preventDefault(); isThrusting = true; playSound('tap'); }
       function onEnd(e) { e.preventDefault(); isThrusting = false; }
@@ -984,10 +1027,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (altitude > 140) { altitude = 140; velocity = 0; }
         rocket.style.bottom = altitude + 'px';
 
-        // 実際のDOM要素の矩形で厳密に当たり判定
         const r = rocket.getBoundingClientRect();
         const z = zone.getBoundingClientRect();
-        const isInside = (r.bottom >= z.top + 6 && r.top <= z.bottom - 6);
+        const rCenter = r.top + r.height / 2;
+        const isInside = (rCenter >= z.top && rCenter <= z.bottom);
 
         if (isInside) {
           zone.classList.add('active-in');
@@ -1010,29 +1053,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       activeAnimationId = requestAnimationFrame(hoverPhysics);
 
-    // 14 & 30. 星形にスライドさせる奴 (星マークを全て描き切るまで解除しない)
-    } else if (lock.type === 'star_trace' || lock.type === 'star_trace_fast') {
+    // 14. 星型完全トレース (安定ベクター星アイコン)
+    } else if (lock.type === 'star_trace') {
       const area = document.createElement('div');
       area.className = 'star-trace-area';
 
-      // 星の5角星パス：P0 -> P1 -> P2 -> P3 -> P4 -> P0 (完全閉路)
       const starPoints = [
-        { x: 95, y: 22 },   // P0 (上)
-        { x: 148, y: 165 }, // P1 (右下)
-        { x: 12, y: 74 },   // P2 (左上)
-        { x: 178, y: 74 },  // P3 (右上)
-        { x: 42, y: 165 },  // P4 (左下)
-        { x: 95, y: 22 }    // P0 (上に戻る！)
+        { x: 95, y: 22 },
+        { x: 148, y: 165 },
+        { x: 12, y: 74 },
+        { x: 178, y: 74 },
+        { x: 42, y: 165 },
+        { x: 95, y: 22 }
       ];
 
       const stepInd = document.createElement('div');
       stepInd.className = 'star-step-indicator';
-      const starIcons = [];
+      const starIconContainers = [];
       for (let i = 0; i < 5; i++) {
         const span = document.createElement('span');
-        span.textContent = '☆';
+        span.innerHTML = getStarSvg(false);
         stepInd.appendChild(span);
-        starIcons.push(span);
+        starIconContainers.push(span);
       }
       area.appendChild(stepInd);
 
@@ -1060,7 +1102,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       area.appendChild(svg);
 
-      // 5つの頂点マーカー
       const markerPoints = starPoints.slice(0, 5);
       const markerEls = markerPoints.map((pt, idx) => {
         const marker = document.createElement('div');
@@ -1078,7 +1119,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const knob = document.createElement('div');
       knob.className = 'star-knob';
-      knob.textContent = '⭐';
+      knob.innerHTML = getStarSvg(true);
       knob.style.left = starPoints[0].x + 'px';
       knob.style.top = starPoints[0].y + 'px';
       area.appendChild(knob);
@@ -1119,13 +1160,14 @@ document.addEventListener('DOMContentLoaded', () => {
             markerEls[targetPtIdx].classList.add('completed');
             markerEls[targetPtIdx].textContent = '✔';
           }
-          if (starIcons[targetPtIdx - 1]) starIcons[targetPtIdx - 1].textContent = '⭐';
+          if (starIconContainers[targetPtIdx - 1]) {
+            starIconContainers[targetPtIdx - 1].innerHTML = getStarSvg(true);
+          }
 
           targetPtIdx++;
           updateTrail();
 
           if (targetPtIdx >= starPoints.length) {
-            // 全5画を完全に描き切った！
             isDragging = false;
             knob.style.left = target.x + 'px';
             knob.style.top = target.y + 'px';
@@ -1147,8 +1189,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (i === 0) m.classList.add('completed');
             if (i === 1) m.classList.add('active-target');
           });
-          starIcons.forEach((s) => {
-            s.textContent = '☆';
+          starIconContainers.forEach((s) => {
+            s.innerHTML = getStarSvg(false);
           });
           knob.style.left = starPoints[0].x + 'px';
           knob.style.top = starPoints[0].y + 'px';
@@ -1164,7 +1206,7 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 
-    // 15. ダイヤル式のカギ (数字ドラムを合わせる)
+    // 15. ダイヤル式のカギ (平均6タップで終わるようタップ数を精密調整)
     } else if (lock.type === 'dial_code') {
       const stage = document.createElement('div');
       stage.className = 'dial-lock-stage';
@@ -1177,11 +1219,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const row = document.createElement('div');
       row.className = 'dial-wheels-row';
 
-      const currentDigits = [
-        Math.floor(Math.random() * 6) + 1,
-        Math.floor(Math.random() * 6) + 1,
-        Math.floor(Math.random() * 6) + 1
+      const tapDistributions = [
+        [2, 2, 2], [1, 2, 3], [3, 1, 2], [2, 3, 1],
+        [1, 3, 2], [2, 1, 3], [3, 2, 1], [1, 2, 2],
+        [2, 2, 1], [2, 2, 3], [3, 2, 2], [2, 3, 2]
       ];
+      const chosenTaps = tapDistributions[Math.floor(Math.random() * tapDistributions.length)];
+      const currentDigits = chosenTaps.map(t => (7 - t + 10) % 10);
 
       currentDigits.forEach((val, idx) => {
         const wheel = document.createElement('div');
@@ -1211,7 +1255,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const btn = document.createElement('button');
       btn.className = 'moving-action-btn';
-      btn.textContent = '🏃';
+      btn.textContent = 'TARGET';
+      btn.style.fontSize = '0.9rem';
+      btn.style.fontWeight = '900';
       box.appendChild(btn);
       gimmickContainer.appendChild(box);
 
@@ -1234,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resolveLockSuccess();
       });
 
-    // 18. モールス信号打つ奴 (トン・ツー・トン)
+    // 17. モールス信号打つ奴 (トン・ツー・トン)
     } else if (lock.type === 'morse_code') {
       const stage = document.createElement('div');
       stage.className = 'morse-stage';
@@ -1253,7 +1299,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const tapBtn = document.createElement('button');
       tapBtn.className = 'morse-tap-btn';
-      tapBtn.textContent = '📻';
+      tapBtn.textContent = 'KEY';
+      tapBtn.style.fontSize = '1.3rem';
+      tapBtn.style.fontWeight = '900';
       tapBtn.addEventListener('contextmenu', (e) => { e.preventDefault(); e.stopPropagation(); });
 
       let pressStart = 0;
@@ -1295,7 +1343,7 @@ document.addEventListener('DOMContentLoaded', () => {
       stage.appendChild(tapBtn);
       gimmickContainer.appendChild(stage);
 
-    // 19. ハンドル回転・バルブ (wheel_turn)
+    // 18. ハンドル回転・バルブ (回してる間に段々解除される演出＆シャックル連動)
     } else if (lock.type === 'wheel_turn') {
       const stage = document.createElement('div');
       stage.className = 'wheel-turn-stage';
@@ -1312,8 +1360,9 @@ document.addEventListener('DOMContentLoaded', () => {
       rim.appendChild(knob);
 
       const center = document.createElement('div');
-      center.className = 'wheel-turn-center';
-      center.textContent = '↻';
+      center.className = 'wheel-turn-center unlocking';
+      center.textContent = '0%';
+      center.style.fontSize = '0.9rem';
 
       stage.appendChild(rim);
       stage.appendChild(center);
@@ -1323,6 +1372,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let lastAngle = null;
       let totalRotated = 0;
       let currentDeg = 0;
+      let lastStepSound = 0;
 
       function getAngle(e) {
         const pt = e.touches ? e.touches[0] : e;
@@ -1351,9 +1401,25 @@ document.addEventListener('DOMContentLoaded', () => {
         rim.style.transform = `rotate(${currentDeg}deg)`;
         lastAngle = angle;
 
-        if (Math.abs(totalRotated) >= Math.PI * 1.85) {
+        const progress = Math.min(1, Math.abs(totalRotated) / (Math.PI * 1.85));
+        currentShackle.style.transform = `translateY(${-progress * 18}px)`;
+
+        const pct = Math.floor(progress * 100);
+        center.textContent = (progress >= 0.98) ? 'OPEN' : `${pct}%`;
+        const rVal = Math.round(255 - progress * (255 - 46));
+        const gVal = Math.round(165 + progress * (213 - 165));
+        const bVal = Math.round(2 + progress * (115 - 2));
+        center.style.background = `rgb(${rVal}, ${gVal}, ${bVal})`;
+
+        const step = Math.floor(Math.abs(totalRotated) / (Math.PI / 4));
+        if (step > lastStepSound) {
+          lastStepSound = step;
+          playSound('tap');
+        }
+
+        if (progress >= 1) {
           isDragging = false;
-          center.textContent = '🟢';
+          center.textContent = 'OPEN';
           center.style.background = '#2ed573';
           setTimeout(() => resolveLockSuccess(), 120);
         }
@@ -1364,7 +1430,11 @@ document.addEventListener('DOMContentLoaded', () => {
           isDragging = false;
           totalRotated = 0;
           currentDeg = 0;
+          lastStepSound = 0;
           rim.style.transform = 'rotate(0deg)';
+          currentShackle.style.transform = 'translateY(0)';
+          center.textContent = '0%';
+          center.style.background = '#ffa502';
           triggerMistake();
         }
       }
@@ -1376,11 +1446,63 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 
-    // 21. カラー二択
+    // 19. タップしないで1.5秒待つとOK (我慢・静止ギミック)
+    } else if (lock.type === 'wait_still') {
+      const stage = document.createElement('div');
+      stage.className = 'wait-still-stage';
+
+      const handIcon = document.createElement('div');
+      handIcon.className = 'wait-still-hand';
+      handIcon.textContent = '✋';
+
+      const track = document.createElement('div');
+      track.className = 'wait-still-progress-track';
+      const fill = document.createElement('div');
+      fill.className = 'wait-still-progress-fill';
+      track.appendChild(fill);
+
+      stage.appendChild(handIcon);
+      stage.appendChild(track);
+      gimmickContainer.appendChild(stage);
+
+      let waitTime = 0;
+      const targetWait = 1500;
+
+      function onAccidentalTap(e) {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        waitTime = 0;
+        fill.style.width = '0%';
+        triggerMistake();
+      }
+
+      stage.addEventListener('mousedown', onAccidentalTap);
+      stage.addEventListener('touchstart', onAccidentalTap, { passive: false });
+
+      function waitLoop() {
+        if (!isPlaying || currentLock.type !== lock.type) return;
+        waitTime += 16.6;
+        const pct = Math.min(100, (waitTime / targetWait) * 100);
+        fill.style.width = pct + '%';
+
+        if (waitTime >= targetWait) {
+          handIcon.textContent = 'OK';
+          handIcon.style.color = '#2ed573';
+          resolveLockSuccess();
+          return;
+        }
+        activeAnimationId = requestAnimationFrame(waitLoop);
+      }
+      activeAnimationId = requestAnimationFrame(waitLoop);
+
+    // 20. カラー二択 (UI位置・間隔・押しやすさを再調整)
     } else if (lock.type === 'color_choice_2') {
       const isBlue = Math.random() > 0.5;
       const wrap = document.createElement('div');
       wrap.className = 'color-match-wrap';
+
       const target = document.createElement('div');
       target.className = 'color-target-display';
       target.style.background = isBlue ? '#1e90ff' : '#ff4757';
@@ -1396,95 +1518,12 @@ document.addEventListener('DOMContentLoaded', () => {
       wrap.appendChild(row);
       gimmickContainer.appendChild(wrap);
 
-    // 22. 形状二択
-    } else if (lock.type === 'shape_choice_2') {
-      const isSquare = Math.random() > 0.5;
-      const wrap = document.createElement('div');
-      wrap.className = 'color-match-wrap';
-      const target = document.createElement('div');
-      target.className = 'shape-target-display';
-      target.textContent = isSquare ? '■' : '●';
-      target.style.color = '#ffa502';
-      wrap.appendChild(target);
-
-      const row = document.createElement('div');
-      row.className = 'choice-row';
-      const b1 = document.createElement('button'); b1.className = 'shape-choice-btn'; b1.textContent = '■';
-      const b2 = document.createElement('button'); b2.className = 'shape-choice-btn'; b2.textContent = '●';
-      b1.addEventListener('click', () => { if (isSquare) { playSound('tap'); resolveLockSuccess(); } else triggerMistake(); });
-      b2.addEventListener('click', () => { if (!isSquare) { playSound('tap'); resolveLockSuccess(); } else triggerMistake(); });
-      row.appendChild(b1); row.appendChild(b2);
-      wrap.appendChild(row);
-      gimmickContainer.appendChild(wrap);
-
-    // 23. 指紋スキャナー
-    } else if (lock.type === 'fingerprint') {
-      const btn = document.createElement('button');
-      btn.className = 'fingerprint-btn';
-      btn.innerHTML = `<div class="fingerprint-scanner-bar"></div><span>🛡️</span>`;
-
-      let holdStart = 0;
-      let holdTimer = null;
-      btn.addEventListener('contextmenu', (e) => { e.preventDefault(); e.stopPropagation(); });
-
-      function onStart(e) {
-        if (e) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        holdStart = Date.now();
-        playSound('tap');
-        btn.classList.add('scanning');
-        holdTimer = setInterval(() => {
-          if (Date.now() - holdStart >= 750) {
-            clearInterval(holdTimer);
-            btn.classList.remove('scanning');
-            resolveLockSuccess();
-          }
-        }, 30);
-      }
-      function onCancel() {
-        if (holdTimer) {
-          clearInterval(holdTimer);
-          holdTimer = null;
-          btn.classList.remove('scanning');
-          triggerMistake();
-        }
-      }
-      btn.addEventListener('mousedown', onStart);
-      btn.addEventListener('touchstart', onStart, { passive: false });
-      addTrackedListener(window, 'mouseup', onCancel);
-      addTrackedListener(window, 'touchend', onCancel);
-      gimmickContainer.appendChild(btn);
-
-    // 24. ダイヤル合わせ
-    } else if (lock.type === 'dial_turn') {
-      const wrap = document.createElement('div');
-      wrap.className = 'dial-wrap';
-      const mark = document.createElement('div');
-      mark.className = 'dial-target-mark';
-      mark.textContent = '▼';
-      let rotation = (Math.floor(Math.random() * 3) + 1) * 90;
-      const dial = document.createElement('div');
-      dial.className = 'dial-knob-ui';
-      dial.style.transform = `rotate(${rotation}deg)`;
-      const ind = document.createElement('div');
-      ind.className = 'dial-indicator';
-      dial.appendChild(ind);
-      dial.addEventListener('click', () => {
-        playSound('tap');
-        rotation = (rotation + 90) % 360;
-        dial.style.transform = `rotate(${rotation}deg)`;
-        if (rotation === 0) setTimeout(() => resolveLockSuccess(), 120);
-      });
-      wrap.appendChild(mark);
-      wrap.appendChild(dial);
-      gimmickContainer.appendChild(wrap);
-
-    // 26. 鍵を鍵穴へ、ただイライラ棒
+    // 21. イライラ棒！鍵迷路 (多回数カーブ ＆ ビリビリ放電エフェクト ＆ ベクターキー)
     } else if (lock.type === 'irira_key_maze') {
       const container = document.createElement('div');
       container.className = 'irira-maze-container';
+
+      const pathD = "M 30 25 L 85 25 L 85 65 L 155 65 L 155 30 L 225 30 L 225 120";
 
       container.innerHTML = `
         <svg class="irira-maze-svg" viewBox="0 0 250 140">
@@ -1494,36 +1533,44 @@ document.addEventListener('DOMContentLoaded', () => {
               <feComposite in="SourceGraphic" in2="glow" operator="over" />
             </filter>
           </defs>
-          <path d="M 35 35 L 125 35 L 125 105 L 215 105" 
+          <path class="electric-zap-path electric-zap-glow" d="${pathD}" 
                 fill="none" stroke="#ffa502" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-shock)" />
-          <path d="M 35 35 L 125 35 L 125 105 L 215 105" 
+          <path d="${pathD}" 
                 fill="none" stroke="#2f3542" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M 35 35 L 125 35 L 125 105 L 215 105" 
+          <path d="${pathD}" 
                 fill="none" stroke="rgba(255, 255, 255, 0.4)" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       `;
 
       const goalHole = document.createElement('div');
       goalHole.className = 'irira-goal-hole';
-      goalHole.textContent = '🕳️';
-      goalHole.style.left = '215px';
-      goalHole.style.top = '105px';
+      goalHole.innerHTML = `
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <circle cx="12" cy="9" r="6" fill="#2ed573" />
+          <polygon points="9,10 15,10 14,20 10,20" fill="#2ed573" />
+        </svg>
+      `;
+      goalHole.style.left = '225px';
+      goalHole.style.top = '120px';
       container.appendChild(goalHole);
 
       const keyDragger = document.createElement('div');
       keyDragger.className = 'irira-key-dragger';
-      keyDragger.textContent = '🔑';
-      keyDragger.style.left = '35px';
-      keyDragger.style.top = '35px';
+      keyDragger.innerHTML = KEY_SVG;
+      keyDragger.style.left = '30px';
+      keyDragger.style.top = '25px';
       container.appendChild(keyDragger);
 
       gimmickContainer.appendChild(container);
 
       const points = [
-        { x: 35, y: 35 },
-        { x: 125, y: 35 },
-        { x: 125, y: 105 },
-        { x: 215, y: 105 }
+        { x: 30, y: 25 },
+        { x: 85, y: 25 },
+        { x: 85, y: 65 },
+        { x: 155, y: 65 },
+        { x: 155, y: 30 },
+        { x: 225, y: 30 },
+        { x: 225, y: 120 }
       ];
 
       function distToSegment(px, py, x1, y1, x2, y2) {
@@ -1566,22 +1613,22 @@ document.addEventListener('DOMContentLoaded', () => {
         keyDragger.style.top = py + 'px';
 
         const dist = minDistanceToPath(px, py);
-        if (dist > 20) {
+        if (dist > 19) {
           isDragging = false;
           container.classList.add('shocked');
           triggerMistake();
           setTimeout(() => {
             container.classList.remove('shocked');
           }, 350);
-          keyDragger.style.left = '35px';
-          keyDragger.style.top = '35px';
+          keyDragger.style.left = '30px';
+          keyDragger.style.top = '25px';
           return;
         }
 
-        if (Math.hypot(px - 215, py - 105) <= 18) {
+        if (Math.hypot(px - 225, py - 120) <= 18) {
           isDragging = false;
-          keyDragger.style.left = '215px';
-          keyDragger.style.top = '105px';
+          keyDragger.style.left = '225px';
+          keyDragger.style.top = '120px';
           setTimeout(() => resolveLockSuccess(), 100);
         }
       }
@@ -1589,8 +1636,8 @@ document.addEventListener('DOMContentLoaded', () => {
       function onEnd() {
         if (isDragging) {
           isDragging = false;
-          keyDragger.style.left = '35px';
-          keyDragger.style.top = '35px';
+          keyDragger.style.left = '30px';
+          keyDragger.style.top = '25px';
           triggerMistake();
         }
       }
@@ -1602,13 +1649,99 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 
-    // 28. 動くボタン滅茶苦茶小さいやつ
+    // 22. 精密高度キープ (10%狭い36pxゾーン ＆ ロケット垂直中心判定)
+    } else if (lock.type === 'hover_thrust_hard') {
+      const stage = document.createElement('div');
+      stage.className = 'hover-stage';
+
+      const zone = document.createElement('div');
+      zone.className = 'hover-target-zone';
+      zone.style.height = '36px';
+      
+      const zoneIcon = document.createElement('span');
+      zoneIcon.textContent = '🎯';
+      const progressTrack = document.createElement('div');
+      progressTrack.className = 'hover-progress-track';
+      const progressFill = document.createElement('div');
+      progressFill.className = 'hover-progress-fill';
+      progressTrack.appendChild(progressFill);
+      zone.appendChild(zoneIcon);
+      zone.appendChild(progressTrack);
+
+      const rocket = document.createElement('div');
+      rocket.className = 'hover-rocket';
+      rocket.innerHTML = ROCKET_SVG;
+
+      stage.appendChild(zone);
+      stage.appendChild(rocket);
+
+      const thrustBtn = document.createElement('button');
+      thrustBtn.className = 'hover-thrust-btn';
+      thrustBtn.textContent = 'THRUST';
+
+      gimmickContainer.appendChild(stage);
+      gimmickContainer.appendChild(thrustBtn);
+
+      let altitude = 15;
+      let velocity = 0;
+      let isThrusting = false;
+      let insideTime = 0;
+      const targetDuration = 550;
+
+      function onStart(e) { e.preventDefault(); isThrusting = true; playSound('tap'); }
+      function onEnd(e) { e.preventDefault(); isThrusting = false; }
+
+      thrustBtn.addEventListener('mousedown', onStart);
+      thrustBtn.addEventListener('touchstart', onStart, { passive: false });
+      addTrackedListener(window, 'mouseup', onEnd);
+      addTrackedListener(window, 'touchend', onEnd);
+
+      function hoverPhysics() {
+        if (!isPlaying || currentLock.type !== lock.type) return;
+        if (isThrusting) velocity += 0.55;
+        else velocity -= 0.35;
+
+        velocity *= 0.95;
+        altitude += velocity;
+        if (altitude < 8) { altitude = 8; velocity = 0; }
+        if (altitude > 140) { altitude = 140; velocity = 0; }
+        rocket.style.bottom = altitude + 'px';
+
+        const r = rocket.getBoundingClientRect();
+        const z = zone.getBoundingClientRect();
+        const rCenter = r.top + r.height / 2;
+        const isInside = (rCenter >= z.top && rCenter <= z.bottom);
+
+        if (isInside) {
+          zone.classList.add('active-in');
+          insideTime += 16.6;
+          const pct = Math.min(100, (insideTime / targetDuration) * 100);
+          progressFill.style.width = pct + '%';
+
+          if (insideTime >= targetDuration) {
+            resolveLockSuccess();
+            return;
+          }
+        } else {
+          zone.classList.remove('active-in');
+          insideTime = Math.max(0, insideTime - 12);
+          const pct = Math.min(100, (insideTime / targetDuration) * 100);
+          progressFill.style.width = pct + '%';
+        }
+
+        activeAnimationId = requestAnimationFrame(hoverPhysics);
+      }
+      activeAnimationId = requestAnimationFrame(hoverPhysics);
+
+    // 23. 極小・激しく動くボタン (クッキリ照準マーク)
     } else if (lock.type === 'tiny_moving_btn') {
       const box = document.createElement('div');
       box.className = 'moving-btn-container';
       const btn = document.createElement('button');
       btn.className = 'tiny-moving-btn';
-      btn.textContent = '🐜';
+      btn.textContent = '⌖';
+      btn.style.fontSize = '1.2rem';
+      btn.style.lineHeight = '1';
       box.appendChild(btn);
       gimmickContainer.appendChild(box);
 
@@ -1630,6 +1763,58 @@ document.addEventListener('DOMContentLoaded', () => {
         playSound('tap');
         resolveLockSuccess();
       });
+
+    // 24. 超激連打 (連打しないとゲージがマイナスに減少して左に飛び出す ＆ リアル立体アーケードボタン)
+    } else if (lock.type === 'super_mash') {
+      let progress = 0;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'super-mash-container';
+
+      const trackWrapper = document.createElement('div');
+      trackWrapper.className = 'super-mash-track-wrapper';
+
+      const fillBar = document.createElement('div');
+      fillBar.className = 'super-mash-fill-bar';
+      trackWrapper.appendChild(fillBar);
+
+      const btn = document.createElement('button');
+      btn.className = 'super-arcade-btn';
+      btn.textContent = '●';
+      btn.style.fontSize = '2.5rem';
+
+      btn.addEventListener('click', () => {
+        playSound('tap');
+        progress = Math.min(100, progress + 13);
+        updateBar();
+        if (progress >= 100) {
+          resolveLockSuccess();
+        }
+      });
+
+      function updateBar() {
+        if (progress >= 0) {
+          fillBar.style.left = '0%';
+          fillBar.style.width = progress + '%';
+          fillBar.classList.remove('negative');
+        } else {
+          fillBar.style.left = progress + '%';
+          fillBar.style.width = Math.abs(progress) + '%';
+          fillBar.classList.add('negative');
+        }
+      }
+
+      wrap.appendChild(trackWrapper);
+      wrap.appendChild(btn);
+      gimmickContainer.appendChild(wrap);
+
+      function decayLoop() {
+        if (!isPlaying || currentLock.type !== lock.type) return;
+        progress = Math.max(-40, progress - 0.35);
+        updateBar();
+        activeAnimationId = requestAnimationFrame(decayLoop);
+      }
+      activeAnimationId = requestAnimationFrame(decayLoop);
     }
   }
 
@@ -1748,13 +1933,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let rank = 'C';
     let commentIcon = '🥉';
-    if (score >= 8000) {
+    if (score >= 6500) {
       rank = 'S';
       commentIcon = '👑';
-    } else if (score >= 4500) {
+    } else if (score >= 3800) {
       rank = 'A';
       commentIcon = '🥇';
-    } else if (score >= 2200) {
+    } else if (score >= 1800) {
       rank = 'B';
       commentIcon = '🥈';
     }
@@ -1812,8 +1997,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const debugAddTimeBtn = document.getElementById('debug-add-time-btn');
   const debugGameoverBtn = document.getElementById('debug-gameover-btn');
 
-  // 全30種類のギミックをセレクトボックスに登録
-  if (debugLevelSelect) {
+  function populateDebugSelect() {
+    if (!debugLevelSelect) return;
+    debugLevelSelect.innerHTML = '';
     LOCK_DEFINITIONS.forEach((def) => {
       const opt = document.createElement('option');
       opt.value = def.level;
@@ -1821,30 +2007,27 @@ document.addEventListener('DOMContentLoaded', () => {
       debugLevelSelect.appendChild(opt);
     });
   }
+  populateDebugSelect();
 
   function toggleDebug() {
     if (!debugPanel) return;
     debugPanel.classList.toggle('active');
   }
 
-  // タッチ・クリック両対応で確実に開閉
   setupActionButton(debugBtn, toggleDebug);
   setupActionButton(startDebugBtn, toggleDebug);
   setupActionButton(debugCloseBtn, toggleDebug);
 
-  // キーボード 'D' キーでデバッグパネル開閉
   window.addEventListener('keydown', (e) => {
     if (e.key === 'd' || e.key === 'D') {
       toggleDebug();
     }
   });
 
-  // URLに ?debug がある場合は初期表示
   if (new URLSearchParams(window.location.search).has('debug')) {
     toggleDebug();
   }
 
-  // ステージジャンプ (任意のLvへ即時移動)
   setupActionButton(debugJumpBtn, () => {
     initAudio();
     const targetLevel = parseInt(debugLevelSelect.value, 10);
@@ -1864,13 +2047,11 @@ document.addEventListener('DOMContentLoaded', () => {
     playSound('tap');
   });
 
-  // PASS (強制解錠)
   setupActionButton(debugPassBtn, () => {
     if (!isPlaying) return;
     resolveLockSuccess();
   });
 
-  // FREEZE (タイマー停止/再開)
   setupActionButton(debugFreezeBtn, () => {
     isTimeFrozen = !isTimeFrozen;
     if (isTimeFrozen) {
@@ -1882,7 +2063,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // +10s (時間追加)
   setupActionButton(debugAddTimeBtn, () => {
     remainingTime += 10.0;
     timeDisplay.textContent = remainingTime.toFixed(1);
@@ -1894,7 +2074,6 @@ document.addEventListener('DOMContentLoaded', () => {
     playSound('unlock');
   });
 
-  // GAME OVER (強制終了)
   setupActionButton(debugGameoverBtn, () => {
     if (!isPlaying) return;
     endGame();
