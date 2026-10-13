@@ -1527,7 +1527,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 400);
   }
 
-  // Success Trigger (+0.5s & Card Swap)
+  // Success Trigger (+1.0s & Card Swap)
   function resolveLockSuccess() {
     cleanActiveAnimations();
     cleanActiveListeners();
@@ -1535,7 +1535,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentShackle.classList.add('open');
     lockFace.textContent = getRandomFace('happy');
 
-    remainingTime += 0.5;
+    remainingTime += 1.0;
     timeAddedAnim.classList.remove('animate');
     void timeAddedAnim.offsetWidth;
     timeAddedAnim.classList.add('animate');
