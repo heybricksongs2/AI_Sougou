@@ -2238,30 +2238,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resultCardEl) resultCardEl.classList.remove('rank-s-card');
 
     let rank = 'C';
-    if (score >= 6500) {
+    if (score >= 4000) {
       rank = 'S';
       if (nextRankEl) {
         nextRankEl.textContent = '★ MAX RANK 達成! ★';
         nextRankEl.className = 'next-rank-info max-rank';
       }
       if (resultCardEl) resultCardEl.classList.add('rank-s-card');
-    } else if (score >= 3800) {
+    } else if (score >= 2500) {
       rank = 'A';
-      const diff = 6500 - score;
+      const diff = 4000 - score;
       if (nextRankEl) {
         nextRankEl.textContent = `次のランク(S)まで あと ${diff.toLocaleString()} pt`;
         nextRankEl.className = 'next-rank-info';
       }
-    } else if (score >= 1800) {
+    } else if (score >= 1200) {
       rank = 'B';
-      const diff = 3800 - score;
+      const diff = 2500 - score;
       if (nextRankEl) {
         nextRankEl.textContent = `次のランク(A)まで あと ${diff.toLocaleString()} pt`;
         nextRankEl.className = 'next-rank-info';
       }
     } else {
       rank = 'C';
-      const diff = 1800 - score;
+      const diff = 1200 - score;
       if (nextRankEl) {
         nextRankEl.textContent = `次のランク(B)まで あと ${diff.toLocaleString()} pt`;
         nextRankEl.className = 'next-rank-info';
