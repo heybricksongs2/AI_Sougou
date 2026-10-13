@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>🔐 LOCK LOCKER LOCKEST 🔓</title>
-  <link rel="stylesheet" href="style.css?v=lockest_1">
+  <link rel="stylesheet" href="style.css?v=lockest_2">
 </head>
 <body>
   <!-- 背景パーティクル & メカニカル鍵背景 -->
@@ -76,31 +76,33 @@
         <div class="hero-icon">🔐💥🔓</div>
         <h1 class="game-title">LOCK LOCKER LOCKEST</h1>
         
-        <!-- ノンバーバル説明: 🔒 ➔ 🔓 ➔ +1.0s ⏱️ -->
-        <div class="lock-tutorial-flow">
-          <div class="tuto-flow-step">
-            <span class="flow-icon">🔒</span>
+        <!-- ノンバーバル説明: 🔒 ➔ 🔓 ➔ +1.0s ⏱️ (崩れ知らずの均一バッジバー) -->
+        <div class="lock-tutorial-bar">
+          <div class="tuto-badge-step">
+            <span class="step-emoji">🔒</span>
           </div>
-          <div class="tuto-flow-arrow">➔</div>
-          <div class="tuto-flow-step">
-            <span class="flow-icon">🔓</span>
+          <span class="tuto-arrow">➔</span>
+          <div class="tuto-badge-step">
+            <span class="step-emoji">🔓</span>
           </div>
-          <div class="tuto-flow-arrow">➔</div>
-          <div class="tuto-flow-step reward-step">
-            <span class="flow-badge">+1.0s</span>
-            <span class="flow-icon">⏱️</span>
+          <span class="tuto-arrow">➔</span>
+          <div class="tuto-badge-step reward">
+            <span class="reward-plus">+1.0s</span>
+            <span class="step-emoji">⏱️</span>
           </div>
         </div>
 
         <!-- 長押しSTARTボタン（3, 2, 1 カウントダウン） -->
-        <button id="start-btn" class="pop-btn primary-btn hold-start-btn">
+        <button id="start-btn" class="pop-btn primary-btn hold-start-btn" type="button">
           <div class="hold-progress-fill" id="hold-progress-fill"></div>
-          <div class="hold-content" id="hold-content">
-            <span class="hold-icon">👆</span>
-            <span class="hold-label">HOLD TO START</span>
-          </div>
-          <div class="hold-countdown-box" id="hold-countdown-box" style="display: none;">
-            <span class="hold-num" id="hold-countdown-num">3</span>
+          <div class="hold-inner-wrap">
+            <div class="hold-idle-state" id="hold-idle-state">
+              <span class="hold-icon">👆</span>
+              <span class="hold-label">HOLD TO START</span>
+            </div>
+            <div class="hold-active-state" id="hold-active-state">
+              <span class="hold-countdown-num" id="hold-countdown-num">3</span>
+            </div>
           </div>
         </button>
 
@@ -155,6 +157,6 @@
     </div>
   </div>
 
-  <script src="main.js?v=lockest_1"></script>
+  <script src="main.js?v=lockest_2"></script>
 </body>
 </html>

@@ -2145,20 +2145,18 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', handleAction);
   }
 
-  // 長押しカウントダウン START ボタン (3, 2, 1 ➔ START)
+  // 長押しカウントダウン START ボタン (PointerEvents完全追跡 & 3, 2, 1 ➔ START)
   function setupHoldToStart(btn) {
     if (!btn) return;
 
     const progressFill = document.getElementById('hold-progress-fill');
-    const contentBox = document.getElementById('hold-content');
-    const countdownBox = document.getElementById('hold-countdown-box');
     const countdownNum = document.getElementById('hold-countdown-num');
 
     let isHolding = false;
     let holdStartTime = 0;
     let holdAnimId = null;
-    let countdownStep = 3;
-    const TOTAL_HOLD_MS = 1400; // 合計1.4秒 (各ステップ約466ms)
+    let currentStep = 3;
+    const TOTAL_HOLD_MS = 1400; // 合計1.4秒 (各ステップ約460ms)
 
     function playBeep(step) {
       if (!soundEnabled || !audioCtx) return;
@@ -2171,49 +2169,50 @@ document.addEventListener('DOMContentLoaded', () => {
         // step 3: 440Hz, step 2: 587Hz, step 1: 784Hz
         const freqs = { 3: 440, 2: 587, 1: 784 };
         osc.frequency.setValueAtTime(freqs[step] || 500, now);
-        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.setValueAtTime(0.25, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
         osc.start(now);
         osc.stop(now + 0.12);
       } catch (e) {}
     }
 
-    function resetHold() {
+    function cancelHold() {
+      if (!isHolding) return;
       isHolding = false;
       if (holdAnimId) {
         cancelAnimationFrame(holdAnimId);
         holdAnimId = null;
       }
-      btn.classList.remove('holding');
+      btn.classList.remove('is-holding');
       if (progressFill) progressFill.style.width = '0%';
-      if (contentBox) contentBox.style.display = 'flex';
-      if (countdownBox) countdownBox.style.display = 'none';
-      countdownStep = 3;
+      currentStep = 3;
     }
 
-    function onHoldStart(e) {
+    function startHold(e) {
       if (e) {
         e.preventDefault();
         e.stopPropagation();
+        if (btn.setPointerCapture && e.pointerId !== undefined) {
+          try { btn.setPointerCapture(e.pointerId); } catch (err) {}
+        }
       }
       if (isHolding) return;
       initAudio();
+
       isHolding = true;
       holdStartTime = performance.now();
-      countdownStep = 3;
+      currentStep = 3;
 
-      btn.classList.add('holding');
-      if (contentBox) contentBox.style.display = 'none';
-      if (countdownBox) countdownBox.style.display = 'flex';
+      btn.classList.add('is-holding');
       if (countdownNum) {
         countdownNum.textContent = '3';
         countdownNum.style.animation = 'none';
         void countdownNum.offsetWidth;
-        countdownNum.style.animation = 'count-pop 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards';
+        countdownNum.style.animation = 'count-pop 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards';
       }
 
       playBeep(3);
-      if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
+      if (navigator.vibrate) { try { navigator.vibrate(25); } catch (err) {} }
 
       function loop(now) {
         if (!isHolding) return;
@@ -2224,32 +2223,32 @@ document.addEventListener('DOMContentLoaded', () => {
           progressFill.style.width = (progress * 100) + '%';
         }
 
-        // カウントダウンステップ遷移
-        if (progress >= 0.66 && countdownStep > 1) {
-          countdownStep = 1;
+        // カウントダウン遷移
+        if (progress >= 0.66 && currentStep > 1) {
+          currentStep = 1;
           if (countdownNum) {
             countdownNum.textContent = '1';
             countdownNum.style.animation = 'none';
             void countdownNum.offsetWidth;
-            countdownNum.style.animation = 'count-pop 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards';
+            countdownNum.style.animation = 'count-pop 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards';
           }
           playBeep(1);
-          if (navigator.vibrate) { try { navigator.vibrate(35); } catch (e) {} }
-        } else if (progress >= 0.33 && countdownStep > 2) {
-          countdownStep = 2;
+          if (navigator.vibrate) { try { navigator.vibrate(35); } catch (err) {} }
+        } else if (progress >= 0.33 && currentStep > 2) {
+          currentStep = 2;
           if (countdownNum) {
             countdownNum.textContent = '2';
             countdownNum.style.animation = 'none';
             void countdownNum.offsetWidth;
-            countdownNum.style.animation = 'count-pop 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards';
+            countdownNum.style.animation = 'count-pop 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards';
           }
           playBeep(2);
-          if (navigator.vibrate) { try { navigator.vibrate(30); } catch (e) {} }
+          if (navigator.vibrate) { try { navigator.vibrate(30); } catch (err) {} }
         }
 
         if (elapsed >= TOTAL_HOLD_MS) {
           // 長押し完了！ START!
-          resetHold();
+          cancelHold();
           playSound('unlock');
           startGame();
           return;
@@ -2261,21 +2260,17 @@ document.addEventListener('DOMContentLoaded', () => {
       holdAnimId = requestAnimationFrame(loop);
     }
 
-    function onHoldEnd(e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      if (!isHolding) return;
-      resetHold();
-    }
+    // Modern PointerEvents API (あらゆるタッチ・クリックを確実に捕捉)
+    btn.addEventListener('pointerdown', startHold);
+    btn.addEventListener('pointerup', cancelHold);
+    btn.addEventListener('pointercancel', cancelHold);
 
-    btn.addEventListener('mousedown', onHoldStart);
-    btn.addEventListener('touchstart', onHoldStart, { passive: false });
-    window.addEventListener('mouseup', onHoldEnd);
-    window.addEventListener('touchend', onHoldEnd);
-    window.addEventListener('touchcancel', onHoldEnd);
-    btn.addEventListener('mouseleave', onHoldEnd);
+    // フォールバック
+    btn.addEventListener('touchstart', (e) => { e.preventDefault(); startHold(e); }, { passive: false });
+    btn.addEventListener('touchend', (e) => { e.preventDefault(); cancelHold(); });
+    btn.addEventListener('mousedown', startHold);
+    btn.addEventListener('mouseup', cancelHold);
+    btn.addEventListener('mouseleave', cancelHold);
     btn.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 
