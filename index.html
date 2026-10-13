@@ -2,139 +2,114 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="description" content="High-octane 60-second 2D cyber-neon runner browser game">
-  <title>⚡ NEON RUNNER 60s ⚡</title>
-  <link rel="icon" type="image/svg+xml" href="./apple.svg">
-  <link rel="stylesheet" href="./style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🔐 POP LOCK RUSH! 🔓</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="game-wrapper">
-    <!-- Top Cyber-Neon HUD -->
-    <header class="game-hud">
-      <div class="hud-group hud-left">
-        <div class="hud-badge timer-badge">
-          <span class="hud-label">TIME</span>
-          <span id="hud-timer" class="hud-value">60.0s</span>
-        </div>
-        <div class="hud-badge speed-badge">
-          <span class="hud-label">SPEED</span>
-          <span id="hud-speed" class="hud-value">1.0x</span>
-        </div>
-      </div>
+  <!-- 背景パーティクル & 演出用Canvas -->
+  <canvas id="particle-canvas"></canvas>
 
-      <div class="hud-group hud-center">
-        <h1 class="hud-logo">⚡ NEON RUNNER ⚡</h1>
+  <div id="game-app">
+    <!-- ヘッダーHUD -->
+    <header id="hud">
+      <div class="hud-item timer-box">
+        <span class="hud-label">TIME</span>
+        <span id="time-display" class="hud-value">18.0</span>
+        <span id="time-added-anim" class="time-bonus">+0.5s</span>
       </div>
-
-      <div class="hud-group hud-right">
-        <div class="hud-badge score-badge">
-          <span class="hud-label">SCORE</span>
-          <span id="hud-score" class="hud-value">0</span>
-        </div>
-        <div class="hud-badge high-badge">
-          <span class="hud-label">BEST</span>
-          <span id="hud-high" class="hud-value">0</span>
-        </div>
-        <div class="hud-badge lives-badge">
-          <span class="hud-label">LIVES</span>
-          <span id="hud-lives" class="hud-value">❤️❤️❤️</span>
-        </div>
+      <div class="hud-item score-box">
+        <span class="hud-label">SCORE</span>
+        <span id="score-display" class="hud-value">0</span>
       </div>
+      <div class="hud-item unlocked-box">
+        <span class="hud-label">UNLOCKED</span>
+        <span id="unlocked-count" class="hud-value">0</span>
+      </div>
+      <button id="sound-btn" class="icon-btn" aria-label="Sound Toggle">🔊</button>
     </header>
 
-    <!-- 16:9 Responsive Canvas Viewport & Overlays -->
-    <main class="canvas-container">
-      <canvas id="game-canvas" width="960" height="540"></canvas>
-
-      <!-- Overlay Screen Manager -->
-      <div id="overlay-container" class="overlay-container active">
-        <!-- 1. Start / Instructions Screen -->
-        <div id="screen-start" class="screen-view active">
-          <h2 class="neon-title cyan-glow">NEON RUNNER 60s</h2>
-          <p class="neon-subtitle">60秒間生き残り、サイバースペースの果てへ到達せよ！</p>
-          
-          <div class="controls-guide-grid">
-            <div class="guide-card">
-              <div class="guide-icon">💻 PC CONTROLS</div>
-              <ul class="guide-list">
-                <li><span class="key-badge">SPACE</span> / <span class="key-badge">↑</span> : ジャンプ / 2段ジャンプ</li>
-                <li><span class="key-badge">↓</span> : しゃがみ / 急降下</li>
-                <li><span class="key-badge">P</span> / <span class="key-badge">ESC</span> : 一時停止</li>
-              </ul>
-            </div>
-            <div class="guide-card">
-              <div class="guide-icon">📱 MOBILE CONTROLS</div>
-              <ul class="guide-list">
-                <li><span class="tap-badge">画面タップ</span> : ジャンプ</li>
-                <li><span class="tap-badge">下スワイプ</span> : しゃがみ</li>
-              </ul>
-            </div>
-          </div>
-
-          <p class="mission-hint">障害物を回避し、スター (+250pt) を回収してハイスコアを目指せ！</p>
-          <button id="btn-start" class="glow-btn btn-cyan">START RUN [SPACE]</button>
+    <!-- 鍵スタックエリア（立体カード構造） -->
+    <main id="lock-stage">
+      <!-- 背後の鍵（次の鍵：少し薄く、小さく奥にスタンバイ） -->
+      <div id="next-lock-card" class="lock-card preview-card">
+        <div class="card-shackle"></div>
+        <div class="card-body">
+          <div class="lock-face">👀</div>
+          <div class="card-badge">NEXT LOCK</div>
         </div>
+      </div>
 
-        <!-- 2. Pause Screen -->
-        <div id="screen-pause" class="screen-view">
-          <h2 class="neon-title amber-glow">SYSTEM PAUSED</h2>
-          <p class="neon-subtitle">一時停止中</p>
-          <div class="summary-stats-box">
-            <div class="stat-line">REMAINING TIME: <span id="pause-time" class="stat-val">60.0s</span></div>
-            <div class="stat-line">CURRENT SCORE: <span id="pause-score" class="stat-val">0</span></div>
-          </div>
-          <div class="btn-group">
-            <button id="btn-resume" class="glow-btn btn-cyan">RESUME [P]</button>
-            <button id="btn-pause-restart" class="sub-btn">RESTART RUN</button>
-          </div>
-        </div>
-
-        <!-- 3. Game Over Screen -->
-        <div id="screen-gameover" class="screen-view">
-          <h2 class="neon-title magenta-glow">SYSTEM FAILURE</h2>
-          <p class="neon-subtitle">シグナル途絶: クラッシュ</p>
-          <div class="summary-stats-box">
-            <div class="stat-line">SURVIVED: <span id="gameover-time" class="stat-val">0.0s / 60.0s</span></div>
-            <div class="stat-line">FINAL SCORE: <span id="gameover-score" class="stat-val highlight-score">0</span></div>
-            <div class="stat-line">BEST RECORD: <span id="gameover-best" class="stat-val">0</span></div>
-          </div>
-          <div id="gameover-new-record" class="record-badge hidden">★ NEW HIGH SCORE! ★</div>
-          <button id="btn-restart" class="glow-btn btn-magenta">RETRY RUN [ENTER / SPACE]</button>
-        </div>
-
-        <!-- 4. Victory Screen -->
-        <div id="screen-victory" class="screen-view">
-          <h2 class="neon-title green-glow">MISSION ACCOMPLISHED! 🏆</h2>
-          <p class="neon-subtitle">60秒間のハイパースピードを完走！ 生存成功！</p>
-          
-          <div class="rank-container">
-            <div class="rank-badge-box">
-              <span class="rank-label">CLEAR RANK</span>
-              <span id="victory-rank" class="rank-badge rank-s">S</span>
-              <span id="victory-rank-title" class="rank-title">CYBER LEGEND</span>
-            </div>
+      <!-- 手前の鍵（今解く鍵：アクティブ） -->
+      <div id="current-lock-card" class="lock-card active-card">
+        <div class="card-shackle" id="current-shackle"></div>
+        <div class="card-body">
+          <div class="lock-header">
+            <span id="lock-name" class="lock-type-title">TAP LOCK</span>
+            <span id="lock-difficulty" class="difficulty-stars">★☆☆</span>
           </div>
 
-          <div class="summary-stats-box">
-            <div class="stat-line">SURVIVAL BONUS: <span class="stat-val bonus-val">+5,000 PTS</span></div>
-            <div class="stat-line">FINAL SCORE: <span id="victory-score" class="stat-val highlight-score">0</span></div>
-            <div class="stat-line">ALL-TIME BEST: <span id="victory-best" class="stat-val">0</span></div>
+          <!-- コミカルな南京錠の表情 -->
+          <div id="lock-face" class="lock-face">😏</div>
+
+          <!-- ギミック操作エリア（動的に切り替え） -->
+          <div id="gimmick-container" class="gimmick-area">
+            <!-- JavaScriptでギミックUIを動的挿入 -->
           </div>
-          <div id="victory-new-record" class="record-badge hidden">★ NEW HIGH SCORE! ★</div>
-          <button id="btn-victory-restart" class="glow-btn btn-green">PLAY AGAIN [ENTER / SPACE]</button>
         </div>
       </div>
     </main>
 
-    <!-- Bottom Footer -->
-    <footer class="game-footer">
-      <div class="footer-hint">PC: [SPACE] Jump / [↓] Duck / [P] Pause · Mobile: Tap Screen</div>
-      <button id="sound-toggle" class="sub-btn">🔊 サウンド: ON</button>
+    <!-- フッターヒント -->
+    <footer id="footer-hint">
+      <p id="hint-text">画面の指示に従ってすばやく解錠せよ！</p>
     </footer>
+
+    <!-- スタート画面オーバーレイ -->
+    <div id="start-overlay" class="screen-overlay active">
+      <div class="overlay-card bounce-in">
+        <div class="hero-icon">🔐✨</div>
+        <h1 class="game-title">POP LOCK RUSH!</h1>
+        <p class="game-desc">
+          次々現れる鍵をすばやく解除せよ！<br>
+          1つ解錠するごとに <strong>+0.5秒</strong> 制限時間延長！<br>
+          難易度の高い鍵ほど高得点！
+        </p>
+        <button id="start-btn" class="pop-btn primary-btn">START RUSH!</button>
+      </div>
+    </div>
+
+    <!-- リザルト画面オーバーレイ -->
+    <div id="result-overlay" class="screen-overlay">
+      <div class="overlay-card pop-up">
+        <div id="result-rank-badge" class="rank-badge">RANK S</div>
+        <h2 id="result-title" class="result-title">TIME'S UP!</h2>
+        <div id="result-title-comment" class="result-comment">「神速のピッキングマスター！」</div>
+
+        <div class="result-stats">
+          <div class="stat-row">
+            <span>最終スコア:</span>
+            <strong id="final-score" class="highlight-val">0</strong>
+          </div>
+          <div class="stat-row">
+            <span>解錠した数:</span>
+            <strong id="final-locks">0 個</strong>
+          </div>
+          <div class="stat-row">
+            <span>難易度ボーナス:</span>
+            <strong id="final-bonus">+0 pts</strong>
+          </div>
+          <div class="stat-row">
+            <span>ハイスコア:</span>
+            <strong id="high-score">0</strong>
+          </div>
+        </div>
+
+        <button id="retry-btn" class="pop-btn primary-btn">もう一度挑戦！ 🔄</button>
+      </div>
+    </div>
   </div>
 
-  <!-- Entry Script (ES Module) -->
-  <script type="module" src="./main.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
