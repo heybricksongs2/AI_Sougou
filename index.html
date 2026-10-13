@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>LOCK LOCKER LOCKEST</title>
-  <link rel="stylesheet" href="style.css?v=lockest_13">
+  <link rel="stylesheet" href="style.css?v=lockest_15">
 </head>
 <body>
   <!-- 背景パーティクル & メカニカル鍵背景 -->
@@ -205,30 +205,38 @@
       </div>
     </div>
 
-    <!-- リザルト画面オーバーレイ（絵文字削除・SVGホームアイコン付きボタン） -->
+    <!-- タイムアップ演出: FINISH! ポップアップオーバーレイ -->
+    <div id="finish-banner-overlay" class="finish-banner-overlay">
+      <div class="finish-banner-text">FINISH!</div>
+    </div>
+
+    <!-- リザルト画面オーバーレイ -->
     <div id="result-overlay" class="screen-overlay">
-      <div class="overlay-card pop-up">
+      <div id="result-card" class="overlay-card pop-up">
         <div id="result-rank-badge" class="rank-badge">RANK S</div>
+        <!-- 次のランクまでのスコア表示 -->
+        <div id="next-rank-info" class="next-rank-info"></div>
+
         <h2 id="result-title" class="result-title">TIME'S UP!</h2>
         <div id="result-title-comment" class="result-comment" style="display: none;"></div>
 
         <div class="result-stats">
           <div class="stat-row">
-            <span>SCORE:</span>
+            <span>スコア:</span>
             <strong id="final-score" class="highlight-val">0</strong>
           </div>
           <div class="stat-row">
-            <span>UNLOCKED:</span>
+            <span>解錠数:</span>
             <strong id="final-locks">0</strong>
           </div>
           <div class="stat-row">
-            <span>HIGH SCORE:</span>
+            <span>ハイスコア:</span>
             <strong id="high-score">0</strong>
           </div>
         </div>
 
         <button id="retry-btn" class="pop-btn primary-btn">
-          <span>TITLE</span>
+          <span>タイトルへ</span>
           <svg class="btn-home-svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="vertical-align: -3px; margin-left: 6px;">
             <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
           </svg>
@@ -257,6 +265,6 @@
     </div>
   </div>
 
-  <script src="main.js?v=lockest_13"></script>
+  <script src="main.js?v=lockest_15"></script>
 </body>
 </html>

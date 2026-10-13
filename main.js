@@ -96,6 +96,42 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   updateParticles();
 
+  // Rank S 達成時の紙吹雪シャワー
+  let confettiRainInterval = null;
+  function startConfettiRain(durationMs = 4500) {
+    if (confettiRainInterval) clearInterval(confettiRainInterval);
+    const colors = ['#ff4757', '#2ed573', '#ffa502', '#1e90ff', '#ffd32a', '#9b59b6', '#ff007f', '#00d2d3'];
+    const startTime = Date.now();
+
+    confettiRainInterval = setInterval(() => {
+      if (Date.now() - startTime > durationMs) {
+        clearInterval(confettiRainInterval);
+        confettiRainInterval = null;
+        return;
+      }
+      for (let i = 0; i < 6; i++) {
+        const x = Math.random() * canvas.width;
+        const y = -12;
+        const angle = (Math.PI / 2) + (Math.random() - 0.5) * 0.8;
+        const speed = Math.random() * 4.5 + 3.2;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          w: Math.random() * 9 + 6,
+          h: Math.random() * 6 + 5,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: 1,
+          decay: Math.random() * 0.007 + 0.004,
+          rot: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.22,
+          isConfetti: true
+        });
+      }
+    }, 65);
+  }
+
   // Web Audio Synth (多層サウンド ＆ コンボピッチ上昇)
   let audioCtx = null;
   let soundEnabled = true;
@@ -181,6 +217,35 @@ document.addEventListener('DOMContentLoaded', () => {
         gain.connect(audioCtx.destination);
         osc.start(now);
         osc.stop(now + 0.06);
+
+      } else if (type === 'whistle_finish') {
+        // ピッピー！ホイッスルのダブルトーン (短音 + 長音)
+        // 1. ピッ (短音)
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(860, now);
+        osc1.frequency.linearRampToValueAtTime(940, now + 0.08);
+        gain1.gain.setValueAtTime(0.3, now);
+        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.09);
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.09);
+
+        // 2. ピー！ (長音)
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(880, now + 0.13);
+        osc2.frequency.linearRampToValueAtTime(960, now + 0.45);
+        gain2.gain.setValueAtTime(0.35, now + 0.13);
+        gain2.gain.setValueAtTime(0.32, now + 0.4);
+        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.55);
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start(now + 0.13);
+        osc2.stop(now + 0.55);
       }
     } catch (e) {}
   }
@@ -1977,12 +2042,17 @@ document.addEventListener('DOMContentLoaded', () => {
     void timeAddedAnim.offsetWidth;
     timeAddedAnim.classList.add('animate');
 
-    // スコア加算 (コンボボーナス付き)
-    const comboBonus = (comboCount > 1) ? (comboCount * 30) : 0;
-    score += (currentLock.points + comboBonus);
+    // スコア加算 (新ルール: 基本100pt固定 + 10個ごとに300pt + コンボ数×10)
     unlockedCountNum++;
-    scoreDisplay.textContent = score;
     unlockedCount.textContent = unlockedCountNum;
+
+    const basePts = 100;
+    const comboBonus = comboCount * 10;
+    const isTenBonus = (unlockedCountNum % 10 === 0);
+    const tenBonus = isTenBonus ? 300 : 0;
+
+    score += (basePts + comboBonus + tenBonus);
+    scoreDisplay.textContent = score;
 
     // スコアバウンス
     const scoreBox = document.querySelector('.score-box');
@@ -2010,8 +2080,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // フローティングテキスト
-    const comboLabel = comboCount > 1 ? `COMBO x${comboCount}!` : '+1.0s!';
-    spawnFloatingText(comboLabel, centerX, cardRect.top + 30);
+    if (isTenBonus) {
+      spawnFloatingText(`BONUS +300pt!`, centerX, cardRect.top + 10);
+    } else {
+      const comboLabel = comboCount > 1 ? `COMBO x${comboCount} (+${comboBonus}pt)` : '+100pt';
+      spawnFloatingText(comboLabel, centerX, cardRect.top + 30);
+    }
 
     // 紙吹雪 ＆ スパークパーティクル爆発
     createBurst(centerX, centerY, 36);
@@ -2115,6 +2189,10 @@ document.addEventListener('DOMContentLoaded', () => {
     comboCount = 0;
     lastUnlockTime = 0;
     if (dangerVignette) dangerVignette.classList.remove('active-danger');
+    if (confettiRainInterval) {
+      clearInterval(confettiRainInterval);
+      confettiRainInterval = null;
+    }
 
     scoreDisplay.textContent = '0';
     unlockedCount.textContent = '0';
@@ -2143,18 +2221,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const urgentOverlay = document.getElementById('urgent-countdown-overlay');
     if (urgentOverlay) urgentOverlay.classList.remove('active');
 
+    // 1. 時間切れのピッピー！ホイッスル
+    playSound('whistle_finish');
+
+    // 2. 画面中央に FINISH! バナーをドカンと表示
+    const finishOverlay = document.getElementById('finish-banner-overlay');
+    if (finishOverlay) finishOverlay.classList.add('active');
+
     if (score > highScore) {
       highScore = score;
       localStorage.setItem('pop_lock_high', highScore);
     }
 
+    const nextRankEl = document.getElementById('next-rank-info');
+    const resultCardEl = document.getElementById('result-card');
+    if (resultCardEl) resultCardEl.classList.remove('rank-s-card');
+
     let rank = 'C';
     if (score >= 6500) {
       rank = 'S';
+      if (nextRankEl) {
+        nextRankEl.textContent = '★ MAX RANK 達成! ★';
+        nextRankEl.className = 'next-rank-info max-rank';
+      }
+      if (resultCardEl) resultCardEl.classList.add('rank-s-card');
     } else if (score >= 3800) {
       rank = 'A';
+      const diff = 6500 - score;
+      if (nextRankEl) {
+        nextRankEl.textContent = `次のランク(S)まで あと ${diff.toLocaleString()} pt`;
+        nextRankEl.className = 'next-rank-info';
+      }
     } else if (score >= 1800) {
       rank = 'B';
+      const diff = 3800 - score;
+      if (nextRankEl) {
+        nextRankEl.textContent = `次のランク(A)まで あと ${diff.toLocaleString()} pt`;
+        nextRankEl.className = 'next-rank-info';
+      }
+    } else {
+      rank = 'C';
+      const diff = 1800 - score;
+      if (nextRankEl) {
+        nextRankEl.textContent = `次のランク(B)まで あと ${diff.toLocaleString()} pt`;
+        nextRankEl.className = 'next-rank-info';
+      }
     }
 
     rankBadgeEl.textContent = `RANK ${rank}`;
@@ -2175,10 +2286,14 @@ document.addEventListener('DOMContentLoaded', () => {
     finalLocksEl.textContent = unlockedCountNum;
     highScoreEl.textContent = highScore;
 
-    // 終了からリザルト画面表示までに1.0秒のインターバル
+    // 3. FINISH! バナー表示後 (1.1秒後) にリザルト画面を表示
     setTimeout(() => {
+      if (finishOverlay) finishOverlay.classList.remove('active');
       resultOverlay.classList.add('active');
-    }, 1000);
+      if (rank === 'S') {
+        startConfettiRain(5000); // Rank S 時に画面全体に紙吹雪を降らせる
+      }
+    }, 1100);
   }
 
   // Reliable touch & click handling for action buttons

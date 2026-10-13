@@ -11,3 +11,6 @@ desktop.ini
 
 # Teamwork agent internal logs & transcripts
 .agents/
+
+# Local preview server
+serve.py
