@@ -160,6 +160,7 @@ body {
   align-items: center;
   border: 4px solid var(--text-dark);
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+  overflow: hidden;
 }
 
 .card-shackle {
@@ -201,6 +202,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
+  position: relative;
 }
 
 .lock-header {
@@ -209,6 +211,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 0 6px;
+  z-index: 5;
 }
 
 .level-badge {
@@ -230,6 +233,7 @@ body {
   font-size: 3.4rem;
   margin: 2px 0;
   transition: transform 0.15s ease;
+  z-index: 5;
 }
 
 .lock-face.shake {
@@ -252,57 +256,169 @@ body {
   align-items: center;
   gap: 12px;
   position: relative;
+  overflow: hidden;
 }
 
-/* --- 30種類のギミック用スタイル --- */
+/* =========================================
+   30種類の直感ギミックスタイル
+   ========================================= */
 
-/* 1. ワンタップ */
-.icon-action-btn {
-  width: 125px;
-  height: 125px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--primary-accent) 0%, #ee5253 100%);
+/* 🐘 アホみたいにデカいボタン */
+.giant-action-btn {
+  width: 230px;
+  height: 210px;
+  border-radius: 40px;
+  background: radial-gradient(circle, #ff4757 0%, #ee5253 100%);
   color: #ffffff;
-  border: 4px solid var(--text-dark);
-  font-size: 3.2rem;
+  border: 6px solid var(--text-dark);
+  font-size: 5rem;
   cursor: pointer;
-  box-shadow: 0 8px 0 var(--text-dark), 0 12px 20px rgba(255, 71, 87, 0.4);
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  box-shadow: 0 10px 0 var(--text-dark), 0 16px 24px rgba(255, 71, 87, 0.4);
+  transition: transform 0.08s ease;
   display: flex;
   justify-content: center;
   align-items: center;
-  animation: bounce-gentle 1.2s infinite alternate ease-in-out;
+  z-index: 10;
 }
 
-@keyframes bounce-gentle {
-  from { transform: scale(0.98); }
-  to { transform: scale(1.04); }
+.giant-action-btn:active {
+  transform: translateY(6px);
+  box-shadow: 0 3px 0 var(--text-dark);
 }
 
-.icon-action-btn:active {
-  transform: translateY(6px) scale(0.96) !important;
-  box-shadow: 0 2px 0 var(--text-dark);
+/* 🏃 激しく動くボタン */
+.moving-btn-container {
+  position: relative;
+  width: 100%;
+  height: 190px;
+  overflow: hidden;
 }
 
-/* 16. 極小ボタン (Tiny Tap) */
-.tiny-action-btn {
-  width: 38px;
-  height: 38px;
+.moving-action-btn {
+  position: absolute;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  background: var(--primary-accent);
-  color: #ffffff;
-  border: 3px solid var(--text-dark);
-  font-size: 1.1rem;
+  background: radial-gradient(circle, var(--yellow-accent) 0%, #e67e22 100%);
+  border: 4px solid var(--text-dark);
+  font-size: 2rem;
   cursor: pointer;
   box-shadow: 0 4px 0 var(--text-dark);
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: transform 0.05s ease;
-  position: absolute;
 }
 
-/* 2. スイッチ（スライド操作必須） */
+/* 🐜 動くボタン滅茶苦茶小さいやつ */
+.tiny-moving-btn {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-accent);
+  border: 3px solid var(--text-dark);
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--text-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 🔑 正しい鍵穴の鍵を選ぶやつ (Match Key to Hole) */
+.key-match-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.key-match-hole {
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+  background: #f1f2f6;
+  border: 4px dashed var(--blue-accent);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.6rem;
+}
+
+.key-choices-row {
+  display: flex;
+  gap: 14px;
+}
+
+.key-choice-item {
+  width: 65px;
+  height: 65px;
+  border-radius: 20px;
+  background: #f1f2f6;
+  border: 3px solid var(--text-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.2rem;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--text-dark);
+  transition: transform 0.08s ease;
+}
+
+.key-choice-item:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--text-dark);
+}
+
+/* 🔢 ダイヤル式のカギ（数字ローリング南京錠） */
+.dial-lock-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.dial-lock-target-code {
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 6px;
+  color: var(--blue-accent);
+  background: #f1f2f6;
+  padding: 6px 18px;
+  border-radius: 14px;
+  border: 2px solid var(--card-border);
+}
+
+.dial-wheels-row {
+  display: flex;
+  gap: 10px;
+}
+
+.dial-wheel {
+  width: 52px;
+  height: 80px;
+  background: #2f3542;
+  border: 3px solid var(--text-dark);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 5px 0 var(--text-dark);
+  transition: transform 0.08s ease;
+}
+
+.dial-wheel:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--text-dark);
+}
+
+/* 2 & 18. スイッチスライド */
 .switch-slider-track {
   position: relative;
   width: 130px;
@@ -346,7 +462,7 @@ body {
   box-shadow: 0 3px 0 var(--text-dark);
 }
 
-/* 3. 鍵ドラッグ＆ドロップ差し込み */
+/* 3. 鍵ドラッグ */
 .key-drag-container {
   display: flex;
   flex-direction: column;
@@ -392,7 +508,7 @@ body {
   bottom: 6px;
 }
 
-/* 4. スライドして回転 (Slide & Twist) */
+/* 4 & 20. スライドして回転 */
 .twist-stage {
   display: flex;
   flex-direction: column;
@@ -420,7 +536,7 @@ body {
   display: inline-block;
 }
 
-/* 5 & 12 & 20 & 27: タップ系 */
+/* 5 & 21. タップ系 */
 .multi-tap-btn {
   width: 125px;
   height: 125px;
@@ -457,7 +573,316 @@ body {
   transform: scale(1.3);
 }
 
-/* 6, 7, 21, 22: 横スライド */
+/* 6 & 26. カクカクL字・クランクスライド */
+.crank-slider-area {
+  position: relative;
+  width: 180px;
+  height: 160px;
+  background: #f1f2f6;
+  border: 4px solid var(--text-dark);
+  border-radius: 28px;
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.crank-slot-path {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  width: 110px;
+  height: 20px;
+  background: #dfe4ea;
+  border-radius: 10px;
+}
+
+.crank-slot-path-v {
+  position: absolute;
+  top: 24px;
+  left: 114px;
+  width: 20px;
+  height: 96px;
+  background: #dfe4ea;
+  border-radius: 10px;
+}
+
+.crank-goal {
+  position: absolute;
+  bottom: 12px;
+  left: 104px;
+  width: 42px;
+  height: 42px;
+  background: rgba(46, 213, 115, 0.25);
+  border: 2px dashed var(--secondary-accent);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.3rem;
+}
+
+.crank-knob {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 40px;
+  height: 40px;
+  background: var(--yellow-accent);
+  border: 3px solid var(--text-dark);
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 3px 0 var(--text-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+}
+
+/* 15 & 30. 星形スライド */
+.star-trace-area {
+  position: relative;
+  width: 190px;
+  height: 190px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.star-trace-svg {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.star-knob {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--yellow-accent);
+  border: 3px solid var(--text-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.4rem;
+  cursor: grab;
+  box-shadow: 0 4px 0 var(--text-dark);
+}
+
+/* 14 & 27. 高度キープホバー */
+.hover-stage {
+  position: relative;
+  width: 130px;
+  height: 180px;
+  background: #f1f2f6;
+  border: 4px solid var(--text-dark);
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.hover-target-zone {
+  position: absolute;
+  top: 50px;
+  left: 8px;
+  right: 8px;
+  height: 54px;
+  background: rgba(46, 213, 115, 0.3);
+  border: 3px dashed var(--secondary-accent);
+  border-radius: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.3rem;
+}
+
+.hover-rocket {
+  position: absolute;
+  bottom: 12px;
+  width: 48px;
+  height: 48px;
+  background: var(--primary-accent);
+  border: 3px solid var(--text-dark);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.6rem;
+  transition: bottom 0.05s linear;
+}
+
+.hover-thrust-btn {
+  width: 120px;
+  padding: 10px;
+  border-radius: 20px;
+  background: var(--blue-accent);
+  color: white;
+  font-size: 1.4rem;
+  border: 3px solid var(--text-dark);
+  box-shadow: 0 4px 0 var(--text-dark);
+  cursor: pointer;
+}
+
+/* 19. モールス信号 */
+.morse-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.morse-target-display {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #f1f2f6;
+  padding: 10px 22px;
+  border-radius: 20px;
+  border: 3px solid var(--text-dark);
+}
+
+.morse-symbol {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+.morse-symbol.matched {
+  color: var(--secondary-accent);
+  transform: scale(1.25);
+}
+
+.morse-tap-btn {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: var(--yellow-accent);
+  border: 4px solid var(--text-dark);
+  font-size: 2.6rem;
+  cursor: pointer;
+  box-shadow: 0 6px 0 var(--text-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 11. 3原色調色 */
+.color-mix-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.color-mix-target-preview {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 4px solid var(--text-dark);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.color-mix-pot {
+  width: 100px;
+  height: 38px;
+  border-radius: 20px;
+  border: 3px solid var(--text-dark);
+  background: #dfe4ea;
+  transition: background 0.2s ease;
+}
+
+.primary-palette {
+  display: flex;
+  gap: 14px;
+}
+
+.primary-color-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  border: 3px solid var(--text-dark);
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--text-dark);
+  transition: transform 0.08s ease;
+}
+
+.primary-color-btn.selected {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--text-dark);
+  border-color: #ffffff;
+}
+
+/* 9. マーク手書きジェスチャー (✔) */
+.gesture-pad-wrap {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  background: #f1f2f6;
+  border: 4px solid var(--text-dark);
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.gesture-target-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 6.5rem;
+  color: rgba(116, 125, 140, 0.22);
+  pointer-events: none;
+  font-weight: 900;
+}
+
+.gesture-canvas {
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+/* 12. 暗証パターン結び */
+.pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 170px;
+  height: 170px;
+  background: #f1f2f6;
+  border: 4px solid var(--text-dark);
+  border-radius: 28px;
+  padding: 16px;
+}
+
+.pattern-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ced6e0;
+  border: 3px solid var(--text-dark);
+  cursor: pointer;
+  margin: auto;
+  transition: all 0.1s ease;
+}
+
+.pattern-dot.active {
+  background: var(--secondary-accent);
+  transform: scale(1.3);
+}
+
+.pattern-dot.guide {
+  animation: pulse-dot 0.6s infinite alternate;
+}
+
+@keyframes pulse-dot {
+  from { background: #ced6e0; }
+  to { background: var(--primary-accent); }
+}
+
+/* 7, 8: 直線スライド */
 .slider-horizontal {
   position: relative;
   width: 90%;
@@ -498,7 +923,6 @@ body {
 }
 
 .slider-goal-h.right { right: 6px; }
-.slider-goal-h.left { left: 6px; }
 
 .slider-knob-h {
   position: absolute;
@@ -516,7 +940,6 @@ body {
   box-shadow: 0 4px 0 var(--text-dark);
 }
 
-/* 8, 9, 23, 24: 縦スライド */
 .slider-vertical {
   position: relative;
   width: 76px;
@@ -559,7 +982,6 @@ body {
 }
 
 .slider-goal-v.top { top: 6px; }
-.slider-goal-v.bottom { bottom: 6px; }
 
 .slider-knob-v {
   position: absolute;
@@ -577,83 +999,7 @@ body {
   box-shadow: 0 4px 0 var(--text-dark);
 }
 
-/* 10, 25: カラー一致 (2択 & 3択) */
-.color-match-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-}
-
-.color-target-display {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  border: 4px solid var(--text-dark);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  animation: pulse-target 0.8s infinite alternate ease-in-out;
-}
-
-@keyframes pulse-target {
-  from { transform: scale(0.95); }
-  to { transform: scale(1.08); }
-}
-
-.choice-row {
-  display: flex;
-  gap: 12px;
-  width: 90%;
-  justify-content: center;
-}
-
-.color-choice-btn {
-  flex: 1;
-  height: 68px;
-  border-radius: 20px;
-  border: 4px solid var(--text-dark);
-  cursor: pointer;
-  box-shadow: 0 6px 0 var(--text-dark);
-  transition: transform 0.08s ease;
-}
-
-.color-choice-btn:active {
-  transform: translateY(4px);
-  box-shadow: 0 2px 0 var(--text-dark);
-}
-
-/* 11, 26: 形状一致 (2択 & 3択) */
-.shape-target-display {
-  width: 64px;
-  height: 64px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 3rem;
-  animation: pulse-target 0.8s infinite alternate ease-in-out;
-}
-
-.shape-choice-btn {
-  flex: 1;
-  height: 68px;
-  border-radius: 20px;
-  background: #f1f2f6;
-  border: 4px solid var(--text-dark);
-  font-size: 2.2rem;
-  cursor: pointer;
-  box-shadow: 0 6px 0 var(--text-dark);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: transform 0.08s ease;
-}
-
-.shape-choice-btn:active {
-  transform: translateY(4px);
-  box-shadow: 0 2px 0 var(--text-dark);
-}
-
-/* 13, 28: 激連打 */
+/* 連打・指紋・ダイヤル */
 .mash-wrap {
   display: flex;
   flex-direction: column;
@@ -678,7 +1024,6 @@ body {
   transition: width 0.06s ease;
 }
 
-/* 14, 29: 指紋スキャナー */
 .fingerprint-btn {
   width: 125px;
   height: 125px;
@@ -717,7 +1062,6 @@ body {
   to { top: 110px; }
 }
 
-/* 15, 30: ダイヤル合わせ */
 .dial-wrap {
   position: relative;
   display: flex;
@@ -759,6 +1103,39 @@ body {
   height: 28px;
   background: var(--primary-accent);
   border-radius: 6px;
+}
+
+.choice-row {
+  display: flex;
+  gap: 12px;
+  width: 90%;
+  justify-content: center;
+}
+
+.color-choice-btn, .shape-choice-btn {
+  flex: 1;
+  height: 68px;
+  border-radius: 20px;
+  border: 4px solid var(--text-dark);
+  cursor: pointer;
+  box-shadow: 0 6px 0 var(--text-dark);
+  transition: transform 0.08s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.2rem;
+}
+
+.color-target-display, .shape-target-display {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 4px solid var(--text-dark);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.6rem;
 }
 
 /* チュートリアルピクトグラム */
@@ -895,3 +1272,84 @@ body {
   color: var(--primary-accent);
   font-size: 1.2rem;
 }
+
+/* 鍵を鍵穴へ、ただイライラ棒 ⚡🔑🕳️ */
+.irira-maze-container {
+  position: relative;
+  width: 250px;
+  height: 140px;
+  background: #1e272e;
+  border-radius: 18px;
+  border: 3px solid #ffa502;
+  box-shadow: 0 0 16px rgba(255, 165, 2, 0.4), inset 0 0 12px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  touch-action: none;
+}
+
+.irira-maze-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.irira-key-dragger {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  font-size: 1.6rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  z-index: 10;
+  transform: translate(-50%, -50%);
+  transition: transform 0.05s ease;
+}
+
+.irira-key-dragger:active {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.irira-goal-hole {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  font-size: 1.8rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background: rgba(46, 213, 115, 0.2);
+  border: 2px dashed #2ed573;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 5;
+  animation: pulse-glow-goal 1s infinite alternate;
+}
+
+@keyframes pulse-glow-goal {
+  from { box-shadow: 0 0 4px #2ed573; }
+  to { box-shadow: 0 0 16px #2ed573; }
+}
+
+.irira-maze-container.shocked {
+  animation: shock-shake 0.3s ease-in-out;
+  border-color: #ff4757;
+  box-shadow: 0 0 24px rgba(255, 71, 87, 0.8);
+}
+
+@keyframes shock-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+

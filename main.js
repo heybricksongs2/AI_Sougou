@@ -1,4 +1,4 @@
-// POP LOCK RUSH! - 30 Non-Verbal Gimmicks (Progression 1-30 & Round 2 Random)
+// POP LOCK RUSH! - 30 Ultimate Creative Gimmicks
 document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const timeDisplay = document.getElementById('time-display');
@@ -135,41 +135,38 @@ document.addEventListener('DOMContentLoaded', () => {
     soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
   });
 
-  // 30 Gimmick Definitions: Level 1 to 30
+  // 30 Ultimate Gimmicks: Level 1 to 30
   const LOCK_DEFINITIONS = [
-    // --- 通常版 (Lv.1 〜 Lv.15) ---
-    { level: 1,  type: 'single_tap',       icon: '👆', stars: '★☆☆☆☆', basePoints: 100 },
+    { level: 1,  type: 'giant_button',     icon: '🐘', stars: '★☆☆☆☆', basePoints: 100 },
     { level: 2,  type: 'switch_slide',     icon: '🎚️', stars: '★☆☆☆☆', basePoints: 120 },
     { level: 3,  type: 'key_drag',         icon: '🔑', stars: '★☆☆☆☆', basePoints: 140 },
     { level: 4,  type: 'slide_twist',      icon: '🗝️', stars: '★★☆☆☆', basePoints: 160 },
     { level: 5,  type: 'double_tap',       icon: '✌️', stars: '★★☆☆☆', basePoints: 180 },
-    { level: 6,  type: 'slide_right',      icon: '➡️', stars: '★★☆☆☆', basePoints: 200 },
-    { level: 7,  type: 'slide_left',       icon: '⬅️', stars: '★★★☆☆', basePoints: 220 },
+    { level: 6,  type: 'crank_slide',      icon: '🧩', stars: '★★☆☆☆', basePoints: 200 },
+    { level: 7,  type: 'slide_right',      icon: '➡️', stars: '★★☆☆☆', basePoints: 220 },
     { level: 8,  type: 'slide_up',         icon: '⬆️', stars: '★★★☆☆', basePoints: 240 },
-    { level: 9,  type: 'slide_down',       icon: '⬇️', stars: '★★★☆☆', basePoints: 260 },
-    { level: 10, type: 'color_choice_2',   icon: '🎨', stars: '★★★☆☆', basePoints: 280 },
-    { level: 11, type: 'shape_choice_2',   icon: '🔷', stars: '★★★★☆', basePoints: 310 },
-    { level: 12, type: 'triple_tap',       icon: '👌', stars: '★★★★☆', basePoints: 340 },
+    { level: 9,  type: 'gesture_mark',     icon: '✍️', stars: '★★★☆☆', basePoints: 260 },
+    { level: 10, type: 'match_key',        icon: '🔍', stars: '★★★☆☆', basePoints: 280 },
+    { level: 11, type: 'color_mix',        icon: '🎨', stars: '★★★☆☆', basePoints: 310 },
+    { level: 12, type: 'pattern_lock',     icon: '🔢', stars: '★★★★☆', basePoints: 340 },
     { level: 13, type: 'rapid_mash',       icon: '⚡', stars: '★★★★☆', basePoints: 370 },
-    { level: 14, type: 'fingerprint',      icon: '🛡️', stars: '★★★★★', basePoints: 420 },
-    { level: 15, type: 'dial_turn',        icon: '🧭', stars: '★★★★★', basePoints: 480 },
-
-    // --- 高難度・Ex版 (Lv.16 〜 Lv.30) ---
-    { level: 16, type: 'tiny_tap',         icon: '🔍', stars: '★★☆☆☆', basePoints: 200 }, // Lv.1の極小版
-    { level: 17, type: 'switch_slide_rev', icon: '🎛️', stars: '★★☆☆☆', basePoints: 230 }, // Lv.2の逆向きスライド
-    { level: 18, type: 'key_drag_precise', icon: '🎯', stars: '★★★☆☆', basePoints: 260 }, // Lv.3の極小鍵穴ドラッグ
-    { level: 19, type: 'slide_twist_180',  icon: '🔄', stars: '★★★☆☆', basePoints: 290 }, // Lv.4の180度回転
-    { level: 20, type: 'quad_tap',         icon: '✋', stars: '★★★☆☆', basePoints: 320 }, // Lv.5の4連打
-    { level: 21, type: 'slide_bounce_r',   icon: '⏩', stars: '★★★★☆', basePoints: 360 }, // Lv.6の往復スライド右
-    { level: 22, type: 'slide_bounce_l',   icon: '⏪', stars: '★★★★☆', basePoints: 390 }, // Lv.7の往復スライド左
-    { level: 23, type: 'slide_up_long',    icon: '🚀', stars: '★★★★☆', basePoints: 430 }, // Lv.8のロング引き上げ
-    { level: 24, type: 'slide_down_long',  icon: '⚓', stars: '★★★★☆', basePoints: 460 }, // Lv.9のロング引き下げ
-    { level: 25, type: 'color_choice_3',   icon: '🌈', stars: '★★★★☆', basePoints: 500 }, // Lv.10の3択カラー
-    { level: 26, type: 'shape_choice_3',   icon: '💠', stars: '★★★★★', basePoints: 540 }, // Lv.11の3択シェイプ
-    { level: 27, type: 'five_tap',         icon: '🖐️', stars: '★★★★★', basePoints: 580 }, // Lv.12の5連タップ
-    { level: 28, type: 'super_mash',       icon: '💥', stars: '★★★★★', basePoints: 630 }, // Lv.13の超激連打
-    { level: 29, type: 'fingerprint_long', icon: '🧬', stars: '★★★★★', basePoints: 690 }, // Lv.14の長時間精密スキャン
-    { level: 30, type: 'dial_turn_precise',icon: '⏰', stars: '★★★★★', basePoints: 750 }  // Lv.15の微細ダイヤル
+    { level: 14, type: 'hover_thrust',     icon: '🚀', stars: '★★★★☆', basePoints: 400 },
+    { level: 15, type: 'star_trace',       icon: '⭐', stars: '★★★★☆', basePoints: 430 },
+    { level: 16, type: 'dial_code',        icon: '🔐', stars: '★★★★☆', basePoints: 460 },
+    { level: 17, type: 'moving_btn',       icon: '🏃', stars: '★★★★☆', basePoints: 490 },
+    { level: 18, type: 'switch_slide_rev', icon: '🎛️', stars: '★★★★☆', basePoints: 520 },
+    { level: 19, type: 'morse_code',       icon: '📻', stars: '★★★★★', basePoints: 550 },
+    { level: 20, type: 'slide_twist_180',  icon: '🔄', stars: '★★★★★', basePoints: 580 },
+    { level: 21, type: 'triple_tap',       icon: '👌', stars: '★★★★★', basePoints: 610 },
+    { level: 22, type: 'color_choice_2',   icon: '🎨', stars: '★★★★★', basePoints: 640 },
+    { level: 23, type: 'shape_choice_2',   icon: '🔷', stars: '★★★★★', basePoints: 670 },
+    { level: 24, type: 'fingerprint',      icon: '🛡️', stars: '★★★★★', basePoints: 700 },
+    { level: 25, type: 'dial_turn',        icon: '🧭', stars: '★★★★★', basePoints: 730 },
+    { level: 26, type: 'irira_key_maze',   icon: '⚡', stars: '★★★★★', basePoints: 760 },
+    { level: 27, type: 'hover_thrust_hard',icon: '🛸', stars: '★★★★★', basePoints: 800 },
+    { level: 28, type: 'tiny_moving_btn',  icon: '🐜', stars: '★★★★★', basePoints: 850 },
+    { level: 29, type: 'super_mash',       icon: '💥', stars: '★★★★★', basePoints: 900 },
+    { level: 30, type: 'star_trace_fast',  icon: '🌟', stars: '★★★★★', basePoints: 1000 }
   ];
 
   const faces = {
@@ -185,14 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Queue System
-  // Round 1: Level 1 to 30 strictly in order
-  // Round 2+: Completely Random (完全ランダム)
   let lockQueue = [];
   let roundNumber = 1;
 
   function buildRoundQueue(round) {
     if (round === 1) {
-      // 1周目は難易度順 (Lv.1 -> Lv.30)
       return LOCK_DEFINITIONS.map(def => ({
         ...def,
         round,
@@ -200,12 +194,11 @@ document.addEventListener('DOMContentLoaded', () => {
         face: getRandomFace('normal')
       }));
     } else {
-      // 2周目以降は完全ランダムにシャッフル
       const shuffled = [...LOCK_DEFINITIONS].sort(() => Math.random() - 0.5);
       return shuffled.map(def => ({
         ...def,
         round,
-        points: def.basePoints + (round - 1) * 100,
+        points: def.basePoints + (round - 1) * 120,
         face: getRandomFace('normal')
       }));
     }
@@ -229,53 +222,54 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentLock = null;
   let nextLock = null;
   let warningBeepTimer = 0;
+  let activeAnimationId = null;
+
+  function cleanActiveAnimations() {
+    if (activeAnimationId) {
+      cancelAnimationFrame(activeAnimationId);
+      activeAnimationId = null;
+    }
+  }
 
   // Render 30 Non-Verbal Gimmicks
   function renderGimmick(lock) {
+    cleanActiveAnimations();
     gimmickContainer.innerHTML = '';
     lockLevelBadge.textContent = `Lv.${lock.level} ${lock.icon}`;
     lockDiff.textContent = lock.stars;
     lockFace.textContent = lock.face;
     currentShackle.classList.remove('open');
 
-    // 1. ワンタップ (通常)
-    if (lock.type === 'single_tap') {
+    // 1. アホみたいにデカいボタン 🐘
+    if (lock.type === 'giant_button') {
       const btn = document.createElement('button');
-      btn.className = 'icon-action-btn';
-      btn.textContent = '👆';
+      btn.className = 'giant-action-btn';
+      btn.textContent = '💥';
       btn.addEventListener('click', () => {
         playSound('tap');
         resolveLockSuccess();
       });
       gimmickContainer.appendChild(btn);
 
-    // 16. 極小ボタンタップ (Ex Lv.1)
-    } else if (lock.type === 'tiny_tap') {
-      const btn = document.createElement('button');
-      btn.className = 'tiny-action-btn';
-      btn.textContent = '🎯';
-      // ランダムな位置に配置
-      const offsetX = (Math.random() - 0.5) * 160;
-      const offsetY = (Math.random() - 0.5) * 100;
-      btn.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-      btn.addEventListener('click', () => {
-        playSound('tap');
-        resolveLockSuccess();
-      });
-      gimmickContainer.appendChild(btn);
-
-    // 2. スイッチ（左から右へ小さいスライド操作）
-    } else if (lock.type === 'switch_slide') {
+    // 2 & 18. スイッチスライド 🎚️ / 🎛️
+    } else if (lock.type === 'switch_slide' || lock.type === 'switch_slide_rev') {
+      const isRev = (lock.type === 'switch_slide_rev');
       const track = document.createElement('div');
-      track.className = 'switch-slider-track';
+      track.className = `switch-slider-track ${isRev ? 'on' : ''}`;
 
       const arrows = document.createElement('div');
       arrows.className = 'switch-arrows-hint';
-      arrows.textContent = '▶▶';
+      arrows.textContent = isRev ? '◀◀' : '▶▶';
 
       const knob = document.createElement('div');
       knob.className = 'switch-draggable-knob';
-      knob.textContent = '⚪';
+      if (isRev) {
+        knob.style.right = '4px';
+        knob.textContent = '🔴';
+      } else {
+        knob.style.left = '4px';
+        knob.textContent = '⚪';
+      }
 
       track.appendChild(arrows);
       track.appendChild(knob);
@@ -288,20 +282,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const curX = (e.touches ? e.touches[0].clientX : e.clientX);
         const rect = track.getBoundingClientRect();
         const maxDist = rect.width - 56;
-        let diff = curX - rect.left - 24;
-        diff = Math.max(4, Math.min(maxDist, diff));
-        knob.style.left = diff + 'px';
-        if (diff >= maxDist - 6) {
-          isDragging = false;
-          track.classList.add('on');
-          knob.textContent = '🟢';
-          setTimeout(() => resolveLockSuccess(), 100);
+        if (!isRev) {
+          let diff = curX - rect.left - 24;
+          diff = Math.max(4, Math.min(maxDist, diff));
+          knob.style.left = diff + 'px';
+          if (diff >= maxDist - 6) {
+            isDragging = false;
+            track.classList.add('on');
+            knob.textContent = '🟢';
+            setTimeout(() => resolveLockSuccess(), 100);
+          }
+        } else {
+          let diff = rect.right - curX - 24;
+          diff = Math.max(4, Math.min(maxDist, diff));
+          knob.style.right = diff + 'px';
+          if (diff >= maxDist - 6) {
+            isDragging = false;
+            track.classList.remove('on');
+            knob.textContent = '🟢';
+            setTimeout(() => resolveLockSuccess(), 100);
+          }
         }
       }
       function onEnd() {
         if (isDragging) {
           isDragging = false;
-          knob.style.left = '4px';
+          if (isRev) knob.style.right = '4px';
+          else knob.style.left = '4px';
           triggerMistake();
         }
       }
@@ -312,69 +319,13 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('mouseup', onEnd);
       window.addEventListener('touchend', onEnd);
 
-    // 17. 逆向きスイッチスライド (Ex Lv.2: 右から左へ倒す)
-    } else if (lock.type === 'switch_slide_rev') {
-      const track = document.createElement('div');
-      track.className = 'switch-slider-track on';
-
-      const arrows = document.createElement('div');
-      arrows.className = 'switch-arrows-hint';
-      arrows.textContent = '◀◀';
-
-      const knob = document.createElement('div');
-      knob.className = 'switch-draggable-knob';
-      knob.style.left = 'auto';
-      knob.style.right = '4px';
-      knob.textContent = '🔴';
-
-      track.appendChild(arrows);
-      track.appendChild(knob);
-      gimmickContainer.appendChild(track);
-
-      let isDragging = false;
-      function onStart() { isDragging = true; playSound('tap'); }
-      function onMove(e) {
-        if (!isDragging) return;
-        const curX = (e.touches ? e.touches[0].clientX : e.clientX);
-        const rect = track.getBoundingClientRect();
-        const maxDist = rect.width - 56;
-        let diff = rect.right - curX - 24;
-        diff = Math.max(4, Math.min(maxDist, diff));
-        knob.style.right = diff + 'px';
-        if (diff >= maxDist - 6) {
-          isDragging = false;
-          track.classList.remove('on');
-          knob.textContent = '🟢';
-          setTimeout(() => resolveLockSuccess(), 100);
-        }
-      }
-      function onEnd() {
-        if (isDragging) {
-          isDragging = false;
-          knob.style.right = '4px';
-          triggerMistake();
-        }
-      }
-      knob.addEventListener('mousedown', onStart);
-      knob.addEventListener('touchstart', onStart, { passive: true });
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: true });
-      window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
-
-    // 3. 鍵ドラッグ差し込み (スライドさせて鍵穴まで持っていく)
-    } else if (lock.type === 'key_drag' || lock.type === 'key_drag_precise') {
-      const isPrecise = (lock.type === 'key_drag_precise');
+    // 3. 鍵ドラッグ差し込み 🔑
+    } else if (lock.type === 'key_drag') {
       const container = document.createElement('div');
       container.className = 'key-drag-container';
 
       const targetHole = document.createElement('div');
       targetHole.className = 'key-drop-target';
-      if (isPrecise) {
-        targetHole.style.width = '52px';
-        targetHole.style.height = '52px';
-        targetHole.style.fontSize = '1.8rem';
-      }
       targetHole.textContent = '🕳️';
 
       const guide = document.createElement('div');
@@ -408,20 +359,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const dx = point.clientX - startMouseX;
         keyItem.style.transform = `translate(${dx}px, ${dy}px) scale(1.05)`;
 
-        // 鍵穴との衝突判定
         const keyRect = keyItem.getBoundingClientRect();
         const holeRect = targetHole.getBoundingClientRect();
         const dist = Math.hypot(
           (keyRect.left + keyRect.width / 2) - (holeRect.left + holeRect.width / 2),
           (keyRect.top + keyRect.height / 2) - (holeRect.top + holeRect.height / 2)
         );
-
-        const threshold = isPrecise ? 32 : 55;
-        if (dist < threshold) {
-          targetHole.classList.add('hovered');
-        } else {
-          targetHole.classList.remove('hovered');
-        }
+        if (dist < 55) targetHole.classList.add('hovered');
+        else targetHole.classList.remove('hovered');
       }
       function onEnd() {
         if (!isDragging) return;
@@ -443,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('mouseup', onEnd);
       window.addEventListener('touchend', onEnd);
 
-    // 4. スライドして回転 (Slide & Twist) & 19 (180度回転)
+    // 4 & 20. スライドして回転 🗝️ / 🔄
     } else if (lock.type === 'slide_twist' || lock.type === 'slide_twist_180') {
       const is180 = (lock.type === 'slide_twist_180');
       const stage = document.createElement('div');
@@ -467,28 +412,23 @@ document.addEventListener('DOMContentLoaded', () => {
       stage.appendChild(lockBox);
       gimmickContainer.appendChild(stage);
 
-      let step = 0; // 0: slid, 1: twisted
+      let step = 0;
       keyEl.addEventListener('click', () => {
         playSound('tap');
         if (step === 0) {
-          // まずスライドイン
           step = 1;
           keyEl.style.transform = 'translateX(0px)';
           guideArrow.textContent = is180 ? '↺ 180°' : '↻ 90°';
         } else if (step === 1) {
-          // 次に回転
           const targetDeg = is180 ? -180 : 90;
           keyEl.style.transform = `translateX(0px) rotate(${targetDeg}deg)`;
           setTimeout(() => resolveLockSuccess(), 120);
         }
       });
 
-    // 5, 12, 20, 27: マルチタップ系 (ダブル/3回/4回/5回)
-    } else if (['double_tap', 'triple_tap', 'quad_tap', 'five_tap'].includes(lock.type)) {
-      const counts = { double_tap: 2, triple_tap: 3, quad_tap: 4, five_tap: 5 };
-      const icons = { double_tap: '✌️', triple_tap: '👌', quad_tap: '✋', five_tap: '🖐️' };
-      const targetCount = counts[lock.type];
-
+    // 5 & 21. マルチタップ (ダブル / 3回) ✌️ / 👌
+    } else if (lock.type === 'double_tap' || lock.type === 'triple_tap') {
+      const targetCount = (lock.type === 'triple_tap') ? 3 : 2;
       let currentTaps = 0;
       let lastTapTime = 0;
 
@@ -496,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.className = 'multi-tap-btn';
 
       const iconSpan = document.createElement('span');
-      iconSpan.textContent = icons[lock.type];
+      iconSpan.textContent = (targetCount === 3) ? '👌' : '✌️';
 
       const dotRow = document.createElement('div');
       dotRow.className = 'multi-dot-row';
@@ -517,9 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentTaps === 0 || now - lastTapTime < 500) {
           currentTaps++;
           dots[currentTaps - 1].classList.add('active');
-          if (currentTaps >= targetCount) {
-            setTimeout(() => resolveLockSuccess(), 80);
-          }
+          if (currentTaps >= targetCount) setTimeout(() => resolveLockSuccess(), 80);
         } else {
           currentTaps = 1;
           dots.forEach(d => d.classList.remove('active'));
@@ -529,81 +467,54 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       gimmickContainer.appendChild(btn);
 
-    // 6, 7, 21, 22: 横スライド (右/左/往復)
-    } else if (['slide_right', 'slide_left', 'slide_bounce_r', 'slide_bounce_l'].includes(lock.type)) {
-      const isLeft = (lock.type === 'slide_left' || lock.type === 'slide_bounce_l');
-      const isBounce = (lock.type === 'slide_bounce_r' || lock.type === 'slide_bounce_l');
+    // 6 & 26. カクカクっと2回スライド (L字 / Z字クランク) 🧩 / ⚡
+    } else if (lock.type === 'crank_slide' || lock.type === 'crank_slide_z') {
+      const area = document.createElement('div');
+      area.className = 'crank-slider-area';
 
-      const track = document.createElement('div');
-      track.className = 'slider-horizontal';
+      const pathH = document.createElement('div');
+      pathH.className = 'crank-slot-path';
 
-      const arrows = document.createElement('div');
-      arrows.className = 'slider-arrows-bg';
-      arrows.textContent = isBounce ? '⇋ ⇋' : (isLeft ? '◀ ◀ ◀' : '▶ ▶ ▶');
+      const pathV = document.createElement('div');
+      pathV.className = 'crank-slot-path-v';
 
       const goal = document.createElement('div');
-      goal.className = `slider-goal-h ${isLeft ? 'left' : 'right'}`;
-      goal.textContent = isBounce ? '⚡' : '🔓';
+      goal.className = 'crank-goal';
+      goal.textContent = '🔓';
 
       const knob = document.createElement('div');
-      knob.className = 'slider-knob-h';
-      if (isLeft) {
-        knob.style.right = '6px';
-        knob.style.left = 'auto';
-        knob.textContent = '👈';
-      } else {
-        knob.style.left = '6px';
-        knob.textContent = '👉';
-      }
+      knob.className = 'crank-knob';
+      knob.textContent = '👉';
 
-      track.appendChild(arrows);
-      track.appendChild(goal);
-      track.appendChild(knob);
-      gimmickContainer.appendChild(track);
+      area.appendChild(pathH);
+      area.appendChild(pathV);
+      area.appendChild(goal);
+      area.appendChild(knob);
+      gimmickContainer.appendChild(area);
 
+      let step = 0; // 0: moving right, 1: moving down
       let isDragging = false;
-      let hitEnd = false;
 
       function onStart() { isDragging = true; playSound('tap'); }
       function onMove(e) {
         if (!isDragging) return;
-        const curX = (e.touches ? e.touches[0].clientX : e.clientX);
-        const rect = track.getBoundingClientRect();
-        const maxDist = rect.width - 66;
+        const cur = e.touches ? e.touches[0] : e;
+        const rect = area.getBoundingClientRect();
+        const relX = cur.clientX - rect.left - 20;
+        const relY = cur.clientY - rect.top - 20;
 
-        if (!isLeft) {
-          let diff = curX - rect.left - 27;
-          diff = Math.max(6, Math.min(maxDist, diff));
-          knob.style.left = diff + 'px';
-          if (diff >= maxDist - 8) {
-            if (isBounce) {
-              hitEnd = true;
-              goal.className = 'slider-goal-h left';
-              goal.textContent = '🔓';
-            } else {
-              isDragging = false;
-              resolveLockSuccess();
-            }
+        if (step === 0) {
+          let x = Math.max(14, Math.min(104, relX));
+          knob.style.left = x + 'px';
+          if (x >= 98) {
+            step = 1;
+            knob.textContent = '👇';
+            playSound('tap');
           }
-          if (isBounce && hitEnd && diff <= 12) {
-            isDragging = false;
-            resolveLockSuccess();
-          }
-        } else {
-          let diff = rect.right - curX - 27;
-          diff = Math.max(6, Math.min(maxDist, diff));
-          knob.style.right = diff + 'px';
-          if (diff >= maxDist - 8) {
-            if (isBounce) {
-              hitEnd = true;
-              goal.className = 'slider-goal-h right';
-              goal.textContent = '🔓';
-            } else {
-              isDragging = false;
-              resolveLockSuccess();
-            }
-          }
-          if (isBounce && hitEnd && diff <= 12) {
+        } else if (step === 1) {
+          let y = Math.max(14, Math.min(104, relY));
+          knob.style.top = y + 'px';
+          if (y >= 98) {
             isDragging = false;
             resolveLockSuccess();
           }
@@ -612,8 +523,10 @@ document.addEventListener('DOMContentLoaded', () => {
       function onEnd() {
         if (isDragging) {
           isDragging = false;
-          if (isLeft) knob.style.right = '6px';
-          else knob.style.left = '6px';
+          step = 0;
+          knob.style.left = '14px';
+          knob.style.top = '14px';
+          knob.textContent = '👉';
           triggerMistake();
         }
       }
@@ -624,34 +537,66 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('mouseup', onEnd);
       window.addEventListener('touchend', onEnd);
 
-    // 8, 9, 23, 24: 縦スライド (上/下/ロング)
-    } else if (['slide_up', 'slide_down', 'slide_up_long', 'slide_down_long'].includes(lock.type)) {
-      const isDown = (lock.type === 'slide_down' || lock.type === 'slide_down_long');
-      const isLong = (lock.type.includes('long'));
+    // 7 & 8. スライド右 ➡️ / スライド上 ⬆️
+    } else if (lock.type === 'slide_right') {
+      const track = document.createElement('div');
+      track.className = 'slider-horizontal';
+      const arrows = document.createElement('div');
+      arrows.className = 'slider-arrows-bg';
+      arrows.textContent = '▶ ▶ ▶';
+      const goal = document.createElement('div');
+      goal.className = 'slider-goal-h right';
+      goal.textContent = '🔓';
+      const knob = document.createElement('div');
+      knob.className = 'slider-knob-h';
+      knob.style.left = '6px';
+      knob.textContent = '👉';
+      track.appendChild(arrows);
+      track.appendChild(goal);
+      track.appendChild(knob);
+      gimmickContainer.appendChild(track);
 
+      let isDragging = false;
+      function onStart() { isDragging = true; playSound('tap'); }
+      function onMove(e) {
+        if (!isDragging) return;
+        const curX = (e.touches ? e.touches[0].clientX : e.clientX);
+        const rect = track.getBoundingClientRect();
+        const maxDist = rect.width - 66;
+        let diff = Math.max(6, Math.min(maxDist, curX - rect.left - 27));
+        knob.style.left = diff + 'px';
+        if (diff >= maxDist - 8) {
+          isDragging = false;
+          resolveLockSuccess();
+        }
+      }
+      function onEnd() {
+        if (isDragging) {
+          isDragging = false;
+          knob.style.left = '6px';
+          triggerMistake();
+        }
+      }
+      knob.addEventListener('mousedown', onStart);
+      knob.addEventListener('touchstart', onStart, { passive: true });
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, { passive: true });
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+
+    } else if (lock.type === 'slide_up') {
       const track = document.createElement('div');
       track.className = 'slider-vertical';
-      if (isLong) track.style.height = '190px';
-
       const arrows = document.createElement('div');
       arrows.className = 'slider-arrows-v-bg';
-      arrows.textContent = isDown ? '▼ ▼' : '▲ ▲';
-
+      arrows.textContent = '▲ ▲';
       const goal = document.createElement('div');
-      goal.className = `slider-goal-v ${isDown ? 'bottom' : 'top'}`;
+      goal.className = 'slider-goal-v top';
       goal.textContent = '🔓';
-
       const knob = document.createElement('div');
       knob.className = 'slider-knob-v';
-      if (isDown) {
-        knob.style.top = '6px';
-        knob.style.bottom = 'auto';
-        knob.textContent = '👇';
-      } else {
-        knob.style.bottom = '6px';
-        knob.textContent = '☝️';
-      }
-
+      knob.style.bottom = '6px';
+      knob.textContent = '☝️';
       track.appendChild(arrows);
       track.appendChild(goal);
       track.appendChild(knob);
@@ -664,30 +609,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const curY = (e.touches ? e.touches[0].clientY : e.clientY);
         const rect = track.getBoundingClientRect();
         const maxDist = rect.height - 60;
-
-        if (!isDown) {
-          let diff = rect.bottom - curY - 26;
-          diff = Math.max(6, Math.min(maxDist, diff));
-          knob.style.bottom = diff + 'px';
-          if (diff >= maxDist - 8) {
-            isDragging = false;
-            resolveLockSuccess();
-          }
-        } else {
-          let diff = curY - rect.top - 26;
-          diff = Math.max(6, Math.min(maxDist, diff));
-          knob.style.top = diff + 'px';
-          if (diff >= maxDist - 8) {
-            isDragging = false;
-            resolveLockSuccess();
-          }
+        let diff = Math.max(6, Math.min(maxDist, rect.bottom - curY - 26));
+        knob.style.bottom = diff + 'px';
+        if (diff >= maxDist - 8) {
+          isDragging = false;
+          resolveLockSuccess();
         }
       }
       function onEnd() {
         if (isDragging) {
           isDragging = false;
-          if (isDown) knob.style.top = '6px';
-          else knob.style.bottom = '6px';
+          knob.style.bottom = '6px';
           triggerMistake();
         }
       }
@@ -698,95 +630,235 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('mouseup', onEnd);
       window.addEventListener('touchend', onEnd);
 
-    // 10 & 25: カラー一致 (2択 & 3択)
-    } else if (lock.type === 'color_choice_2' || lock.type === 'color_choice_3') {
-      const colors = ['#1e90ff', '#ff4757'];
-      if (lock.type === 'color_choice_3') colors.push('#ffa502');
-
-      const targetColor = colors[Math.floor(Math.random() * colors.length)];
-
+    // 9. マークを書くやつ (✔ ジェスチャー) ✍️
+    } else if (lock.type === 'gesture_mark') {
       const wrap = document.createElement('div');
-      wrap.className = 'color-match-wrap';
+      wrap.className = 'gesture-pad-wrap';
 
-      const targetCircle = document.createElement('div');
-      targetCircle.className = 'color-target-display';
-      targetCircle.style.background = targetColor;
-      wrap.appendChild(targetCircle);
+      const watermark = document.createElement('div');
+      watermark.className = 'gesture-target-watermark';
+      watermark.textContent = '✔';
+
+      const gCanvas = document.createElement('canvas');
+      gCanvas.className = 'gesture-canvas';
+      gCanvas.width = 180;
+      gCanvas.height = 180;
+
+      wrap.appendChild(watermark);
+      wrap.appendChild(gCanvas);
+      gimmickContainer.appendChild(wrap);
+
+      const gCtx = gCanvas.getContext('2d');
+      gCtx.lineWidth = 10;
+      gCtx.lineCap = 'round';
+      gCtx.strokeStyle = '#2ed573';
+
+      let isDrawing = false;
+      let strokePoints = [];
+
+      function startDraw(e) {
+        isDrawing = true;
+        strokePoints = [];
+        const pt = e.touches ? e.touches[0] : e;
+        const rect = gCanvas.getBoundingClientRect();
+        strokePoints.push({ x: pt.clientX - rect.left, y: pt.clientY - rect.top });
+        gCtx.clearRect(0, 0, 180, 180);
+      }
+      function moveDraw(e) {
+        if (!isDrawing) return;
+        const pt = e.touches ? e.touches[0] : e;
+        const rect = gCanvas.getBoundingClientRect();
+        const p = { x: pt.clientX - rect.left, y: pt.clientY - rect.top };
+        strokePoints.push(p);
+
+        gCtx.beginPath();
+        gCtx.moveTo(strokePoints[strokePoints.length - 2].x, strokePoints[strokePoints.length - 2].y);
+        gCtx.lineTo(p.x, p.y);
+        gCtx.stroke();
+      }
+      function endDraw() {
+        if (!isDrawing) return;
+        isDrawing = false;
+        // チェックマーク簡易判定: 左上から下へ行き、右上へ跳ね上がる
+        if (strokePoints.length > 5) {
+          const first = strokePoints[0];
+          const last = strokePoints[strokePoints.length - 1];
+          let lowest = strokePoints.reduce((max, p) => p.y > max.y ? p : max, strokePoints[0]);
+          if (lowest.y > first.y + 25 && last.x > lowest.x + 20 && last.y < lowest.y - 15) {
+            playSound('tap');
+            resolveLockSuccess();
+            return;
+          }
+        }
+        gCtx.clearRect(0, 0, 180, 180);
+        triggerMistake();
+      }
+
+      gCanvas.addEventListener('mousedown', startDraw);
+      gCanvas.addEventListener('touchstart', startDraw, { passive: true });
+      window.addEventListener('mousemove', moveDraw);
+      window.addEventListener('touchmove', moveDraw, { passive: true });
+      window.addEventListener('mouseup', endDraw);
+      window.addEventListener('touchend', endDraw);
+
+    // 10. いくつかのカギの中から正しい鍵穴の奴を選ぶ奴 🔍
+    } else if (lock.type === 'match_key') {
+      const stage = document.createElement('div');
+      stage.className = 'key-match-stage';
+
+      const symbols = ['⭐', '🔷', '❤️'];
+      const targetSym = symbols[Math.floor(Math.random() * symbols.length)];
+
+      const hole = document.createElement('div');
+      hole.className = 'key-match-hole';
+      hole.textContent = targetSym;
+      stage.appendChild(hole);
 
       const row = document.createElement('div');
-      row.className = 'choice-row';
+      row.className = 'key-choices-row';
 
-      const shuffledColors = [...colors].sort(() => Math.random() - 0.5);
-      shuffledColors.forEach(c => {
-        const btn = document.createElement('button');
-        btn.className = 'color-choice-btn';
-        btn.style.background = c;
-        btn.addEventListener('click', () => {
-          if (c === targetColor) {
+      const shuffled = [...symbols].sort(() => Math.random() - 0.5);
+      shuffled.forEach(sym => {
+        const item = document.createElement('div');
+        item.className = 'key-choice-item';
+        item.textContent = sym;
+        item.addEventListener('click', () => {
+          if (sym === targetSym) {
             playSound('tap');
             resolveLockSuccess();
           } else {
             triggerMistake();
           }
         });
-        row.appendChild(btn);
+        row.appendChild(item);
       });
 
-      wrap.appendChild(row);
-      gimmickContainer.appendChild(wrap);
+      stage.appendChild(row);
+      gimmickContainer.appendChild(stage);
 
-    // 11 & 26: 形状一致 (2択 & 3択)
-    } else if (lock.type === 'shape_choice_2' || lock.type === 'shape_choice_3') {
-      const shapes = ['■', '●'];
-      if (lock.type === 'shape_choice_3') shapes.push('▲');
+    // 11. 3原色を混ぜて指示する色にするやつ 🎨
+    } else if (lock.type === 'color_mix') {
+      const stage = document.createElement('div');
+      stage.className = 'color-mix-stage';
 
-      const targetShape = shapes[Math.floor(Math.random() * shapes.length)];
+      // Targets: 紫(赤+青), 緑(青+黄), オレンジ(赤+黄)
+      const recipes = [
+        { name: '紫', color: '#9b59b6', ingredients: ['red', 'blue'] },
+        { name: '緑', color: '#2ed573', ingredients: ['blue', 'yellow'] },
+        { name: '橙', color: '#e67e22', ingredients: ['red', 'yellow'] }
+      ];
+      const targetRecipe = recipes[Math.floor(Math.random() * recipes.length)];
 
-      const wrap = document.createElement('div');
-      wrap.className = 'color-match-wrap';
+      const preview = document.createElement('div');
+      preview.className = 'color-mix-target-preview';
+      preview.style.background = targetRecipe.color;
 
-      const targetEl = document.createElement('div');
-      targetEl.className = 'shape-target-display';
-      targetEl.textContent = targetShape;
-      targetEl.style.color = '#ffa502';
-      wrap.appendChild(targetEl);
+      const pot = document.createElement('div');
+      pot.className = 'color-mix-pot';
 
-      const row = document.createElement('div');
-      row.className = 'choice-row';
+      const palette = document.createElement('div');
+      palette.className = 'primary-palette';
 
-      const shuffledShapes = [...shapes].sort(() => Math.random() - 0.5);
-      shuffledShapes.forEach(s => {
-        const btn = document.createElement('button');
-        btn.className = 'shape-choice-btn';
-        btn.textContent = s;
-        btn.addEventListener('click', () => {
-          if (s === targetShape) {
-            playSound('tap');
-            resolveLockSuccess();
+      const selected = new Set();
+
+      const btnRed = document.createElement('button');
+      btnRed.className = 'primary-color-btn';
+      btnRed.style.background = '#ff4757';
+
+      const btnBlue = document.createElement('button');
+      btnBlue.className = 'primary-color-btn';
+      btnBlue.style.background = '#1e90ff';
+
+      const btnYellow = document.createElement('button');
+      btnYellow.className = 'primary-color-btn';
+      btnYellow.style.background = '#ffa502';
+
+      function toggleColor(name, btn) {
+        playSound('tap');
+        if (selected.has(name)) {
+          selected.delete(name);
+          btn.classList.remove('selected');
+        } else {
+          selected.add(name);
+          btn.classList.add('selected');
+        }
+
+        // Mix Check
+        if (selected.size === 2) {
+          const arr = Array.from(selected);
+          if (targetRecipe.ingredients.includes(arr[0]) && targetRecipe.ingredients.includes(arr[1])) {
+            pot.style.background = targetRecipe.color;
+            setTimeout(() => resolveLockSuccess(), 120);
           } else {
             triggerMistake();
+            selected.clear();
+            [btnRed, btnBlue, btnYellow].forEach(b => b.classList.remove('selected'));
+          }
+        }
+      }
+
+      btnRed.addEventListener('click', () => toggleColor('red', btnRed));
+      btnBlue.addEventListener('click', () => toggleColor('blue', btnBlue));
+      btnYellow.addEventListener('click', () => toggleColor('yellow', btnYellow));
+
+      palette.appendChild(btnRed);
+      palette.appendChild(btnBlue);
+      palette.appendChild(btnYellow);
+
+      stage.appendChild(preview);
+      stage.appendChild(pot);
+      stage.appendChild(palette);
+      gimmickContainer.appendChild(stage);
+
+    // 12. 暗証番号を書く/結ぶやつ (パターンロック) 🔢
+    } else if (lock.type === 'pattern_lock') {
+      const grid = document.createElement('div');
+      grid.className = 'pattern-grid';
+
+      // 結ぶパターン: 上段左(0) -> 中央(4) -> 下段右(8)
+      const targetPattern = [0, 4, 8];
+      let currentStep = 0;
+
+      for (let i = 0; i < 9; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'pattern-dot';
+        if (i === targetPattern[currentStep]) dot.classList.add('guide');
+
+        dot.addEventListener('click', () => {
+          if (i === targetPattern[currentStep]) {
+            playSound('tap');
+            dot.classList.remove('guide');
+            dot.classList.add('active');
+            currentStep++;
+            if (currentStep >= targetPattern.length) {
+              resolveLockSuccess();
+            } else {
+              grid.children[targetPattern[currentStep]].classList.add('guide');
+            }
+          } else {
+            triggerMistake();
+            currentStep = 0;
+            Array.from(grid.children).forEach((d, idx) => {
+              d.classList.remove('active', 'guide');
+              if (idx === targetPattern[0]) d.classList.add('guide');
+            });
           }
         });
-        row.appendChild(btn);
-      });
+        grid.appendChild(dot);
+      }
+      gimmickContainer.appendChild(grid);
 
-      wrap.appendChild(row);
-      gimmickContainer.appendChild(wrap);
-
-    // 13 & 28: 激連打 & 超連打
+    // 13 & 29. 激連打 & 超激連打 ⚡ / 💥
     } else if (lock.type === 'rapid_mash' || lock.type === 'super_mash') {
-      const targetClicks = (lock.type === 'super_mash') ? 10 : 5;
+      const targetClicks = (lock.type === 'super_mash') ? 11 : 6;
       let count = 0;
-
       const wrap = document.createElement('div');
       wrap.className = 'mash-wrap';
-
       const bar = document.createElement('div');
       bar.className = 'mash-bar';
       const fill = document.createElement('div');
       fill.className = 'mash-fill';
       bar.appendChild(fill);
-
       const btn = document.createElement('button');
       btn.className = 'icon-action-btn';
       btn.textContent = (lock.type === 'super_mash') ? '💥' : '⚡';
@@ -794,44 +866,335 @@ document.addEventListener('DOMContentLoaded', () => {
         count++;
         playSound('tap');
         fill.style.width = Math.min(100, (count / targetClicks) * 100) + '%';
-        lockFace.textContent = getRandomFace('trying');
         if (count >= targetClicks) resolveLockSuccess();
       });
-
       wrap.appendChild(bar);
       wrap.appendChild(btn);
       gimmickContainer.appendChild(wrap);
 
-    // 14 & 29: 指紋スキャナー & 長時間精密スキャン
-    } else if (lock.type === 'fingerprint' || lock.type === 'fingerprint_long') {
-      const requiredHoldMs = (lock.type === 'fingerprint_long') ? 1200 : 700;
+    // 14 & 27. 長押しを繰り返して丁度いい高さをキープするやつ 🚀 / 🛸
+    } else if (lock.type === 'hover_thrust' || lock.type === 'hover_thrust_hard') {
+      const isHard = (lock.type === 'hover_thrust_hard');
+      const stage = document.createElement('div');
+      stage.className = 'hover-stage';
+
+      const zone = document.createElement('div');
+      zone.className = 'hover-target-zone';
+      if (isHard) zone.style.height = '36px';
+      zone.textContent = '🎯';
+
+      const rocket = document.createElement('div');
+      rocket.className = 'hover-rocket';
+      rocket.textContent = isHard ? '🛸' : '🚀';
+
+      stage.appendChild(zone);
+      stage.appendChild(rocket);
+
+      const thrustBtn = document.createElement('button');
+      thrustBtn.className = 'hover-thrust-btn';
+      thrustBtn.textContent = 'THRUST 💨';
+
+      gimmickContainer.appendChild(stage);
+      gimmickContainer.appendChild(thrustBtn);
+
+      let altitude = 10;
+      let velocity = 0;
+      let isThrusting = false;
+      let insideTime = 0;
+
+      function onStart(e) { e.preventDefault(); isThrusting = true; playSound('tap'); }
+      function onEnd(e) { e.preventDefault(); isThrusting = false; }
+
+      thrustBtn.addEventListener('mousedown', onStart);
+      thrustBtn.addEventListener('touchstart', onStart, { passive: false });
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+
+      function hoverPhysics() {
+        if (!isPlaying || currentLock.type !== lock.type) return;
+        if (isThrusting) velocity += 0.8;
+        else velocity -= 0.6; // gravity
+
+        altitude += velocity;
+        if (altitude < 10) { altitude = 10; velocity = 0; }
+        if (altitude > 140) { altitude = 140; velocity = 0; }
+        rocket.style.bottom = altitude + 'px';
+
+        // Check if rocket is inside zone (zone is around altitude 70-115)
+        const targetMin = isHard ? 80 : 65;
+        const targetMax = isHard ? 105 : 115;
+        if (altitude >= targetMin && altitude <= targetMax) {
+          zone.style.background = 'rgba(46, 213, 115, 0.6)';
+          insideTime += 16;
+          if (insideTime >= 850) { // 0.85s keep!
+            resolveLockSuccess();
+            return;
+          }
+        } else {
+          zone.style.background = 'rgba(46, 213, 115, 0.25)';
+          insideTime = Math.max(0, insideTime - 8);
+        }
+
+        activeAnimationId = requestAnimationFrame(hoverPhysics);
+      }
+      activeAnimationId = requestAnimationFrame(hoverPhysics);
+
+    // 15 & 30. 星形にスライドさせる奴 (★トレース) ⭐ / 🌟
+    } else if (lock.type === 'star_trace' || lock.type === 'star_trace_fast') {
+      const area = document.createElement('div');
+      area.className = 'star-trace-area';
+
+      area.innerHTML = `
+        <svg class="star-trace-svg" viewBox="0 0 180 180">
+          <polygon points="90,15 112,65 168,68 125,105 138,160 90,130 42,160 55,105 12,68 68,65"
+            fill="none" stroke="#ced6e0" stroke-width="8" stroke-linejoin="round" />
+        </svg>
+      `;
+
+      const knob = document.createElement('div');
+      knob.className = 'star-knob';
+      knob.textContent = '⭐';
+      knob.style.top = '10px';
+      knob.style.left = '70px';
+
+      area.appendChild(knob);
+      gimmickContainer.appendChild(area);
+
+      // 星の5頂点
+      const starPoints = [
+        { x: 90, y: 15 },
+        { x: 138, y: 160 },
+        { x: 12, y: 68 },
+        { x: 168, y: 68 },
+        { x: 42, y: 160 }
+      ];
+      let targetPtIdx = 1;
+
+      let isDragging = false;
+      function onStart() { isDragging = true; playSound('tap'); }
+      function onMove(e) {
+        if (!isDragging) return;
+        const cur = e.touches ? e.touches[0] : e;
+        const rect = area.getBoundingClientRect();
+        const rx = cur.clientX - rect.left;
+        const ry = cur.clientY - rect.top;
+
+        knob.style.left = (rx - 21) + 'px';
+        knob.style.top = (ry - 21) + 'px';
+
+        const target = starPoints[targetPtIdx];
+        if (Math.hypot(rx - target.x, ry - target.y) < 32) {
+          playSound('tap');
+          targetPtIdx++;
+          if (targetPtIdx >= starPoints.length) {
+            isDragging = false;
+            resolveLockSuccess();
+          }
+        }
+      }
+      function onEnd() {
+        if (isDragging) {
+          isDragging = false;
+          targetPtIdx = 1;
+          knob.style.top = '10px';
+          knob.style.left = '70px';
+          triggerMistake();
+        }
+      }
+      knob.addEventListener('mousedown', onStart);
+      knob.addEventListener('touchstart', onStart, { passive: true });
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, { passive: true });
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+
+    // 16. ダイヤル式のカギ (数字ドラムを合わせる) 🔐
+    } else if (lock.type === 'dial_code') {
+      const stage = document.createElement('div');
+      stage.className = 'dial-lock-stage';
+
+      const targetDigits = [7, 7, 7];
+      const codeLabel = document.createElement('div');
+      codeLabel.className = 'dial-lock-target-code';
+      codeLabel.textContent = '7 7 7';
+
+      const row = document.createElement('div');
+      row.className = 'dial-wheels-row';
+
+      const currentDigits = [
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1
+      ];
+
+      currentDigits.forEach((val, idx) => {
+        const wheel = document.createElement('div');
+        wheel.className = 'dial-wheel';
+        wheel.textContent = val;
+
+        wheel.addEventListener('click', () => {
+          playSound('tap');
+          currentDigits[idx] = (currentDigits[idx] + 1) % 10;
+          wheel.textContent = currentDigits[idx];
+
+          if (currentDigits.every((d, i) => d === targetDigits[i])) {
+            setTimeout(() => resolveLockSuccess(), 120);
+          }
+        });
+        row.appendChild(wheel);
+      });
+
+      stage.appendChild(codeLabel);
+      stage.appendChild(row);
+      gimmickContainer.appendChild(stage);
+
+    // 17. ボタンが激しく動くやつ 🏃
+    } else if (lock.type === 'moving_btn') {
+      const box = document.createElement('div');
+      box.className = 'moving-btn-container';
 
       const btn = document.createElement('button');
+      btn.className = 'moving-action-btn';
+      btn.textContent = '🏃';
+      box.appendChild(btn);
+      gimmickContainer.appendChild(box);
+
+      let x = 60, y = 60;
+      let vx = 3.5, vy = 2.8;
+
+      function bounceAnim() {
+        if (!isPlaying || currentLock.type !== lock.type) return;
+        x += vx; y += vy;
+        if (x <= 10 || x >= 240) vx = -vx;
+        if (y <= 10 || y >= 120) vy = -vy;
+        btn.style.left = x + 'px';
+        btn.style.top = y + 'px';
+        activeAnimationId = requestAnimationFrame(bounceAnim);
+      }
+      activeAnimationId = requestAnimationFrame(bounceAnim);
+
+      btn.addEventListener('click', () => {
+        playSound('tap');
+        resolveLockSuccess();
+      });
+
+    // 19. モールス信号打つ奴 (トン・ツー・トン) 📻
+    } else if (lock.type === 'morse_code') {
+      const stage = document.createElement('div');
+      stage.className = 'morse-stage';
+
+      // Pattern: ・ ━ ・ (短・長・短)
+      const targetPattern = ['dot', 'dash', 'dot'];
+      let currentIdx = 0;
+
+      const display = document.createElement('div');
+      display.className = 'morse-target-display';
+      const s1 = document.createElement('span'); s1.className = 'morse-symbol'; s1.textContent = '・';
+      const s2 = document.createElement('span'); s2.className = 'morse-symbol'; s2.textContent = '━';
+      const s3 = document.createElement('span'); s3.className = 'morse-symbol'; s3.textContent = '・';
+      display.appendChild(s1);
+      display.appendChild(s2);
+      display.appendChild(s3);
+
+      const tapBtn = document.createElement('button');
+      tapBtn.className = 'morse-tap-btn';
+      tapBtn.textContent = '📻';
+
+      let pressStart = 0;
+      function onPressStart(e) {
+        e.preventDefault();
+        pressStart = Date.now();
+        playSound('tap');
+      }
+      function onPressEnd(e) {
+        e.preventDefault();
+        const duration = Date.now() - pressStart;
+        const inputType = duration > 280 ? 'dash' : 'dot';
+
+        if (inputType === targetPattern[currentIdx]) {
+          display.children[currentIdx].classList.add('matched');
+          currentIdx++;
+          if (currentIdx >= targetPattern.length) {
+            resolveLockSuccess();
+          }
+        } else {
+          triggerMistake();
+          currentIdx = 0;
+          Array.from(display.children).forEach(c => c.classList.remove('matched'));
+        }
+      }
+
+      tapBtn.addEventListener('mousedown', onPressStart);
+      tapBtn.addEventListener('touchstart', onPressStart, { passive: false });
+      window.addEventListener('mouseup', onPressEnd);
+      window.addEventListener('touchend', onPressEnd);
+
+      stage.appendChild(display);
+      stage.appendChild(tapBtn);
+      gimmickContainer.appendChild(stage);
+
+    // 22. カラー二択 🎨
+    } else if (lock.type === 'color_choice_2') {
+      const isBlue = Math.random() > 0.5;
+      const wrap = document.createElement('div');
+      wrap.className = 'color-match-wrap';
+      const target = document.createElement('div');
+      target.className = 'color-target-display';
+      target.style.background = isBlue ? '#1e90ff' : '#ff4757';
+      wrap.appendChild(target);
+
+      const row = document.createElement('div');
+      row.className = 'choice-row';
+      const b1 = document.createElement('button'); b1.className = 'color-choice-btn'; b1.style.background = '#1e90ff';
+      const b2 = document.createElement('button'); b2.className = 'color-choice-btn'; b2.style.background = '#ff4757';
+      b1.addEventListener('click', () => { if (isBlue) { playSound('tap'); resolveLockSuccess(); } else triggerMistake(); });
+      b2.addEventListener('click', () => { if (!isBlue) { playSound('tap'); resolveLockSuccess(); } else triggerMistake(); });
+      row.appendChild(b1); row.appendChild(b2);
+      wrap.appendChild(row);
+      gimmickContainer.appendChild(wrap);
+
+    // 23. 形状二択 🔷
+    } else if (lock.type === 'shape_choice_2') {
+      const isSquare = Math.random() > 0.5;
+      const wrap = document.createElement('div');
+      wrap.className = 'color-match-wrap';
+      const target = document.createElement('div');
+      target.className = 'shape-target-display';
+      target.textContent = isSquare ? '■' : '●';
+      target.style.color = '#ffa502';
+      wrap.appendChild(target);
+
+      const row = document.createElement('div');
+      row.className = 'choice-row';
+      const b1 = document.createElement('button'); b1.className = 'shape-choice-btn'; b1.textContent = '■';
+      const b2 = document.createElement('button'); b2.className = 'shape-choice-btn'; b2.textContent = '●';
+      b1.addEventListener('click', () => { if (isSquare) { playSound('tap'); resolveLockSuccess(); } else triggerMistake(); });
+      b2.addEventListener('click', () => { if (!isSquare) { playSound('tap'); resolveLockSuccess(); } else triggerMistake(); });
+      row.appendChild(b1); row.appendChild(b2);
+      wrap.appendChild(row);
+      gimmickContainer.appendChild(wrap);
+
+    // 24. 指紋スキャナー 🛡️
+    } else if (lock.type === 'fingerprint') {
+      const btn = document.createElement('button');
       btn.className = 'fingerprint-btn';
-      btn.innerHTML = `
-        <div class="fingerprint-scanner-bar"></div>
-        <span>🛡️</span>
-      `;
+      btn.innerHTML = `<div class="fingerprint-scanner-bar"></div><span>🛡️</span>`;
 
       let holdStart = 0;
       let holdTimer = null;
-
       function onStart(e) {
         e.preventDefault();
         holdStart = Date.now();
         playSound('tap');
         btn.classList.add('scanning');
         holdTimer = setInterval(() => {
-          const elapsed = Date.now() - holdStart;
-          if (elapsed >= requiredHoldMs) {
+          if (Date.now() - holdStart >= 750) {
             clearInterval(holdTimer);
             btn.classList.remove('scanning');
-            btn.style.borderColor = '#2ed573';
             resolveLockSuccess();
           }
         }, 30);
       }
-
       function onCancel() {
         if (holdTimer) {
           clearInterval(holdTimer);
@@ -840,46 +1203,195 @@ document.addEventListener('DOMContentLoaded', () => {
           triggerMistake();
         }
       }
-
       btn.addEventListener('mousedown', onStart);
       btn.addEventListener('touchstart', onStart, { passive: false });
       window.addEventListener('mouseup', onCancel);
       window.addEventListener('touchend', onCancel);
       gimmickContainer.appendChild(btn);
 
-    // 15 & 30: ダイヤル合わせ & 微細ダイヤル
-    } else if (lock.type === 'dial_turn' || lock.type === 'dial_turn_precise') {
-      const isPrecise = (lock.type === 'dial_turn_precise');
+    // 25. ダイヤル合わせ 🧭
+    } else if (lock.type === 'dial_turn') {
       const wrap = document.createElement('div');
       wrap.className = 'dial-wrap';
-
-      const targetMark = document.createElement('div');
-      targetMark.className = 'dial-target-mark';
-      targetMark.textContent = '▼';
-
-      const stepDeg = isPrecise ? 45 : 90;
-      let rotation = (Math.floor(Math.random() * (isPrecise ? 7 : 3)) + 1) * stepDeg;
-
+      const mark = document.createElement('div');
+      mark.className = 'dial-target-mark';
+      mark.textContent = '▼';
+      let rotation = (Math.floor(Math.random() * 3) + 1) * 90;
       const dial = document.createElement('div');
       dial.className = 'dial-knob-ui';
       dial.style.transform = `rotate(${rotation}deg)`;
-
       const ind = document.createElement('div');
       ind.className = 'dial-indicator';
       dial.appendChild(ind);
-
       dial.addEventListener('click', () => {
         playSound('tap');
-        rotation = (rotation + stepDeg) % 360;
+        rotation = (rotation + 90) % 360;
         dial.style.transform = `rotate(${rotation}deg)`;
-        if (rotation === 0) {
-          setTimeout(() => resolveLockSuccess(), 120);
-        }
+        if (rotation === 0) setTimeout(() => resolveLockSuccess(), 120);
       });
-
-      wrap.appendChild(targetMark);
+      wrap.appendChild(mark);
       wrap.appendChild(dial);
       gimmickContainer.appendChild(wrap);
+
+    // 26. 鍵を鍵穴へ、ただイライラ棒 ⚡🔑🕳️
+    } else if (lock.type === 'irira_key_maze') {
+      const container = document.createElement('div');
+      container.className = 'irira-maze-container';
+
+      // SVG電撃コース
+      container.innerHTML = `
+        <svg class="irira-maze-svg" viewBox="0 0 250 140">
+          <defs>
+            <filter id="glow-shock" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="glow" />
+              <feComposite in="SourceGraphic" in2="glow" operator="over" />
+            </filter>
+          </defs>
+          <!-- 外壁ネオン電撃 -->
+          <path d="M 35 35 L 125 35 L 125 105 L 215 105" 
+                fill="none" stroke="#ffa502" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-shock)" />
+          <!-- 安全通路径 -->
+          <path d="M 35 35 L 125 35 L 125 105 L 215 105" 
+                fill="none" stroke="#2f3542" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" />
+          <!-- センターガイド点線 -->
+          <path d="M 35 35 L 125 35 L 125 105 L 215 105" 
+                fill="none" stroke="rgba(255, 255, 255, 0.4)" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      `;
+
+      // ゴール鍵穴
+      const goalHole = document.createElement('div');
+      goalHole.className = 'irira-goal-hole';
+      goalHole.textContent = '🕳️';
+      goalHole.style.left = '215px';
+      goalHole.style.top = '105px';
+      container.appendChild(goalHole);
+
+      // 鍵ドラッガー
+      const keyDragger = document.createElement('div');
+      keyDragger.className = 'irira-key-dragger';
+      keyDragger.textContent = '🔑';
+      keyDragger.style.left = '35px';
+      keyDragger.style.top = '35px';
+      container.appendChild(keyDragger);
+
+      gimmickContainer.appendChild(container);
+
+      // コース定義 (スタート: 35,35 -> 125,35 -> 125,105 -> 215,105 ゴール)
+      const points = [
+        { x: 35, y: 35 },
+        { x: 125, y: 35 },
+        { x: 125, y: 105 },
+        { x: 215, y: 105 }
+      ];
+
+      function distToSegment(px, py, x1, y1, x2, y2) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const lenSq = dx * dx + dy * dy;
+        if (lenSq === 0) return Math.hypot(px - x1, py - y1);
+        let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
+        t = Math.max(0, Math.min(1, t));
+        const projX = x1 + t * dx;
+        const projY = y1 + t * dy;
+        return Math.hypot(px - projX, py - projY);
+      }
+
+      function minDistanceToPath(px, py) {
+        let minD = Infinity;
+        for (let i = 0; i < points.length - 1; i++) {
+          const d = distToSegment(px, py, points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
+          if (d < minD) minD = d;
+        }
+        return minD;
+      }
+
+      let isDragging = false;
+
+      function onStart(e) {
+        e.preventDefault();
+        isDragging = true;
+        playSound('tap');
+      }
+
+      function onMove(e) {
+        if (!isDragging) return;
+        const cur = e.touches ? e.touches[0] : e;
+        const rect = container.getBoundingClientRect();
+        const px = cur.clientX - rect.left;
+        const py = cur.clientY - rect.top;
+
+        keyDragger.style.left = px + 'px';
+        keyDragger.style.top = py + 'px';
+
+        // 壁判定 (電撃接触)
+        const dist = minDistanceToPath(px, py);
+        if (dist > 20) { // 通路幅を超えて壁に接触！
+          isDragging = false;
+          container.classList.add('shocked');
+          triggerMistake();
+          setTimeout(() => {
+            container.classList.remove('shocked');
+          }, 350);
+          keyDragger.style.left = '35px';
+          keyDragger.style.top = '35px';
+          return;
+        }
+
+        // ゴール判定
+        if (Math.hypot(px - 215, py - 105) <= 18) {
+          isDragging = false;
+          keyDragger.style.left = '215px';
+          keyDragger.style.top = '105px';
+          setTimeout(() => resolveLockSuccess(), 100);
+        }
+      }
+
+      function onEnd() {
+        if (isDragging) {
+          isDragging = false;
+          keyDragger.style.left = '35px';
+          keyDragger.style.top = '35px';
+          triggerMistake();
+        }
+      }
+
+      keyDragger.addEventListener('mousedown', onStart);
+      keyDragger.addEventListener('touchstart', onStart, { passive: false });
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+
+
+    // 28. 動くボタン滅茶苦茶小さいやつ 🐜
+    } else if (lock.type === 'tiny_moving_btn') {
+      const box = document.createElement('div');
+      box.className = 'moving-btn-container';
+      const btn = document.createElement('button');
+      btn.className = 'tiny-moving-btn';
+      btn.textContent = '🐜';
+      box.appendChild(btn);
+      gimmickContainer.appendChild(box);
+
+      let x = 80, y = 80;
+      let vx = 5.2, vy = 4.5; // 超高速で飛び跳ねる
+
+      function tinyBounce() {
+        if (!isPlaying || currentLock.type !== lock.type) return;
+        x += vx; y += vy;
+        if (x <= 5 || x >= 280) vx = -vx;
+        if (y <= 5 || y >= 150) vy = -vy;
+        btn.style.left = x + 'px';
+        btn.style.top = y + 'px';
+        activeAnimationId = requestAnimationFrame(tinyBounce);
+      }
+      activeAnimationId = requestAnimationFrame(tinyBounce);
+
+      btn.addEventListener('click', () => {
+        playSound('tap');
+        resolveLockSuccess();
+      });
     }
   }
 
@@ -895,11 +1407,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Success Trigger (+0.5s & Card Swap)
   function resolveLockSuccess() {
+    cleanActiveAnimations();
     playSound('unlock');
     currentShackle.classList.add('open');
     lockFace.textContent = getRandomFace('happy');
 
-    // Add +0.5s bonus
     remainingTime += 0.5;
     timeAddedAnim.classList.remove('animate');
     void timeAddedAnim.offsetWidth;
@@ -910,11 +1422,9 @@ document.addEventListener('DOMContentLoaded', () => {
     scoreDisplay.textContent = score;
     unlockedCount.textContent = unlockedCountNum;
 
-    // Burst particles
     const cardRect = currentCard.getBoundingClientRect();
     createBurst(cardRect.left + cardRect.width / 2, cardRect.top + cardRect.height / 2, 32);
 
-    // Card Stack Swap
     currentCard.style.transform = 'translateY(-20px) scale(1.08)';
     currentCard.style.opacity = '0';
 
@@ -974,7 +1484,6 @@ document.addEventListener('DOMContentLoaded', () => {
     startOverlay.classList.remove('active');
     resultOverlay.classList.remove('active');
 
-    // Build Round 1 Queue (Level 1 to 30 in strict progression)
     lockQueue = buildRoundQueue(1);
     currentLock = getNextLockFromQueue();
     nextLock = getNextLockFromQueue();
@@ -989,6 +1498,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function endGame() {
     isPlaying = false;
+    cleanActiveAnimations();
     clearInterval(timerInterval);
 
     if (score > highScore) {
@@ -998,13 +1508,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let rank = 'C';
     let commentIcon = '🥉';
-    if (score >= 7000) {
+    if (score >= 8000) {
       rank = 'S';
       commentIcon = '👑';
-    } else if (score >= 4000) {
+    } else if (score >= 4500) {
       rank = 'A';
       commentIcon = '🥇';
-    } else if (score >= 2000) {
+    } else if (score >= 2200) {
       rank = 'B';
       commentIcon = '🥈';
     }
