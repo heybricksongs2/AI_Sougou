@@ -1,4 +1,4 @@
-// POP LOCK RUSH! - 100% Non-Verbal & Intuitive Gimmicks
+// POP LOCK RUSH! - 15 Non-Verbal Iconic Gimmicks with Strict Progression
 document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const timeDisplay = document.getElementById('time-display');
@@ -135,18 +135,23 @@ document.addEventListener('DOMContentLoaded', () => {
     soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
   });
 
-  // 10 Lock Types: Level 1 to 10
+  // 15 Gimmick Types: Ranked Level 1 to 15
   const LOCK_DEFINITIONS = [
     { level: 1,  type: 'single_tap',    icon: '👆', stars: '★☆☆☆☆', basePoints: 100 },
     { level: 2,  type: 'toggle_switch', icon: '🎚️', stars: '★☆☆☆☆', basePoints: 120 },
-    { level: 3,  type: 'key_insert',    icon: '🔑', stars: '★★☆☆☆', basePoints: 150 },
-    { level: 4,  type: 'double_tap',    icon: '✌️', stars: '★★☆☆☆', basePoints: 180 },
-    { level: 5,  type: 'slide_right',   icon: '➡️', stars: '★★★☆☆', basePoints: 220 },
-    { level: 6,  type: 'slide_up',      icon: '⬆️', stars: '★★★☆☆', basePoints: 260 },
-    { level: 7,  type: 'color_choice',  icon: '🎨', stars: '★★★★☆', basePoints: 320 },
-    { level: 8,  type: 'rapid_mash',    icon: '⚡', stars: '★★★★☆', basePoints: 380 },
-    { level: 9,  type: 'hold_charge',   icon: '⏳', stars: '★★★★★', basePoints: 450 },
-    { level: 10, type: 'dial_turn',     icon: '🧭', stars: '★★★★★', basePoints: 550 }
+    { level: 3,  type: 'key_insert',    icon: '🔑', stars: '★☆☆☆☆', basePoints: 140 },
+    { level: 4,  type: 'key_twist',     icon: '🗝️', stars: '★★☆☆☆', basePoints: 160 },
+    { level: 5,  type: 'double_tap',    icon: '✌️', stars: '★★☆☆☆', basePoints: 180 },
+    { level: 6,  type: 'slide_right',   icon: '➡️', stars: '★★☆☆☆', basePoints: 200 },
+    { level: 7,  type: 'slide_left',    icon: '⬅️', stars: '★★★☆☆', basePoints: 230 },
+    { level: 8,  type: 'slide_up',      icon: '⬆️', stars: '★★★☆☆', basePoints: 260 },
+    { level: 9,  type: 'slide_down',    icon: '⬇️', stars: '★★★☆☆', basePoints: 290 },
+    { level: 10, type: 'color_choice',  icon: '🎨', stars: '★★★★☆', basePoints: 330 },
+    { level: 11, type: 'shape_choice',  icon: '🔷', stars: '★★★★☆', basePoints: 360 },
+    { level: 12, type: 'triple_tap',    icon: '👌', stars: '★★★★☆', basePoints: 400 },
+    { level: 13, type: 'rapid_mash',    icon: '⚡', stars: '★★★★★', basePoints: 450 },
+    { level: 14, type: 'fingerprint',   icon: '🛡️', stars: '★★★★★', basePoints: 500 },
+    { level: 15, type: 'dial_turn',     icon: '🧭', stars: '★★★★★', basePoints: 580 }
   ];
 
   const faces = {
@@ -161,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return list[Math.floor(Math.random() * list.length)];
   }
 
-  // Round-Robin Queue System
+  // Round-Robin Queue: 1周15種類すべて解き終えるまで同じ鍵は再出現しない
   let lockQueue = [];
   let roundNumber = 1;
 
@@ -169,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return LOCK_DEFINITIONS.map(def => ({
       ...def,
       round,
-      points: def.basePoints + (round - 1) * 80,
+      points: def.basePoints + (round - 1) * 90,
       face: getRandomFace('normal')
     }));
   }
@@ -193,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let nextLock = null;
   let warningBeepTimer = 0;
 
-  // Render 10 Non-Verbal Gimmicks
+  // Render 15 Non-Verbal Gimmicks
   function renderGimmick(lock) {
     gimmickContainer.innerHTML = '';
     lockLevelBadge.textContent = `Lv.${lock.level} ${lock.icon}`;
@@ -201,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lockFace.textContent = lock.face;
     currentShackle.classList.remove('open');
 
-    // 1. ワンタップ: 巨大な👆アイコンボタン
+    // 1. ワンタップ
     if (lock.type === 'single_tap') {
       const btn = document.createElement('button');
       btn.className = 'icon-action-btn';
@@ -212,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       gimmickContainer.appendChild(btn);
 
-    // 2. 電源スイッチ: 見ればわかるトグル
+    // 2. 電源スイッチ (トグル)
     } else if (lock.type === 'toggle_switch') {
       const wrap = document.createElement('div');
       wrap.className = 'switch-container';
@@ -233,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       gimmickContainer.appendChild(wrap);
 
-    // 3. 鍵差し込み: 鍵穴 🕳️ と 鍵 🔑 と上向き矢印
+    // 3. 鍵差し込み
     } else if (lock.type === 'key_insert') {
       const zone = document.createElement('div');
       zone.className = 'keyhole-zone';
@@ -262,18 +267,35 @@ document.addEventListener('DOMContentLoaded', () => {
       zone.appendChild(keyBtn);
       gimmickContainer.appendChild(zone);
 
-    // 4. ダブルタップ: ✌️ と 2つのインジケータードット
+    // 4. 鍵をひねる (Key Twist)
+    } else if (lock.type === 'key_twist') {
+      const btn = document.createElement('button');
+      btn.className = 'key-twist-btn';
+      btn.textContent = '🗝️';
+
+      let twisted = false;
+      btn.addEventListener('click', () => {
+        if (!twisted) {
+          twisted = true;
+          playSound('tap');
+          btn.style.transform = 'rotate(90deg) scale(1.05)';
+          setTimeout(() => resolveLockSuccess(), 120);
+        }
+      });
+      gimmickContainer.appendChild(btn);
+
+    // 5. ダブルタップ (2回)
     } else if (lock.type === 'double_tap') {
       let lastTapTime = 0;
 
       const btn = document.createElement('button');
-      btn.className = 'double-tap-btn';
+      btn.className = 'multi-tap-btn';
 
       const iconSpan = document.createElement('span');
       iconSpan.textContent = '✌️';
 
       const dotRow = document.createElement('div');
-      dotRow.className = 'double-dot-row';
+      dotRow.className = 'multi-dot-row';
       const dot1 = document.createElement('div');
       dot1.className = 'tap-dot';
       const dot2 = document.createElement('div');
@@ -297,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       gimmickContainer.appendChild(btn);
 
-    // 5. 横スライド: >>> の点滅矢印と右のゴール
+    // 6. 横スライド・右 (Slide Right)
     } else if (lock.type === 'slide_right') {
       const track = document.createElement('div');
       track.className = 'slider-horizontal';
@@ -307,11 +329,12 @@ document.addEventListener('DOMContentLoaded', () => {
       arrows.textContent = '▶ ▶ ▶';
 
       const goal = document.createElement('div');
-      goal.className = 'slider-goal-h';
+      goal.className = 'slider-goal-h right';
       goal.textContent = '🔓';
 
       const knob = document.createElement('div');
       knob.className = 'slider-knob-h';
+      knob.style.left = '6px';
       knob.textContent = '👉';
 
       track.appendChild(arrows);
@@ -320,10 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
       gimmickContainer.appendChild(track);
 
       let isDragging = false;
-      function onStart() {
-        isDragging = true;
-        playSound('tap');
-      }
+      function onStart() { isDragging = true; playSound('tap'); }
       function onMove(e) {
         if (!isDragging) return;
         const curX = (e.touches ? e.touches[0].clientX : e.clientX);
@@ -351,7 +371,60 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('mouseup', onEnd);
       window.addEventListener('touchend', onEnd);
 
-    // 6. 上引きレバー: ^^^ の点滅矢印と上のゴール
+    // 7. 横スライド・左 (Slide Left)
+    } else if (lock.type === 'slide_left') {
+      const track = document.createElement('div');
+      track.className = 'slider-horizontal';
+
+      const arrows = document.createElement('div');
+      arrows.className = 'slider-arrows-bg';
+      arrows.textContent = '◀ ◀ ◀';
+
+      const goal = document.createElement('div');
+      goal.className = 'slider-goal-h left';
+      goal.textContent = '🔓';
+
+      const knob = document.createElement('div');
+      knob.className = 'slider-knob-h';
+      knob.style.right = '6px';
+      knob.style.left = 'auto';
+      knob.textContent = '👈';
+
+      track.appendChild(arrows);
+      track.appendChild(goal);
+      track.appendChild(knob);
+      gimmickContainer.appendChild(track);
+
+      let isDragging = false;
+      function onStart() { isDragging = true; playSound('tap'); }
+      function onMove(e) {
+        if (!isDragging) return;
+        const curX = (e.touches ? e.touches[0].clientX : e.clientX);
+        const rect = track.getBoundingClientRect();
+        const maxDist = rect.width - 66;
+        let diff = rect.right - curX - 27;
+        diff = Math.max(6, Math.min(maxDist, diff));
+        knob.style.right = diff + 'px';
+        if (diff >= maxDist - 8) {
+          isDragging = false;
+          resolveLockSuccess();
+        }
+      }
+      function onEnd() {
+        if (isDragging) {
+          isDragging = false;
+          knob.style.right = '6px';
+          triggerMistake();
+        }
+      }
+      knob.addEventListener('mousedown', onStart);
+      knob.addEventListener('touchstart', onStart, { passive: true });
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, { passive: true });
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+
+    // 8. 上引きレバー (Slide Up)
     } else if (lock.type === 'slide_up') {
       const track = document.createElement('div');
       track.className = 'slider-vertical';
@@ -361,11 +434,12 @@ document.addEventListener('DOMContentLoaded', () => {
       arrows.textContent = '▲ ▲';
 
       const goal = document.createElement('div');
-      goal.className = 'slider-goal-v';
+      goal.className = 'slider-goal-v top';
       goal.textContent = '🔓';
 
       const knob = document.createElement('div');
       knob.className = 'slider-knob-v';
+      knob.style.bottom = '6px';
       knob.textContent = '☝️';
 
       track.appendChild(arrows);
@@ -374,10 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
       gimmickContainer.appendChild(track);
 
       let isDragging = false;
-      function onStart() {
-        isDragging = true;
-        playSound('tap');
-      }
+      function onStart() { isDragging = true; playSound('tap'); }
       function onMove(e) {
         if (!isDragging) return;
         const curY = (e.touches ? e.touches[0].clientY : e.clientY);
@@ -405,7 +476,60 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('mouseup', onEnd);
       window.addEventListener('touchend', onEnd);
 
-    // 7. カラー一致: 上にターゲット色円、下に2色ボタン
+    // 9. 下引きレバー (Slide Down)
+    } else if (lock.type === 'slide_down') {
+      const track = document.createElement('div');
+      track.className = 'slider-vertical';
+
+      const arrows = document.createElement('div');
+      arrows.className = 'slider-arrows-v-bg';
+      arrows.textContent = '▼ ▼';
+
+      const goal = document.createElement('div');
+      goal.className = 'slider-goal-v bottom';
+      goal.textContent = '🔓';
+
+      const knob = document.createElement('div');
+      knob.className = 'slider-knob-v';
+      knob.style.top = '6px';
+      knob.style.bottom = 'auto';
+      knob.textContent = '👇';
+
+      track.appendChild(arrows);
+      track.appendChild(goal);
+      track.appendChild(knob);
+      gimmickContainer.appendChild(track);
+
+      let isDragging = false;
+      function onStart() { isDragging = true; playSound('tap'); }
+      function onMove(e) {
+        if (!isDragging) return;
+        const curY = (e.touches ? e.touches[0].clientY : e.clientY);
+        const rect = track.getBoundingClientRect();
+        const maxDist = rect.height - 60;
+        let diff = curY - rect.top - 26;
+        diff = Math.max(6, Math.min(maxDist, diff));
+        knob.style.top = diff + 'px';
+        if (diff >= maxDist - 8) {
+          isDragging = false;
+          resolveLockSuccess();
+        }
+      }
+      function onEnd() {
+        if (isDragging) {
+          isDragging = false;
+          knob.style.top = '6px';
+          triggerMistake();
+        }
+      }
+      knob.addEventListener('mousedown', onStart);
+      knob.addEventListener('touchstart', onStart, { passive: true });
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, { passive: true });
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+
+    // 10. カラー一致
     } else if (lock.type === 'color_choice') {
       const isBlueTarget = Math.random() > 0.5;
 
@@ -456,9 +580,105 @@ document.addEventListener('DOMContentLoaded', () => {
       wrap.appendChild(row);
       gimmickContainer.appendChild(wrap);
 
-    // 8. 激連打: ⚡ アイコンとプログレスバー
+    // 11. 形状一致 (Shape Match: ■ vs ●)
+    } else if (lock.type === 'shape_choice') {
+      const isSquareTarget = Math.random() > 0.5;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'color-match-wrap';
+
+      const targetShape = document.createElement('div');
+      targetShape.className = 'shape-target-display';
+      targetShape.textContent = isSquareTarget ? '■' : '●';
+      targetShape.style.color = '#ffa502';
+      wrap.appendChild(targetShape);
+
+      const row = document.createElement('div');
+      row.className = 'choice-row';
+
+      const btnSquare = document.createElement('button');
+      btnSquare.className = 'shape-choice-btn';
+      btnSquare.textContent = '■';
+
+      const btnCircle = document.createElement('button');
+      btnCircle.className = 'shape-choice-btn';
+      btnCircle.textContent = '●';
+
+      btnSquare.addEventListener('click', () => {
+        if (isSquareTarget) {
+          playSound('tap');
+          resolveLockSuccess();
+        } else {
+          triggerMistake();
+        }
+      });
+
+      btnCircle.addEventListener('click', () => {
+        if (!isSquareTarget) {
+          playSound('tap');
+          resolveLockSuccess();
+        } else {
+          triggerMistake();
+        }
+      });
+
+      if (Math.random() > 0.5) {
+        row.appendChild(btnSquare);
+        row.appendChild(btnCircle);
+      } else {
+        row.appendChild(btnCircle);
+        row.appendChild(btnSquare);
+      }
+      wrap.appendChild(row);
+      gimmickContainer.appendChild(wrap);
+
+    // 12. 3回タップ (Triple Tap)
+    } else if (lock.type === 'triple_tap') {
+      let currentTaps = 0;
+      let lastTapTime = 0;
+
+      const btn = document.createElement('button');
+      btn.className = 'multi-tap-btn';
+
+      const iconSpan = document.createElement('span');
+      iconSpan.textContent = '👌';
+
+      const dotRow = document.createElement('div');
+      dotRow.className = 'multi-dot-row';
+      const dots = [
+        document.createElement('div'),
+        document.createElement('div'),
+        document.createElement('div')
+      ];
+      dots.forEach(d => {
+        d.className = 'tap-dot';
+        dotRow.appendChild(d);
+      });
+
+      btn.appendChild(iconSpan);
+      btn.appendChild(dotRow);
+
+      btn.addEventListener('click', () => {
+        const now = Date.now();
+        playSound('tap');
+        if (currentTaps === 0 || now - lastTapTime < 500) {
+          currentTaps++;
+          dots[currentTaps - 1].classList.add('active');
+          if (currentTaps >= 3) {
+            setTimeout(() => resolveLockSuccess(), 80);
+          }
+        } else {
+          currentTaps = 1;
+          dots.forEach(d => d.classList.remove('active'));
+          dots[0].classList.add('active');
+        }
+        lastTapTime = now;
+      });
+      gimmickContainer.appendChild(btn);
+
+    // 13. 激連打 (Mash)
     } else if (lock.type === 'rapid_mash') {
-      const targetClicks = 4 + lock.round * 2;
+      const targetClicks = 5 + lock.round * 2;
       let count = 0;
 
       const wrap = document.createElement('div');
@@ -485,27 +705,17 @@ document.addEventListener('DOMContentLoaded', () => {
       wrap.appendChild(btn);
       gimmickContainer.appendChild(wrap);
 
-    // 9. 長押しチャージ: 👇 アイコンと円形プログレス
-    } else if (lock.type === 'hold_charge') {
-      const requiredHoldMs = 850 + lock.round * 100;
-
-      const wrap = document.createElement('div');
-      wrap.className = 'hold-circle-wrap';
-
-      wrap.innerHTML = `
-        <svg class="hold-svg-ring" viewBox="0 0 125 125">
-          <circle class="hold-ring-bg" cx="62.5" cy="62.5" r="54" />
-          <circle id="hold-ring-fill" class="hold-ring-fill" cx="62.5" cy="62.5" r="54" />
-        </svg>
-      `;
+    // 14. 指紋認証スキャン (Hold)
+    } else if (lock.type === 'fingerprint') {
+      const requiredHoldMs = 750 + lock.round * 80;
 
       const btn = document.createElement('button');
-      btn.className = 'hold-btn';
-      btn.textContent = '👇';
-      wrap.appendChild(btn);
-      gimmickContainer.appendChild(wrap);
+      btn.className = 'fingerprint-btn';
+      btn.innerHTML = `
+        <div class="fingerprint-scanner-bar"></div>
+        <span>🛡️</span>
+      `;
 
-      const fill = wrap.querySelector('#hold-ring-fill');
       let holdStart = 0;
       let holdTimer = null;
 
@@ -513,12 +723,13 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         holdStart = Date.now();
         playSound('tap');
+        btn.classList.add('scanning');
         holdTimer = setInterval(() => {
           const elapsed = Date.now() - holdStart;
-          const pct = Math.min(1, elapsed / requiredHoldMs);
-          fill.style.strokeDashoffset = (339 * (1 - pct)) + '';
           if (elapsed >= requiredHoldMs) {
             clearInterval(holdTimer);
+            btn.classList.remove('scanning');
+            btn.style.borderColor = '#2ed573';
             resolveLockSuccess();
           }
         }, 30);
@@ -528,7 +739,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (holdTimer) {
           clearInterval(holdTimer);
           holdTimer = null;
-          fill.style.strokeDashoffset = '339';
+          btn.classList.remove('scanning');
           triggerMistake();
         }
       }
@@ -537,8 +748,9 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('touchstart', onStart, { passive: false });
       window.addEventListener('mouseup', onCancel);
       window.addEventListener('touchend', onCancel);
+      gimmickContainer.appendChild(btn);
 
-    // 10. ダイヤル合わせ: 上部の▼マークと回転ノブ
+    // 15. ダイヤル合わせ
     } else if (lock.type === 'dial_turn') {
       const wrap = document.createElement('div');
       wrap.className = 'dial-wrap';
@@ -662,6 +874,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startOverlay.classList.remove('active');
     resultOverlay.classList.remove('active');
 
+    // Build Round 1 Queue (Level 1 to 15 in strict progression)
     lockQueue = buildRoundQueue(1);
     currentLock = getNextLockFromQueue();
     nextLock = getNextLockFromQueue();
@@ -685,13 +898,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let rank = 'C';
     let commentIcon = '🥉';
-    if (score >= 4500) {
+    if (score >= 5500) {
       rank = 'S';
       commentIcon = '👑';
-    } else if (score >= 2800) {
+    } else if (score >= 3500) {
       rank = 'A';
       commentIcon = '🥇';
-    } else if (score >= 1400) {
+    } else if (score >= 1800) {
       rank = 'B';
       commentIcon = '🥈';
     }
