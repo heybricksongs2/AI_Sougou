@@ -2340,3 +2340,153 @@ body {
   50% { transform: scale(1.18); color: #ffd32a; }
   100% { transform: scale(1); }
 }
+
+
+/* ==========================================================
+   背景メカニカル鍵・シリンダー錠解錠演出 ＆ UI微調整
+   ========================================================== */
+
+#lock-mechanism-bg {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 100vw;
+  height: 100vh;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mech-cylinder-ring {
+  position: absolute;
+  border-radius: 50%;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
+}
+
+.mech-cylinder-ring.outer {
+  width: min(85vw, 540px);
+  height: min(85vw, 540px);
+  border: 3px dotted rgba(255, 211, 42, 0.08);
+}
+
+.mech-cylinder-ring.mid {
+  width: min(65vw, 420px);
+  height: min(65vw, 420px);
+  border: 3px dashed rgba(255, 255, 255, 0.08);
+}
+
+.mech-cylinder-ring.inner {
+  width: min(45vw, 290px);
+  height: min(45vw, 290px);
+  border: 2px solid rgba(255, 211, 42, 0.12);
+  background: radial-gradient(circle, rgba(255, 211, 42, 0.03) 0%, transparent 70%);
+}
+
+.mech-bolt {
+  position: absolute;
+  top: 50%;
+  width: 38vw;
+  height: 24px;
+  background: linear-gradient(180deg, #2f3542 0%, #1e272e 100%);
+  border: 2px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+  transition: transform 0.38s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.mech-bolt.bolt-left {
+  left: 0;
+  transform: translateY(-50%) translateX(-6%);
+  border-radius: 0 12px 12px 0;
+}
+
+.mech-bolt.bolt-right {
+  right: 0;
+  transform: translateY(-50%) translateX(6%);
+  border-radius: 12px 0 0 12px;
+}
+
+.mech-glow-burst {
+  position: absolute;
+  width: min(72vw, 460px);
+  height: min(72vw, 460px);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(46, 213, 115, 0.32) 0%, rgba(255, 211, 42, 0.18) 40%, transparent 75%);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+
+/* 解錠された瞬間の背景アニメーション！ */
+#lock-mechanism-bg.unlocked .mech-cylinder-ring.outer {
+  transform: rotate(50deg);
+  border-color: rgba(46, 213, 115, 0.35);
+}
+
+#lock-mechanism-bg.unlocked .mech-cylinder-ring.mid {
+  transform: rotate(-65deg);
+  border-color: rgba(255, 211, 42, 0.4);
+}
+
+#lock-mechanism-bg.unlocked .mech-cylinder-ring.inner {
+  transform: rotate(90deg) scale(1.08);
+  border-color: rgba(46, 213, 115, 0.55);
+}
+
+#lock-mechanism-bg.unlocked .mech-bolt.bolt-left {
+  transform: translateY(-50%) translateX(-55%);
+}
+
+#lock-mechanism-bg.unlocked .mech-bolt.bolt-right {
+  transform: translateY(-50%) translateX(55%);
+}
+
+#lock-mechanism-bg.unlocked .mech-glow-burst {
+  opacity: 1;
+  transform: scale(1.25);
+}
+
+/* サイコロの見切れ防止 */
+.dice-choices-row {
+  display: flex !important;
+  gap: 6px !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: 290px !important;
+}
+
+.dice-btn {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+}
+
+.dice-face-grid {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.dice-pip {
+  width: 5px !important;
+  height: 5px !important;
+}
+
+.dice-pip.center-red {
+  width: 7px !important;
+  height: 7px !important;
+}
+
+/* イライラ棒のゴール穴の正確な中央揃え配置 */
+.irira-goal-hole {
+  transform: translate(-50%, -50%) !important;
+}
+
+.irira-key-dragger {
+  transform: translate(-50%, -50%) !important;
+}

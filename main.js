@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (lock.type === 'giant_button') {
       const btn = document.createElement('button');
       btn.className = 'giant-action-btn';
-      btn.textContent = 'PUSH';
+      btn.textContent = '';
       btn.style.letterSpacing = '2px';
       btn.addEventListener('click', () => {
         playSound('tap');
@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const btn = document.createElement('button');
       btn.className = 'multi-tap-btn-clean';
-      btn.textContent = 'TAP';
+      btn.textContent = '';
 
       wrapper.appendChild(dotRow);
       wrapper.appendChild(btn);
@@ -552,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
       arrows.textContent = '▶ ▶ ▶';
       const goal = document.createElement('div');
       goal.className = 'slider-goal-h right';
-      goal.textContent = 'GOAL';
+      goal.textContent = '';
       goal.style.fontSize = '0.9rem';
       goal.style.fontWeight = '900';
       const knob = document.createElement('div');
@@ -931,18 +931,21 @@ document.addEventListener('DOMContentLoaded', () => {
             barFill.style.background = blendedHex;
             isEvaluating = true;
 
-            setTimeout(() => {
-              const [c1, c2] = selectedColors;
-              const isCorrect = (targetRecipe.ingredients.includes(c1) && targetRecipe.ingredients.includes(c2) && c1 !== c2);
-              if (isCorrect) {
-                resolveLockSuccess();
-              } else {
+            const [c1, c2] = selectedColors;
+            const isCorrect = (targetRecipe.ingredients.includes(c1) && targetRecipe.ingredients.includes(c2) && c1 !== c2);
+
+            if (isCorrect) {
+              // 正解なら待たずに即時アンロック
+              resolveLockSuccess();
+            } else {
+              // 不正解の場合は0.5秒間混色を表示してからミス判定とリセット
+              setTimeout(() => {
                 triggerMistake();
                 barFill.style.background = 'transparent';
                 selectedColors = [];
                 isEvaluating = false;
-              }
-            }, 500);
+              }, 500);
+            }
           }
         });
         buttonsRow.appendChild(btn);
@@ -1008,7 +1011,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const btn = document.createElement('button');
       btn.className = 'rapid-mash-big-btn';
-      btn.textContent = 'MASH!';
+      btn.textContent = '';
       btn.style.fontSize = '2.4rem';
       btn.style.fontWeight = '900';
 
@@ -1050,7 +1053,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const thrustBtn = document.createElement('button');
       thrustBtn.className = 'hover-thrust-btn';
-      thrustBtn.textContent = 'THRUST';
+      thrustBtn.textContent = '▲';
 
       gimmickContainer.appendChild(stage);
       gimmickContainer.appendChild(thrustBtn);
@@ -1308,8 +1311,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const btn = document.createElement('button');
       btn.className = 'moving-action-btn';
-      btn.textContent = 'TARGET';
-      btn.style.fontSize = '0.9rem';
+      btn.textContent = '⌖';
+      btn.style.fontSize = '1.3rem';
       btn.style.fontWeight = '900';
       box.appendChild(btn);
       gimmickContainer.appendChild(box);
@@ -1352,8 +1355,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const tapBtn = document.createElement('button');
       tapBtn.className = 'morse-tap-btn';
-      tapBtn.textContent = 'KEY';
-      tapBtn.style.fontSize = '1.3rem';
+      tapBtn.textContent = '●';
+      tapBtn.style.fontSize = '1.6rem';
       tapBtn.style.fontWeight = '900';
       tapBtn.addEventListener('contextmenu', (e) => { e.preventDefault(); e.stopPropagation(); });
 
@@ -1706,6 +1709,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (lock.type === 'hover_thrust_hard') {
       const stage = document.createElement('div');
       stage.className = 'hover-stage';
+      stage.style.width = '100px';
 
       const zone = document.createElement('div');
       zone.className = 'hover-target-zone';
@@ -1730,7 +1734,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const thrustBtn = document.createElement('button');
       thrustBtn.className = 'hover-thrust-btn';
-      thrustBtn.textContent = 'THRUST';
+      thrustBtn.textContent = '▲';
 
       gimmickContainer.appendChild(stage);
       gimmickContainer.appendChild(thrustBtn);
@@ -1786,7 +1790,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       activeAnimationId = requestAnimationFrame(hoverPhysics);
 
-    // 23. 極小・激しく動くボタン (クッキリ照準マーク)
+    // 23. 極小・激しく動くボタン (クッキリ照準マーク ＆ 時間経過で減速)
     } else if (lock.type === 'tiny_moving_btn') {
       const box = document.createElement('div');
       box.className = 'moving-btn-container';
@@ -1803,6 +1807,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       function tinyBounce() {
         if (!isPlaying || currentLock.type !== lock.type) return;
+
+        // 時間経過で徐々に減速（最低速度は確保）
+        vx *= 0.997;
+        vy *= 0.997;
+        if (Math.abs(vx) < 1.1) vx = Math.sign(vx || 1) * 1.1;
+        if (Math.abs(vy) < 0.9) vy = Math.sign(vy || 1) * 0.9;
+
         x += vx; y += vy;
         if (x <= 5 || x >= 280) vx = -vx;
         if (y <= 5 || y >= 150) vy = -vy;
@@ -1983,6 +1994,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // 紙吹雪 ＆ スパークパーティクル爆発
     createBurst(centerX, centerY, 36);
 
+    // 背景の大型鍵メカニズム解錠アニメーション連動
+    const mechBg = document.getElementById('lock-mechanism-bg');
+    if (mechBg) {
+      mechBg.classList.add('unlocked');
+      setTimeout(() => mechBg.classList.remove('unlocked'), 450);
+    }
+
     currentCard.style.transform = 'translateY(-22px) scale(1.08)';
     currentCard.style.opacity = '0';
 
@@ -2099,7 +2117,10 @@ document.addEventListener('DOMContentLoaded', () => {
     finalLocksEl.textContent = unlockedCountNum;
     highScoreEl.textContent = highScore;
 
-    resultOverlay.classList.add('active');
+    // 終了からリザルト画面表示までに1.0秒のインターバル
+    setTimeout(() => {
+      resultOverlay.classList.add('active');
+    }, 1000);
   }
 
   // Reliable touch & click handling for action buttons
