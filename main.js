@@ -1,5 +1,8 @@
 // POP LOCK RUSH! - 30 Ultimate Creative Gimmicks
 document.addEventListener('DOMContentLoaded', () => {
+  // スマホの長押しコンテキストメニューを完全抑止
+  document.addEventListener('contextmenu', (e) => e.preventDefault(), { passive: false });
+
   // DOM Elements
   const timeDisplay = document.getElementById('time-display');
   const timeAddedAnim = document.getElementById('time-added-anim');
@@ -156,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { level: 17, type: 'moving_btn',       icon: '🏃', stars: '★★★★☆', basePoints: 490 },
     { level: 18, type: 'switch_slide_rev', icon: '🎛️', stars: '★★★★☆', basePoints: 520 },
     { level: 19, type: 'morse_code',       icon: '📻', stars: '★★★★★', basePoints: 550 },
-    { level: 20, type: 'slide_twist_180',  icon: '🔄', stars: '★★★★★', basePoints: 580 },
+    { level: 20, type: 'wheel_turn',       icon: '⚙️', stars: '★★★★★', basePoints: 580 },
     { level: 21, type: 'triple_tap',       icon: '👌', stars: '★★★★★', basePoints: 610 },
     { level: 22, type: 'color_choice_2',   icon: '🎨', stars: '★★★★★', basePoints: 640 },
     { level: 23, type: 'shape_choice_2',   icon: '🔷', stars: '★★★★★', basePoints: 670 },
@@ -408,9 +411,8 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 
-    // 4 & 20. スライドして回転 🗝️ / 🔄
-    } else if (lock.type === 'slide_twist' || lock.type === 'slide_twist_180') {
-      const is180 = (lock.type === 'slide_twist_180');
+    // 4. スライドして回転 🗝️
+    } else if (lock.type === 'slide_twist') {
       const stage = document.createElement('div');
       stage.className = 'twist-stage';
 
@@ -438,13 +440,94 @@ document.addEventListener('DOMContentLoaded', () => {
         if (step === 0) {
           step = 1;
           keyEl.style.transform = 'translateX(0px)';
-          guideArrow.textContent = is180 ? '↺ 180°' : '↻ 90°';
+          guideArrow.textContent = '↻ 90°';
         } else if (step === 1) {
-          const targetDeg = is180 ? -180 : 90;
-          keyEl.style.transform = `translateX(0px) rotate(${targetDeg}deg)`;
+          keyEl.style.transform = 'translateX(0px) rotate(90deg)';
           setTimeout(() => resolveLockSuccess(), 120);
         }
       });
+
+    // 20. ハンドル回転・バルブ ⚙️ (wheel_turn)
+    } else if (lock.type === 'wheel_turn') {
+      const stage = document.createElement('div');
+      stage.className = 'wheel-turn-stage';
+
+      const rim = document.createElement('div');
+      rim.className = 'wheel-turn-rim';
+
+      const spokeH = document.createElement('div'); spokeH.className = 'wheel-turn-spoke';
+      const spokeV = document.createElement('div'); spokeV.className = 'wheel-turn-spoke spoke-v';
+      const knob = document.createElement('div'); knob.className = 'wheel-turn-knob';
+
+      rim.appendChild(spokeH);
+      rim.appendChild(spokeV);
+      rim.appendChild(knob);
+
+      const center = document.createElement('div');
+      center.className = 'wheel-turn-center';
+      center.textContent = '↻';
+
+      stage.appendChild(rim);
+      stage.appendChild(center);
+      gimmickContainer.appendChild(stage);
+
+      let isDragging = false;
+      let lastAngle = null;
+      let totalRotated = 0;
+      let currentDeg = 0;
+
+      function getAngle(e) {
+        const pt = e.touches ? e.touches[0] : e;
+        const rect = stage.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        return Math.atan2(pt.clientY - cy, pt.clientX - cx);
+      }
+
+      function onStart(e) {
+        e.preventDefault();
+        isDragging = true;
+        lastAngle = getAngle(e);
+        playSound('tap');
+      }
+
+      function onMove(e) {
+        if (!isDragging) return;
+        const angle = getAngle(e);
+        let delta = angle - lastAngle;
+        if (delta > Math.PI) delta -= 2 * Math.PI;
+        if (delta < -Math.PI) delta += 2 * Math.PI;
+
+        totalRotated += delta;
+        currentDeg += (delta * 180 / Math.PI);
+        rim.style.transform = `rotate(${currentDeg}deg)`;
+        lastAngle = angle;
+
+        // 時計回りでも反時計回りでも、グルッと1回転（約360度）回したら開錠！
+        if (Math.abs(totalRotated) >= Math.PI * 1.85) {
+          isDragging = false;
+          center.textContent = '🟢';
+          center.style.background = '#2ed573';
+          setTimeout(() => resolveLockSuccess(), 120);
+        }
+      }
+
+      function onEnd() {
+        if (isDragging) {
+          isDragging = false;
+          totalRotated = 0;
+          currentDeg = 0;
+          rim.style.transform = 'rotate(0deg)';
+          triggerMistake();
+        }
+      }
+
+      rim.addEventListener('mousedown', onStart);
+      rim.addEventListener('touchstart', onStart, { passive: false });
+      addTrackedListener(window, 'mousemove', onMove);
+      addTrackedListener(window, 'touchmove', onMove, { passive: false });
+      addTrackedListener(window, 'mouseup', onEnd);
+      addTrackedListener(window, 'touchend', onEnd);
 
     // 5 & 21. マルチタップ (ダブル / 3回) ✌️ / 👌
     } else if (lock.type === 'double_tap' || lock.type === 'triple_tap') {
@@ -1221,15 +1304,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const tapBtn = document.createElement('button');
       tapBtn.className = 'morse-tap-btn';
       tapBtn.textContent = '📻';
+      tapBtn.addEventListener('contextmenu', (e) => { e.preventDefault(); e.stopPropagation(); });
 
       let pressStart = 0;
       function onPressStart(e) {
-        e.preventDefault();
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
         pressStart = Date.now();
         playSound('tap');
       }
       function onPressEnd(e) {
-        e.preventDefault();
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
         const duration = Date.now() - pressStart;
         const inputType = duration > 280 ? 'dash' : 'dot';
 
@@ -1304,8 +1394,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let holdStart = 0;
       let holdTimer = null;
+      btn.addEventListener('contextmenu', (e) => { e.preventDefault(); e.stopPropagation(); });
+
       function onStart(e) {
-        e.preventDefault();
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
         holdStart = Date.now();
         playSound('tap');
         btn.classList.add('scanning');
