@@ -972,16 +972,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const btn = document.createElement('button');
       btn.className = 'rapid-mash-big-btn';
-      btn.textContent = '';
-      btn.style.fontSize = '2.4rem';
-      btn.style.fontWeight = '900';
+      btn.type = 'button';
 
-      btn.addEventListener('click', () => {
+      function handleMash(e) {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        if (isResolvingLock) return;
         count++;
         playSound('tap');
         gaugeFill.style.width = Math.min(100, (count / targetClicks) * 100) + '%';
         if (count >= targetClicks) resolveLockSuccess();
-      });
+      }
+
+      btn.addEventListener('pointerdown', handleMash);
+      btn.addEventListener('click', (e) => e.preventDefault());
 
       wrap.appendChild(gaugeTrack);
       wrap.appendChild(btn);
