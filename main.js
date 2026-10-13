@@ -1924,8 +1924,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 400);
   }
 
+  let isResolvingLock = false;
+
   // Success Trigger (+1.0s & Card Swap & Advanced Juice)
   function resolveLockSuccess() {
+    if (!isPlaying || isResolvingLock) return;
+    isResolvingLock = true;
+    if (gimmickContainer) {
+      gimmickContainer.style.pointerEvents = 'none';
+    }
+
     cleanActiveAnimations();
     cleanActiveListeners();
 
@@ -2014,6 +2022,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const nextBadge = document.getElementById('next-lock-badge');
       if (nextBadge) nextBadge.textContent = `NEXT: Lv.${nextLock.level}`;
+
+      // アニメーション完了後に連打ロックを安全に解除
+      setTimeout(() => {
+        isResolvingLock = false;
+        if (gimmickContainer) {
+          gimmickContainer.style.pointerEvents = 'auto';
+        }
+      }, 60);
     }, 200);
   }
 
@@ -2052,6 +2068,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initAudio();
     cleanupCurrentGimmick();
     isPlaying = true;
+    isResolvingLock = false;
+    if (gimmickContainer) {
+      gimmickContainer.style.pointerEvents = 'auto';
+    }
     remainingTime = 18.0;
     score = 0;
     unlockedCountNum = 0;
