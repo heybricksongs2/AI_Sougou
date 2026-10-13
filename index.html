@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>🔐 LOCK LOCKER LOCKEST 🔓</title>
-  <link rel="stylesheet" href="style.css?v=lockest_4">
+  <link rel="stylesheet" href="style.css?v=lockest_5">
 </head>
 <body>
   <!-- 背景パーティクル & メカニカル鍵背景 -->
@@ -20,6 +20,11 @@
   </div>
   <div id="danger-vignette"></div>
   <div id="screen-flash-overlay"></div>
+
+  <!-- 残り3,2,1秒 緊迫感パルスオーバーレイ (90%透過ダークレッド & 脈動カウント) -->
+  <div id="urgent-countdown-overlay" class="urgent-countdown-overlay">
+    <div id="urgent-count-num" class="urgent-count-num">3</div>
+  </div>
 
   <div id="game-app">
     <!-- ヘッダーHUD -->
@@ -70,13 +75,17 @@
       </div>
     </main>
 
-    <!-- スタート画面オーバーレイ（LOCK LOCKER LOCKEST） -->
+    <!-- スタート画面オーバーレイ（洗練されたプレミアムアーケードUI） -->
     <div id="start-overlay" class="screen-overlay active">
-      <div class="overlay-card bounce-in">
-        <div class="hero-icon">🔐💥🔓</div>
-        <h1 class="game-title">LOCK LOCKER LOCKEST</h1>
+      <div class="overlay-card bounce-in title-card-premium">
+        <div class="title-emblem-wrap">
+          <div class="title-lock-ring"></div>
+          <div class="title-lock-icon">🔒</div>
+        </div>
+        <h1 class="game-title title-logo-glow">LOCK LOCKER LOCKEST</h1>
+        <div class="title-subtitle-badge">ULTIMATE SPEED PUZZLE</div>
         
-        <!-- ノンバーバル説明: 🔒 ➔ 🔓 ➔ +1.0s ⏱️ (崩れ知らずの均一バッジバー) -->
+        <!-- ノンバーバル説明: 🔒 ➔ 🔓 ➔ +1.0s ⏱️ -->
         <div class="lock-tutorial-bar">
           <div class="tuto-badge-step">
             <span class="step-emoji">🔒</span>
@@ -110,12 +119,12 @@
       </div>
     </div>
 
-    <!-- リザルト画面オーバーレイ -->
+    <!-- リザルト画面オーバーレイ（絵文字削除・タイトル戻るボタン） -->
     <div id="result-overlay" class="screen-overlay">
       <div class="overlay-card pop-up">
         <div id="result-rank-badge" class="rank-badge">RANK S</div>
         <h2 id="result-title" class="result-title">TIME'S UP!</h2>
-        <div id="result-title-comment" class="result-comment">🏆</div>
+        <div id="result-title-comment" class="result-comment" style="display: none;"></div>
 
         <div class="result-stats">
           <div class="stat-row">
@@ -132,7 +141,7 @@
           </div>
         </div>
 
-        <button id="retry-btn" class="pop-btn primary-btn">RETRY 🔄</button>
+        <button id="retry-btn" class="pop-btn primary-btn">TITLE 🏠</button>
       </div>
     </div>
 
@@ -157,6 +166,6 @@
     </div>
   </div>
 
-  <script src="main.js?v=lockest_4"></script>
+  <script src="main.js?v=lockest_5"></script>
 </body>
 </html>

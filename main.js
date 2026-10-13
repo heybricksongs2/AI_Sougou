@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return grid;
   }
 
-  // 24 精鋭ギミック定義
+  // 23 精鋭ギミック定義 (Lv.11 sugoroku_dice 削除済)
   const LOCK_DEFINITIONS = [
     { level: 1,  type: 'giant_button',          stars: '★☆☆☆☆', basePoints: 100 },
     { level: 2,  type: 'switch_slide',          stars: '★☆☆☆☆', basePoints: 120 },
@@ -274,20 +274,19 @@ document.addEventListener('DOMContentLoaded', () => {
     { level: 8,  type: 'gesture_mark',          stars: '★★★☆☆', basePoints: 240 },
     { level: 9,  type: 'match_key',             stars: '★★★☆☆', basePoints: 260 },
     { level: 10, type: 'color_mix',             stars: '★★★☆☆', basePoints: 280 },
-    { level: 11, type: 'sugoroku_dice',         stars: '★★★☆☆', basePoints: 310 },
-    { level: 12, type: 'rapid_mash',            stars: '★★★★☆', basePoints: 340 },
-    { level: 13, type: 'hover_thrust',          stars: '★★★★☆', basePoints: 370 },
-    { level: 14, type: 'star_trace',            stars: '★★★★☆', basePoints: 400 },
-    { level: 15, type: 'dial_code',             stars: '★★★★☆', basePoints: 440 },
-    { level: 16, type: 'moving_btn',            stars: '★★★★☆', basePoints: 480 },
-    { level: 17, type: 'morse_code',            stars: '★★★★★', basePoints: 520 },
-    { level: 18, type: 'wheel_turn',            stars: '★★★★★', basePoints: 560 },
-    { level: 19, type: 'wait_still',            stars: '★★★★★', basePoints: 600 },
-    { level: 20, type: 'color_choice_2',        stars: '★★★★★', basePoints: 650 },
-    { level: 21, type: 'irira_key_maze',        stars: '★★★★★', basePoints: 720 },
-    { level: 22, type: 'hover_thrust_hard',     stars: '★★★★★', basePoints: 800 },
-    { level: 23, type: 'tiny_moving_btn',       stars: '★★★★★', basePoints: 880 },
-    { level: 24, type: 'super_mash',            stars: '★★★★★', basePoints: 1000 }
+    { level: 11, type: 'rapid_mash',            stars: '★★★★☆', basePoints: 340 },
+    { level: 12, type: 'hover_thrust',          stars: '★★★★☆', basePoints: 370 },
+    { level: 13, type: 'star_trace',            stars: '★★★★☆', basePoints: 400 },
+    { level: 14, type: 'dial_code',             stars: '★★★★☆', basePoints: 440 },
+    { level: 15, type: 'moving_btn',            stars: '★★★★☆', basePoints: 480 },
+    { level: 16, type: 'morse_code',            stars: '★★★★★', basePoints: 520 },
+    { level: 17, type: 'wheel_turn',            stars: '★★★★★', basePoints: 560 },
+    { level: 18, type: 'wait_still',            stars: '★★★★★', basePoints: 600 },
+    { level: 19, type: 'color_choice_2',        stars: '★★★★★', basePoints: 650 },
+    { level: 20, type: 'irira_key_maze',        stars: '★★★★★', basePoints: 720 },
+    { level: 21, type: 'hover_thrust_hard',     stars: '★★★★★', basePoints: 800 },
+    { level: 22, type: 'tiny_moving_btn',       stars: '★★★★★', basePoints: 880 },
+    { level: 23, type: 'super_mash',            stars: '★★★★★', basePoints: 1000 }
   ];
 
   // Queue System
@@ -857,7 +856,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const item = document.createElement('button');
         item.className = 'key-choice-gold-btn';
         item.textContent = sym;
-        item.addEventListener('click', () => {
+        setupActionButton(item, () => {
           if (sym === targetSym) {
             playSound('tap');
             resolveLockSuccess();
@@ -954,45 +953,7 @@ document.addEventListener('DOMContentLoaded', () => {
       stage.appendChild(buttonsRow);
       gimmickContainer.appendChild(stage);
 
-    // 11. すごろくマス ＆ 高品質サイコロ (絵文字不使用・正確なドット描画)
-    } else if (lock.type === 'sugoroku_dice') {
-      const stage = document.createElement('div');
-      stage.className = 'sugoroku-stage';
-
-      const targetRoll = Math.floor(Math.random() * 6) + 1;
-
-      const track = document.createElement('div');
-      track.className = 'sugoroku-track';
-      for (let i = 1; i <= 6; i++) {
-        const tile = document.createElement('div');
-        tile.className = 'sugoroku-tile' + (i === targetRoll ? ' active-goal' : '');
-        tile.textContent = i;
-        track.appendChild(tile);
-      }
-      stage.appendChild(track);
-
-      const diceRow = document.createElement('div');
-      diceRow.className = 'dice-choices-row';
-
-      for (let rollVal = 1; rollVal <= 6; rollVal++) {
-        const btn = document.createElement('button');
-        btn.className = 'dice-btn';
-        btn.appendChild(createDiceFaceElement(rollVal));
-        btn.addEventListener('click', () => {
-          playSound('tap');
-          if (rollVal === targetRoll) {
-            resolveLockSuccess();
-          } else {
-            triggerMistake();
-          }
-        });
-        diceRow.appendChild(btn);
-      }
-
-      stage.appendChild(diceRow);
-      gimmickContainer.appendChild(stage);
-
-    // 12. 特大連打ボタン (rapid_mash)
+    // 11. 特大連打ボタン (rapid_mash)
     } else if (lock.type === 'rapid_mash') {
       const targetClicks = 6;
       let count = 0;
@@ -2037,6 +1998,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Timer loop
   function startTimer() {
+    const urgentOverlay = document.getElementById('urgent-countdown-overlay');
+    const urgentNum = document.getElementById('urgent-count-num');
+
     timerInterval = setInterval(() => {
       if (isTimeFrozen) return;
 
@@ -2044,11 +2008,26 @@ document.addEventListener('DOMContentLoaded', () => {
       if (remainingTime <= 0) {
         remainingTime = 0;
         timeDisplay.textContent = '0.0';
+        if (urgentOverlay) urgentOverlay.classList.remove('active');
         endGame();
         return;
       }
 
       timeDisplay.textContent = remainingTime.toFixed(1);
+
+      // 残り時間3, 2, 1秒で画面全体を90%透過オーバーレイにしてカウントダウン緊迫感を演出
+      if (remainingTime <= 3.0 && remainingTime > 0) {
+        if (urgentOverlay) urgentOverlay.classList.add('active');
+        const sec = Math.ceil(remainingTime);
+        if (urgentNum && urgentNum.textContent !== String(sec)) {
+          urgentNum.textContent = String(sec);
+          urgentNum.style.animation = 'none';
+          void urgentNum.offsetWidth; // reflow
+          urgentNum.style.animation = 'urgent-pulse 0.9s infinite cubic-bezier(0.25, 1, 0.5, 1)';
+        }
+      } else {
+        if (urgentOverlay) urgentOverlay.classList.remove('active');
+      }
 
       if (remainingTime <= 5.0) {
         timeDisplay.parentElement.classList.add('timer-danger');
@@ -2069,6 +2048,9 @@ document.addEventListener('DOMContentLoaded', () => {
     cleanupCurrentGimmick();
     isPlaying = true;
     isResolvingLock = false;
+    const urgentOverlay = document.getElementById('urgent-countdown-overlay');
+    if (urgentOverlay) urgentOverlay.classList.remove('active');
+
     if (gimmickContainer) {
       gimmickContainer.style.pointerEvents = 'auto';
     }
@@ -2105,6 +2087,8 @@ document.addEventListener('DOMContentLoaded', () => {
     cleanupCurrentGimmick();
     clearInterval(timerInterval);
     if (dangerVignette) dangerVignette.classList.remove('active-danger');
+    const urgentOverlay = document.getElementById('urgent-countdown-overlay');
+    if (urgentOverlay) urgentOverlay.classList.remove('active');
 
     if (score > highScore) {
       highScore = score;
@@ -2112,26 +2096,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let rank = 'C';
-    let commentIcon = '🥉';
     if (score >= 6500) {
       rank = 'S';
-      commentIcon = '👑';
     } else if (score >= 3800) {
       rank = 'A';
-      commentIcon = '🥇';
     } else if (score >= 1800) {
       rank = 'B';
-      commentIcon = '🥈';
     }
 
     rankBadgeEl.textContent = `RANK ${rank}`;
-    if (rank === 'S') rankBadgeEl.style.background = '#ffd32a';
-    else if (rank === 'A') rankBadgeEl.style.background = '#2ed573';
-    else if (rank === 'B') rankBadgeEl.style.background = '#1e90ff';
-    else rankBadgeEl.style.background = '#a4b0be';
+    if (rank === 'S') {
+      rankBadgeEl.className = 'rank-badge rank-s-rainbow';
+      rankBadgeEl.style.background = '';
+    } else {
+      rankBadgeEl.className = 'rank-badge';
+      if (rank === 'A') rankBadgeEl.style.background = '#2ed573';
+      else if (rank === 'B') rankBadgeEl.style.background = '#1e90ff';
+      else rankBadgeEl.style.background = '#a4b0be';
+    }
 
     const resultComment = document.getElementById('result-title-comment');
-    if (resultComment) resultComment.textContent = commentIcon;
+    if (resultComment) resultComment.textContent = ''; // 絵文字削除
 
     finalScoreEl.textContent = score;
     finalLocksEl.textContent = unlockedCountNum;
@@ -2295,7 +2280,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   setupHoldToStart(startBtn);
-  setupActionButton(retryBtn, startGame);
+  setupActionButton(retryBtn, () => {
+    resultOverlay.classList.remove('active');
+    startOverlay.classList.add('active');
+    cleanupCurrentGimmick();
+  });
 
   // 🛠️ DEBUG MODE CONTROLS
   const debugBtn = document.getElementById('debug-btn');

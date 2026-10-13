@@ -1230,6 +1230,9 @@ body {
   border-radius: 28px;
   overflow: hidden;
   box-shadow: inset 0 4px 8px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .gesture-target-watermark {
@@ -1241,12 +1244,18 @@ body {
   color: rgba(116, 125, 140, 0.22);
   pointer-events: none;
   font-weight: 900;
+  z-index: 1;
 }
 
 .gesture-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   cursor: crosshair;
+  z-index: 10;
+  touch-action: none;
 }
 
 /* 12. 暗証パターン結び */
@@ -2667,4 +2676,121 @@ body {
 .hold-start-btn.is-holding .hold-active-state {
   display: flex !important;
 }
+
+
+/* ==========================================================
+   追加スタイル: Rank S 虹色、3,2,1緊迫演出、タイトル洗練
+   ========================================================== */
+
+/* 1. Rank S 虹色グラデーション背景 */
+.rank-badge.rank-s-rainbow {
+  background: linear-gradient(90deg, #ff4757, #ffa502, #ffd32a, #2ed573, #1e90ff, #9b59b6, #ff4757) !important;
+  background-size: 300% 100% !important;
+  animation: rainbow-badge-shift 2.2s linear infinite !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 0 20px rgba(255, 211, 42, 0.7), 0 4px 10px rgba(0,0,0,0.3) !important;
+}
+
+@keyframes rainbow-badge-shift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* 2. 残り時間3,2,1秒 緊迫感演出 (90%透過ダークレッドオーバーレイ ＆ 脈動巨大カウント) */
+.urgent-countdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  background: radial-gradient(circle at center, rgba(255, 71, 87, 0.38) 0%, rgba(30, 39, 46, 0.90) 75%);
+  pointer-events: none;
+  z-index: 950;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.urgent-countdown-overlay.active {
+  opacity: 1;
+}
+
+.urgent-count-num {
+  font-size: min(46vw, 220px);
+  font-weight: 900;
+  color: rgba(255, 71, 87, 0.35);
+  text-shadow: 0 0 35px rgba(255, 71, 87, 0.65), 0 0 70px rgba(255, 71, 87, 0.35);
+  line-height: 1;
+  user-select: none;
+  animation: urgent-pulse 0.9s infinite cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes urgent-pulse {
+  0% { transform: scale(0.8); opacity: 0.25; }
+  50% { transform: scale(1.16); opacity: 0.9; filter: drop-shadow(0 0 24px rgba(255, 71, 87, 0.9)); }
+  100% { transform: scale(0.8); opacity: 0.25; }
+}
+
+/* 3. 洗練されたタイトル画面のプレミアムデザイン */
+.title-card-premium {
+  border-color: #ffd32a !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 211, 42, 0.25) !important;
+}
+
+.title-emblem-wrap {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.title-lock-ring {
+  position: absolute;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: 3px dashed rgba(255, 211, 42, 0.6);
+  animation: ring-rotate 12s linear infinite;
+}
+
+@keyframes ring-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.title-lock-icon {
+  font-size: 2.8rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 10px rgba(255, 211, 42, 0.5));
+  animation: lock-float 2s infinite alternate ease-in-out;
+}
+
+@keyframes lock-float {
+  from { transform: translateY(0); }
+  to { transform: translateY(-4px) scale(1.04); }
+}
+
+.title-logo-glow {
+  text-shadow: 0 3px 0 #2f3542, 0 0 16px rgba(255, 71, 87, 0.4);
+}
+
+.title-subtitle-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  color: #ffa502;
+  background: #2f3542;
+  padding: 3px 12px;
+  border-radius: 10px;
+  margin-top: 4px;
+}
+
 
