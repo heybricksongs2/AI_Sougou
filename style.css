@@ -167,24 +167,26 @@ body {
   align-items: center;
   border: 4px solid var(--text-dark);
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
-  overflow: hidden;
+  overflow: visible !important; /* シャックル（金属の掛け金）が欠けないように外側に表示 */
 }
 
 .card-shackle {
   position: absolute;
-  top: -46px;
-  width: 100px;
-  height: 80px;
+  top: -50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 104px;
+  height: 86px;
   border: 14px solid #ced6e0;
   border-bottom: none;
-  border-radius: 50px 50px 0 0;
-  z-index: -1;
-  transition: transform 0.25s ease;
+  border-radius: 52px 52px 0 0;
+  z-index: 0;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
 .card-shackle.open {
-  transform: translateY(-16px) rotate(-15deg);
-  border-color: var(--secondary-accent);
+  transform: translateX(-50%) translateY(-26px) rotate(-14deg) scale(1.06) !important;
+  border-color: var(--secondary-accent) !important;
 }
 
 .preview-card {
@@ -210,6 +212,9 @@ body {
   align-items: center;
   justify-content: space-between;
   position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  z-index: 1;
 }
 
 .lock-header {
@@ -2687,37 +2692,37 @@ body {
    追加スタイル: Rank S 虹色、3,2,1緊迫演出、タイトル洗練
    ========================================================== */
 
-/* 1. Rank S 虹色グラデーション背景 */
+/* 1. Rank S 虹色グラデーション背景 (変化の速いビビッドな虹色) */
 .rank-badge.rank-s-rainbow {
-  background: linear-gradient(90deg, #ff4757, #ffa502, #ffd32a, #2ed573, #1e90ff, #9b59b6, #ff4757) !important;
-  background-size: 300% 100% !important;
-  animation: rainbow-badge-shift 2.2s linear infinite !important;
+  background: linear-gradient(90deg, #ff007f, #ff4757, #ffa502, #ffd32a, #2ed573, #00d2d3, #1e90ff, #9b59b6, #ff007f) !important;
+  background-size: 200% 100% !important;
+  animation: rainbow-badge-shift 0.75s linear infinite !important;
   color: #ffffff !important;
   border-color: #ffffff !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
-  box-shadow: 0 0 20px rgba(255, 211, 42, 0.7), 0 4px 10px rgba(0,0,0,0.3) !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 0 0 22px rgba(255, 211, 42, 0.85), 0 0 10px rgba(46, 213, 115, 0.5), 0 4px 10px rgba(0,0,0,0.3) !important;
 }
 
 @keyframes rainbow-badge-shift {
   0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+  100% { background-position: 200% 50%; }
 }
 
-/* 2. 残り時間3,2,1秒 緊迫感演出 (90%透過ダークレッドオーバーレイ ＆ 脈動巨大カウント) */
+/* 2. 残り時間3,2,1秒 緊迫感演出 (通常画面を邪魔しない、数字のみ薄く重ねる透明オーバーレイ) */
 .urgent-countdown-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100dvh;
-  background: radial-gradient(circle at center, rgba(255, 71, 87, 0.38) 0%, rgba(30, 39, 46, 0.90) 75%);
+  background: transparent !important; /* 通常画面を暗くせずクリアに表示 */
   pointer-events: none;
   z-index: 950;
   display: flex;
   justify-content: center;
   align-items: center;
   opacity: 0;
-  transition: opacity 0.2s ease-in-out;
+  transition: opacity 0.15s ease-in-out;
 }
 
 .urgent-countdown-overlay.active {
@@ -2725,19 +2730,19 @@ body {
 }
 
 .urgent-count-num {
-  font-size: min(46vw, 220px);
+  font-size: min(48vw, 220px);
   font-weight: 900;
-  color: rgba(255, 71, 87, 0.35);
-  text-shadow: 0 0 35px rgba(255, 71, 87, 0.65), 0 0 70px rgba(255, 71, 87, 0.35);
+  color: rgba(255, 71, 87, 0.22); /* 数字を薄く重ねる以外しない */
+  text-shadow: 0 0 20px rgba(255, 71, 87, 0.25);
   line-height: 1;
   user-select: none;
   animation: urgent-pulse 0.9s infinite cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 @keyframes urgent-pulse {
-  0% { transform: scale(0.8); opacity: 0.25; }
-  50% { transform: scale(1.16); opacity: 0.9; filter: drop-shadow(0 0 24px rgba(255, 71, 87, 0.9)); }
-  100% { transform: scale(0.8); opacity: 0.25; }
+  0% { transform: scale(0.85); opacity: 0.16; }
+  50% { transform: scale(1.12); opacity: 0.32; filter: drop-shadow(0 0 12px rgba(255, 71, 87, 0.35)); }
+  100% { transform: scale(0.85); opacity: 0.16; }
 }
 
 /* 3. 洗練されたタイトル画面のプレミアムデザイン */
