@@ -1660,9 +1660,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 200);
   }
 
+  let isTimeFrozen = false;
+
   // Timer loop
   function startTimer() {
     timerInterval = setInterval(() => {
+      if (isTimeFrozen) return; // デバッグモードのタイマー停止
+
       remainingTime -= 0.1;
       if (remainingTime <= 0) {
         remainingTime = 0;
@@ -1778,4 +1782,112 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupActionButton(startBtn, startGame);
   setupActionButton(retryBtn, startGame);
+
+  // 🛠️ DEBUG MODE CONTROLS
+  const debugBtn = document.getElementById('debug-btn');
+  const debugPanel = document.getElementById('debug-panel');
+  const debugCloseBtn = document.getElementById('debug-close-btn');
+  const debugLevelSelect = document.getElementById('debug-level-select');
+  const debugJumpBtn = document.getElementById('debug-jump-btn');
+  const debugPassBtn = document.getElementById('debug-pass-btn');
+  const debugFreezeBtn = document.getElementById('debug-freeze-btn');
+  const debugAddTimeBtn = document.getElementById('debug-add-time-btn');
+  const debugGameoverBtn = document.getElementById('debug-gameover-btn');
+
+  // 全30種類のギミックをセレクトボックスに登録
+  if (debugLevelSelect) {
+    LOCK_DEFINITIONS.forEach((def) => {
+      const opt = document.createElement('option');
+      opt.value = def.level;
+      opt.textContent = `Lv.${def.level} ${def.icon} ${def.type}`;
+      debugLevelSelect.appendChild(opt);
+    });
+  }
+
+  function toggleDebug() {
+    if (!debugPanel) return;
+    debugPanel.classList.toggle('active');
+  }
+
+  if (debugBtn) debugBtn.addEventListener('click', toggleDebug);
+  if (debugCloseBtn) debugCloseBtn.addEventListener('click', toggleDebug);
+
+  // キーボード 'D' キーでデバッグパネル開閉
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'd' || e.key === 'D') {
+      toggleDebug();
+    }
+  });
+
+  // URLに ?debug がある場合は初期表示
+  if (new URLSearchParams(window.location.search).has('debug')) {
+    toggleDebug();
+  }
+
+  // ステージジャンプ (任意のLvへ即時移動)
+  if (debugJumpBtn) {
+    debugJumpBtn.addEventListener('click', () => {
+      initAudio();
+      const targetLevel = parseInt(debugLevelSelect.value, 10);
+      const targetDef = LOCK_DEFINITIONS.find(d => d.level === targetLevel);
+      if (!targetDef) return;
+
+      if (!isPlaying) {
+        startGame();
+      }
+
+      currentLock = {
+        ...targetDef,
+        round: 1,
+        points: targetDef.basePoints,
+        face: getRandomFace('normal')
+      };
+      renderGimmick(currentLock);
+      playSound('tap');
+    });
+  }
+
+  // PASS (強制解錠)
+  if (debugPassBtn) {
+    debugPassBtn.addEventListener('click', () => {
+      if (!isPlaying) return;
+      resolveLockSuccess();
+    });
+  }
+
+  // FREEZE (タイマー停止/再開)
+  if (debugFreezeBtn) {
+    debugFreezeBtn.addEventListener('click', () => {
+      isTimeFrozen = !isTimeFrozen;
+      if (isTimeFrozen) {
+        debugFreezeBtn.textContent = 'FROZEN 🟢';
+        debugFreezeBtn.classList.add('frozen');
+      } else {
+        debugFreezeBtn.textContent = 'FREEZE ⏱️';
+        debugFreezeBtn.classList.remove('frozen');
+      }
+    });
+  }
+
+  // +10s (時間追加)
+  if (debugAddTimeBtn) {
+    debugAddTimeBtn.addEventListener('click', () => {
+      remainingTime += 10.0;
+      timeDisplay.textContent = remainingTime.toFixed(1);
+      timeAddedAnim.textContent = '+10s';
+      timeAddedAnim.classList.remove('animate');
+      void timeAddedAnim.offsetWidth;
+      timeAddedAnim.classList.add('animate');
+      setTimeout(() => { timeAddedAnim.textContent = '+1.0s'; }, 700);
+      playSound('unlock');
+    });
+  }
+
+  // GAME OVER (強制終了)
+  if (debugGameoverBtn) {
+    debugGameoverBtn.addEventListener('click', () => {
+      if (!isPlaying) return;
+      endGame();
+    });
+  }
 });

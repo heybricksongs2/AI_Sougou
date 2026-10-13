@@ -1539,4 +1539,131 @@ body {
   pointer-events: none;
 }
 
+/* デバッグパネル 🛠️ */
+.hud-btn-group {
+  display: flex;
+  gap: 6px;
+}
+
+.debug-panel {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  max-width: 420px;
+  background: rgba(30, 39, 46, 0.96);
+  border: 3px solid #ffa502;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  padding: 12px 14px;
+  z-index: 2000;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  color: #ffffff;
+  touch-action: auto;
+}
+
+.debug-panel.active {
+  display: flex;
+  animation: slide-up-debug 0.2s ease-out;
+}
+
+@keyframes slide-up-debug {
+  from { transform: translate(-50%, 30px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+.debug-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 6px;
+}
+
+.debug-title {
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: #ffa502;
+  letter-spacing: 1px;
+}
+
+.debug-close {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 2px 8px;
+}
+
+.debug-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.debug-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#debug-level-select {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #2f3542;
+  color: #ffffff;
+  border: 2px solid #57606f;
+  font-size: 0.85rem;
+  font-weight: 700;
+  outline: none;
+}
+
+.debug-row-btns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.debug-action-btn {
+  padding: 8px 4px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border-radius: 10px;
+  border: 2px solid #57606f;
+  background: #2f3542;
+  color: #ffffff;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.08s ease, background 0.1s ease;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.debug-action-btn:active {
+  transform: scale(0.94);
+}
+
+.debug-action-btn.primary {
+  background: #1e90ff;
+  border-color: #1e90ff;
+}
+
+.debug-action-btn.danger {
+  background: #ff4757;
+  border-color: #ff4757;
+}
+
+.debug-action-btn.frozen {
+  background: #2ed573;
+  border-color: #2ed573;
+  color: #000;
+}
+
+
 

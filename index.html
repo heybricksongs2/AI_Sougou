@@ -26,7 +26,10 @@
         <span class="hud-label">UNLOCKED</span>
         <span id="unlocked-count" class="hud-value">0</span>
       </div>
-      <button id="sound-btn" class="icon-btn" aria-label="Sound Toggle">🔊</button>
+      <div class="hud-btn-group">
+        <button id="sound-btn" class="icon-btn" aria-label="Sound Toggle">🔊</button>
+        <button id="debug-btn" class="icon-btn" aria-label="Debug Panel">🛠️</button>
+      </div>
     </header>
 
     <!-- 鍵スタックエリア（立体カード構造） -->
@@ -97,6 +100,26 @@
         </div>
 
         <button id="retry-btn" class="pop-btn primary-btn">RETRY 🔄</button>
+      </div>
+    </div>
+
+    <!-- デバッグパネル -->
+    <div id="debug-panel" class="debug-panel">
+      <div class="debug-header">
+        <span class="debug-title">🛠️ DEBUG PANEL</span>
+        <button id="debug-close-btn" class="debug-close">✕</button>
+      </div>
+      <div class="debug-controls">
+        <div class="debug-row">
+          <select id="debug-level-select"></select>
+          <button id="debug-jump-btn" class="debug-action-btn primary">JUMP 🚀</button>
+        </div>
+        <div class="debug-row-btns">
+          <button id="debug-pass-btn" class="debug-action-btn">PASS 🔓</button>
+          <button id="debug-freeze-btn" class="debug-action-btn">FREEZE ⏱️</button>
+          <button id="debug-add-time-btn" class="debug-action-btn">+10s ⏳</button>
+          <button id="debug-gameover-btn" class="debug-action-btn danger">END 💀</button>
+        </div>
       </div>
     </div>
   </div>
