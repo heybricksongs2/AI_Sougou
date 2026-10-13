@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>🔐 LOCK LOCKER LOCKEST 🔓</title>
-  <link rel="stylesheet" href="style.css?v=lockest_5">
+  <link rel="stylesheet" href="style.css?v=lockest_6">
 </head>
 <body>
   <!-- 背景パーティクル & メカニカル鍵背景 -->
@@ -80,33 +80,73 @@
       <div class="overlay-card bounce-in title-card-premium">
         <div class="title-emblem-wrap">
           <div class="title-lock-ring"></div>
-          <div class="title-lock-icon">🔒</div>
+          <svg class="title-lock-svg" viewBox="0 0 80 90" width="60" height="68">
+            <defs>
+              <linearGradient id="shackleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#b2bec3" />
+                <stop offset="50%" stop-color="#ffffff" />
+                <stop offset="100%" stop-color="#636e72" />
+              </linearGradient>
+              <linearGradient id="goldBodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#ffeaa7" />
+                <stop offset="35%" stop-color="#fed330" />
+                <stop offset="80%" stop-color="#f39c12" />
+                <stop offset="100%" stop-color="#d35400" />
+              </linearGradient>
+              <filter id="lockGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="rgba(243, 156, 18, 0.4)"/>
+              </filter>
+            </defs>
+            <!-- シャックル (U字の掛け金) -->
+            <path d="M 23 44 V 24 C 23 13 30 6 40 6 C 50 6 57 13 57 24 V 44" 
+                  fill="none" stroke="url(#shackleGrad)" stroke-width="10" stroke-linecap="round" />
+            <path d="M 23 44 V 24 C 23 13 30 6 40 6 C 50 6 57 13 57 24 V 44" 
+                  fill="none" stroke="#2d3436" stroke-width="2" stroke-linecap="round" opacity="0.25" />
+            <!-- 鍵本体 (ボディ) -->
+            <rect x="12" y="38" width="56" height="46" rx="10" fill="url(#goldBodyGrad)" stroke="#2d3436" stroke-width="3" filter="url(#lockGlow)"/>
+            <!-- ハイライト -->
+            <rect x="16" y="42" width="48" height="5" rx="2.5" fill="#ffffff" opacity="0.45"/>
+            <!-- 鍵穴 -->
+            <circle cx="40" cy="57" r="5" fill="#2d3436" />
+            <polygon points="37.5,59 42.5,59 41.5,72 38.5,72" fill="#2d3436" />
+          </svg>
         </div>
         <h1 class="game-title title-logo-glow">LOCK LOCKER LOCKEST</h1>
         <div class="title-subtitle-badge">ULTIMATE SPEED PUZZLE</div>
         
-        <!-- ノンバーバル説明: 🔒 ➔ 🔓 ➔ +1.0s ⏱️ -->
+        <!-- ノンバーバル説明: 単一枠内のシームレスなステップ表示（二重枠を廃止） -->
         <div class="lock-tutorial-bar">
-          <div class="tuto-badge-step">
-            <span class="step-emoji">🔒</span>
+          <div class="tuto-flow-item">
+            <svg class="tuto-lock-svg" viewBox="0 0 24 24" width="22" height="22">
+              <rect x="4" y="10" width="16" height="12" rx="3" fill="#ffa502" stroke="#2f3542" stroke-width="2"/>
+              <path d="M7 10V7a5 5 0 0 1 10 0v3" fill="none" stroke="#747d8c" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="12" cy="15" r="1.8" fill="#2f3542"/>
+            </svg>
           </div>
           <span class="tuto-arrow">➔</span>
-          <div class="tuto-badge-step">
-            <span class="step-emoji">🔓</span>
+          <div class="tuto-flow-item">
+            <svg class="tuto-lock-svg" viewBox="0 0 24 24" width="22" height="22">
+              <rect x="4" y="10" width="16" height="12" rx="3" fill="#2ed573" stroke="#2f3542" stroke-width="2"/>
+              <path d="M7 10V7a5 5 0 0 1 10 0" fill="none" stroke="#747d8c" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="12" cy="15" r="1.8" fill="#2f3542"/>
+            </svg>
           </div>
           <span class="tuto-arrow">➔</span>
-          <div class="tuto-badge-step reward">
+          <div class="tuto-flow-item tuto-reward">
             <span class="reward-plus">+1.0s</span>
-            <span class="step-emoji">⏱️</span>
+            <svg class="tuto-timer-svg" viewBox="0 0 24 24" width="20" height="20">
+              <circle cx="12" cy="13" r="8" fill="#ffffff" stroke="#2f3542" stroke-width="2"/>
+              <path d="M12 9v4l3 2" fill="none" stroke="#2f3542" stroke-width="2" stroke-linecap="round"/>
+              <path d="M10 2h4M12 2v3" stroke="#2f3542" stroke-width="2" stroke-linecap="round"/>
+            </svg>
           </div>
         </div>
 
-        <!-- 長押しSTARTボタン（3, 2, 1 カウントダウン） -->
+        <!-- 長押しSTARTボタン（指アイコン削除、アニメーショングラデーション背景） -->
         <button id="start-btn" class="pop-btn primary-btn hold-start-btn" type="button">
           <div class="hold-progress-fill" id="hold-progress-fill"></div>
           <div class="hold-inner-wrap">
             <div class="hold-idle-state" id="hold-idle-state">
-              <span class="hold-icon">👆</span>
               <span class="hold-label">HOLD TO START</span>
             </div>
             <div class="hold-active-state" id="hold-active-state">
@@ -166,6 +206,6 @@
     </div>
   </div>
 
-  <script src="main.js?v=lockest_5"></script>
+  <script src="main.js?v=lockest_6"></script>
 </body>
 </html>
