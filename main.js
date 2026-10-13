@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const highScoreEl = document.getElementById('high-score');
   const rankBadgeEl = document.getElementById('result-rank-badge');
 
-  // Canvas Particles
+  // Enhanced Canvas Particles (Confetti & Sparks)
   const canvas = document.getElementById('particle-canvas');
   const ctx = canvas.getContext('2d');
   function resizeCanvas() {
@@ -36,20 +36,25 @@ document.addEventListener('DOMContentLoaded', () => {
   resizeCanvas();
 
   let particles = [];
-  function createBurst(x, y, count = 30) {
-    const colors = ['#ff4757', '#2ed573', '#ffa502', '#1e90ff', '#ffffff', '#9b59b6'];
+  function createBurst(x, y, count = 38) {
+    const colors = ['#ff4757', '#2ed573', '#ffa502', '#1e90ff', '#ffffff', '#ffd32a', '#9b59b6'];
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = Math.random() * 8 + 3;
+      const speed = Math.random() * 9 + 4;
+      const isConfetti = Math.random() > 0.45;
       particles.push({
         x,
         y,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        size: Math.random() * 6 + 4,
+        vy: Math.sin(angle) * speed - 2.5,
+        w: Math.random() * 8 + 5,
+        h: isConfetti ? (Math.random() * 5 + 4) : (Math.random() * 8 + 5),
         color: colors[Math.floor(Math.random() * colors.length)],
         alpha: 1,
-        decay: Math.random() * 0.03 + 0.02
+        decay: Math.random() * 0.024 + 0.016,
+        rot: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.22,
+        isConfetti
       });
     }
   }
@@ -60,25 +65,38 @@ document.addEventListener('DOMContentLoaded', () => {
       const p = particles[i];
       p.x += p.vx;
       p.y += p.vy;
-      p.vy += 0.15;
+      p.vy += 0.16; // 重力
+      p.vx *= 0.98; // 空気抵抗
+      p.rot += p.rotSpeed;
       p.alpha -= p.decay;
+
       if (p.alpha <= 0) {
         particles.splice(i, 1);
         continue;
       }
+
       ctx.save();
       ctx.globalAlpha = p.alpha;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
       ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
+
+      if (p.isConfetti) {
+        // ヒラヒラ舞う紙吹雪
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      } else {
+        // キラキラ丸スパーク
+        ctx.beginPath();
+        ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.restore();
     }
     requestAnimationFrame(updateParticles);
   }
   updateParticles();
 
-  // Web Audio Synth
+  // Web Audio Synth (多層サウンド ＆ コンボピッチ上昇)
   let audioCtx = null;
   let soundEnabled = true;
 
@@ -88,44 +106,79 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function playSound(type) {
+  function playSound(type, combo = 1) {
     if (!soundEnabled || !audioCtx) return;
     try {
       const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
 
       if (type === 'tap') {
-        osc.frequency.setValueAtTime(560, now);
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.06);
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const freqShift = (Math.random() - 0.5) * 40;
+        osc.frequency.setValueAtTime(620 + freqShift, now);
+        osc.frequency.exponentialRampToValueAtTime(920 + freqShift, now + 0.05);
         gain.gain.setValueAtTime(0.18, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
         osc.start(now);
-        osc.stop(now + 0.06);
+        osc.stop(now + 0.05);
+
       } else if (type === 'unlock') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, now);
-        osc.frequency.setValueAtTime(659.25, now + 0.08);
-        osc.frequency.setValueAtTime(1046.50, now + 0.16);
-        gain.gain.setValueAtTime(0.24, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-        osc.start(now);
-        osc.stop(now + 0.35);
+        // コンボに応じたピッチ上昇 (半音ずつ上がる)
+        const pitchMultiplier = Math.pow(1.05946, Math.min(8, combo - 1));
+
+        // 1. メタリック・クリック音 (金属の重み)
+        const clickOsc = audioCtx.createOscillator();
+        const clickGain = audioCtx.createGain();
+        clickOsc.type = 'square';
+        clickOsc.frequency.setValueAtTime(320 * pitchMultiplier, now);
+        clickOsc.frequency.exponentialRampToValueAtTime(140, now + 0.04);
+        clickGain.gain.setValueAtTime(0.25, now);
+        clickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+        clickOsc.connect(clickGain);
+        clickGain.connect(audioCtx.destination);
+        clickOsc.start(now);
+        clickOsc.stop(now + 0.04);
+
+        // 2. 華やかなベル上昇和音
+        const notes = [523.25, 659.25, 1046.50, 1318.51];
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq * pitchMultiplier, now + idx * 0.04);
+          gain.gain.setValueAtTime(0.2, now + idx * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.005, now + idx * 0.04 + 0.3);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + idx * 0.04);
+          osc.stop(now + idx * 0.04 + 0.3);
+        });
+
       } else if (type === 'mistake') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(180, now);
-        osc.frequency.linearRampToValueAtTime(110, now + 0.15);
-        gain.gain.setValueAtTime(0.22, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.linearRampToValueAtTime(90, now + 0.2);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
         osc.start(now);
-        osc.stop(now + 0.15);
+        osc.stop(now + 0.2);
+
       } else if (type === 'warning') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
         osc.type = 'square';
         osc.frequency.setValueAtTime(880, now);
         gain.gain.setValueAtTime(0.12, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
         osc.start(now);
         osc.stop(now + 0.06);
       }
@@ -1818,36 +1871,119 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Juice & Combo State
+  let comboCount = 0;
+  let lastUnlockTime = 0;
+  const gameApp = document.getElementById('game-app');
+  const screenFlashOverlay = document.getElementById('screen-flash-overlay');
+  const dangerVignette = document.getElementById('danger-vignette');
+
+  // ショックウェーブ生成
+  function triggerShockwave(x, y) {
+    const ring = document.createElement('div');
+    ring.className = 'shockwave-ring';
+    ring.style.left = x + 'px';
+    ring.style.top = y + 'px';
+    document.body.appendChild(ring);
+    setTimeout(() => ring.remove(), 500);
+  }
+
+  // フローティング・コンボテキスト生成
+  function spawnFloatingText(text, x, y) {
+    const el = document.createElement('div');
+    el.className = 'floating-combo-text';
+    el.textContent = text;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 700);
+  }
+
   // Mistake Trigger
   function triggerMistake() {
+    comboCount = 0; // コンボ途切れ
     playSound('mistake');
+    if (navigator.vibrate) {
+      try { navigator.vibrate([40, 30, 40]); } catch (e) {}
+    }
+
     currentCard.classList.add('shake');
     setTimeout(() => {
       currentCard.classList.remove('shake');
     }, 400);
   }
 
-  // Success Trigger (+1.0s & Card Swap)
+  // Success Trigger (+1.0s & Card Swap & Advanced Juice)
   function resolveLockSuccess() {
     cleanActiveAnimations();
     cleanActiveListeners();
-    playSound('unlock');
+
+    // コンボ判定 (3.0秒以内の連続解錠でコンボ継続)
+    const now = Date.now();
+    if (now - lastUnlockTime < 3000) {
+      comboCount = Math.min(8, comboCount + 1);
+    } else {
+      comboCount = 1;
+    }
+    lastUnlockTime = now;
+
+    // 音響 (コンボピッチ上昇)
+    playSound('unlock', comboCount);
+
+    // 触覚振動
+    if (navigator.vibrate) {
+      try { navigator.vibrate(comboCount > 2 ? [25, 20, 25] : [22]); } catch (e) {}
+    }
+
+    // シャックルスプリングオープン
     currentShackle.classList.add('open');
 
+    // 時間追加アニメ
     remainingTime += 1.0;
     timeAddedAnim.classList.remove('animate');
     void timeAddedAnim.offsetWidth;
     timeAddedAnim.classList.add('animate');
 
-    score += currentLock.points;
+    // スコア加算 (コンボボーナス付き)
+    const comboBonus = (comboCount > 1) ? (comboCount * 30) : 0;
+    score += (currentLock.points + comboBonus);
     unlockedCountNum++;
     scoreDisplay.textContent = score;
     unlockedCount.textContent = unlockedCountNum;
 
-    const cardRect = currentCard.getBoundingClientRect();
-    createBurst(cardRect.left + cardRect.width / 2, cardRect.top + cardRect.height / 2, 32);
+    // スコアバウンス
+    const scoreBox = document.querySelector('.score-box');
+    if (scoreBox) {
+      scoreBox.classList.remove('pop');
+      void scoreBox.offsetWidth;
+      scoreBox.classList.add('pop');
+    }
 
-    currentCard.style.transform = 'translateY(-20px) scale(1.08)';
+    const cardRect = currentCard.getBoundingClientRect();
+    const centerX = cardRect.left + cardRect.width / 2;
+    const centerY = cardRect.top + cardRect.height / 2;
+
+    // ショックウェーブ ＆ 画面フラッシュ ＆ 画面シェイク
+    triggerShockwave(centerX, centerY);
+    if (screenFlashOverlay) {
+      screenFlashOverlay.classList.add('flash');
+      setTimeout(() => screenFlashOverlay.classList.remove('flash'), 50);
+    }
+    if (gameApp) {
+      gameApp.classList.remove('impact-shake');
+      void gameApp.offsetWidth;
+      gameApp.classList.add('impact-shake');
+      setTimeout(() => gameApp.classList.remove('impact-shake'), 280);
+    }
+
+    // フローティングテキスト
+    const comboLabel = comboCount > 1 ? `COMBO x${comboCount}!` : '+1.0s!';
+    spawnFloatingText(comboLabel, centerX, cardRect.top + 30);
+
+    // 紙吹雪 ＆ スパークパーティクル爆発
+    createBurst(centerX, centerY, 36);
+
+    currentCard.style.transform = 'translateY(-22px) scale(1.08)';
     currentCard.style.opacity = '0';
 
     setTimeout(() => {
@@ -1882,12 +2018,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (remainingTime <= 5.0) {
         timeDisplay.parentElement.classList.add('timer-danger');
+        if (dangerVignette) dangerVignette.classList.add('active-danger');
         warningBeepTimer++;
         if (warningBeepTimer % 5 === 0) {
           playSound('warning');
         }
       } else {
         timeDisplay.parentElement.classList.remove('timer-danger');
+        if (dangerVignette) dangerVignette.classList.remove('active-danger');
       }
     }, 100);
   }
@@ -1901,6 +2039,9 @@ document.addEventListener('DOMContentLoaded', () => {
     unlockedCountNum = 0;
     warningBeepTimer = 0;
     roundNumber = 1;
+    comboCount = 0;
+    lastUnlockTime = 0;
+    if (dangerVignette) dangerVignette.classList.remove('active-danger');
 
     scoreDisplay.textContent = '0';
     unlockedCount.textContent = '0';
@@ -1925,6 +2066,7 @@ document.addEventListener('DOMContentLoaded', () => {
     isPlaying = false;
     cleanupCurrentGimmick();
     clearInterval(timerInterval);
+    if (dangerVignette) dangerVignette.classList.remove('active-danger');
 
     if (score > highScore) {
       highScore = score;
