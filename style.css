@@ -144,7 +144,7 @@ body {
   justify-content: center;
   align-items: center;
   perspective: 900px;
-  margin: 12px 0;
+  margin: 10px 0;
 }
 
 .lock-card {
@@ -159,10 +159,9 @@ body {
   flex-direction: column;
   align-items: center;
   border: 4px solid var(--text-dark);
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
 }
 
-/* 南京錠のU字シャックル */
 .card-shackle {
   position: absolute;
   top: -46px;
@@ -180,7 +179,6 @@ body {
   border-color: var(--secondary-accent);
 }
 
-/* 背後の鍵（次の鍵：奥に配置） */
 .preview-card {
   transform: translateY(-24px) translateZ(-80px) scale(0.88);
   opacity: 0.42;
@@ -189,14 +187,12 @@ body {
   z-index: 1;
 }
 
-/* 手前の鍵（今解く鍵：前面） */
 .active-card {
   transform: translateY(0) translateZ(0) scale(1);
   opacity: 1;
   z-index: 2;
 }
 
-/* 鍵の消滅・登場アニメーション */
 .card-body {
   width: 100%;
   height: 100%;
@@ -229,7 +225,7 @@ body {
 
 .lock-face {
   font-size: 3.2rem;
-  margin: 4px 0;
+  margin: 2px 0;
   transition: transform 0.15s ease;
 }
 
@@ -251,13 +247,15 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-/* ギミック: タップ/連打 */
-.tap-target-btn {
-  width: 110px;
-  height: 110px;
+/* --- 10種類のシンプルギミック共通UI --- */
+
+/* 1. ポチッとタップ */
+.pop-action-btn {
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   background: radial-gradient(circle, var(--primary-accent) 0%, #ee5253 100%);
   color: #ffffff;
@@ -268,52 +266,101 @@ body {
   box-shadow: 0 8px 0 var(--text-dark), 0 12px 20px rgba(255, 71, 87, 0.4);
   transition: transform 0.08s ease, box-shadow 0.08s ease;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 4px;
 }
 
-.tap-target-btn:active {
+.pop-action-btn:active {
   transform: translateY(6px);
   box-shadow: 0 2px 0 var(--text-dark);
 }
 
-.mash-progress-bar {
+/* 2. 連打プログレス */
+.mash-bar {
   width: 80%;
-  height: 14px;
+  height: 16px;
   background: #dfe4ea;
-  border-radius: 10px;
-  border: 2px solid var(--text-dark);
+  border-radius: 12px;
+  border: 3px solid var(--text-dark);
   overflow: hidden;
 }
 
-.mash-progress-fill {
+.mash-fill {
   height: 100%;
   width: 0%;
   background: linear-gradient(90deg, var(--yellow-accent), var(--secondary-accent));
-  transition: width 0.08s ease;
+  transition: width 0.06s ease;
 }
 
-/* ギミック: スライダー */
-.slider-track {
+/* 3. 横スライド */
+.slider-horizontal {
   position: relative;
   width: 85%;
-  height: 60px;
+  height: 64px;
   background: #f1f2f6;
   border: 3px solid var(--text-dark);
-  border-radius: 30px;
+  border-radius: 32px;
   overflow: hidden;
   box-shadow: inset 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.slider-goal-zone {
+.slider-goal-h {
   position: absolute;
-  right: 4px;
-  top: 4px;
-  bottom: 4px;
+  right: 6px;
+  top: 6px;
+  bottom: 6px;
   width: 65px;
   background: rgba(46, 213, 115, 0.25);
   border: 2px dashed var(--secondary-accent);
+  border-radius: 26px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--secondary-accent);
+}
+
+.slider-knob-h {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: 52px;
+  height: 48px;
+  background: var(--yellow-accent);
+  border: 3px solid var(--text-dark);
   border-radius: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.3rem;
+  cursor: grab;
+  box-shadow: 0 4px 0 var(--text-dark);
+}
+
+/* 4. 上引きスライド */
+.slider-vertical {
+  position: relative;
+  width: 72px;
+  height: 150px;
+  background: #f1f2f6;
+  border: 3px solid var(--text-dark);
+  border-radius: 36px;
+  overflow: hidden;
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.slider-goal-v {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  height: 44px;
+  background: rgba(46, 213, 115, 0.25);
+  border: 2px dashed var(--secondary-accent);
+  border-radius: 22px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -322,88 +369,243 @@ body {
   color: var(--secondary-accent);
 }
 
-.slider-thumb {
+.slider-knob-v {
   position: absolute;
+  bottom: 6px;
   left: 6px;
-  top: 5px;
-  width: 48px;
-  height: 44px;
-  background: var(--yellow-accent);
+  width: 54px;
+  height: 50px;
+  background: var(--primary-accent);
   border: 3px solid var(--text-dark);
-  border-radius: 22px;
+  border-radius: 25px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   cursor: grab;
   box-shadow: 0 4px 0 var(--text-dark);
-  transition: left 0.05s ease;
 }
 
-/* ギミック: タイミングサークル */
-.timing-canvas-wrap {
+/* 5. トグルスイッチ */
+.switch-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle-switch-ui {
   position: relative;
-  width: 140px;
-  height: 140px;
-}
-
-.timing-canvas {
-  width: 100%;
-  height: 100%;
-}
-
-.timing-hit-btn {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 65px;
-  height: 65px;
-  border-radius: 50%;
-  background: var(--blue-accent);
-  color: white;
-  border: 3px solid var(--text-dark);
-  font-weight: 900;
-  font-size: 0.85rem;
-  box-shadow: 0 4px 0 var(--text-dark);
+  width: 110px;
+  height: 58px;
+  background: #ced6e0;
+  border-radius: 30px;
+  border: 4px solid var(--text-dark);
   cursor: pointer;
+  transition: background 0.2s ease;
+  box-shadow: 0 6px 0 var(--text-dark);
 }
 
-.timing-hit-btn:active {
-  transform: translate(-50%, -46%);
-  box-shadow: 0 1px 0 var(--text-dark);
+.toggle-switch-ui.on {
+  background: var(--secondary-accent);
 }
 
-/* ギミック: シーケンス（順番押し） */
-.sequence-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  width: 80%;
-}
-
-.seq-btn {
-  aspect-ratio: 1;
-  background: #f1f2f6;
+.switch-thumb-ui {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 42px;
+  height: 42px;
+  background: white;
+  border-radius: 50%;
   border: 3px solid var(--text-dark);
-  border-radius: 14px;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.toggle-switch-ui.on .switch-thumb-ui {
+  transform: translateX(52px);
+}
+
+/* 6. 長押しチャージ */
+.hold-circle-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hold-btn {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--yellow-accent);
+  border: 4px solid var(--text-dark);
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+  cursor: pointer;
+  box-shadow: 0 6px 0 var(--text-dark);
+  transition: transform 0.08s ease;
+}
+
+.hold-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--text-dark);
+}
+
+.hold-svg-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120px;
+  height: 120px;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+
+.hold-ring-bg {
+  stroke: #dfe4ea;
+  stroke-width: 8;
+  fill: none;
+}
+
+.hold-ring-fill {
+  stroke: var(--secondary-accent);
+  stroke-width: 8;
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 339;
+  stroke-dashoffset: 339;
+  transition: stroke-dashoffset 0.05s linear;
+}
+
+/* 7. 二者択一（色・矢印マッチ） */
+.choice-row {
+  display: flex;
+  gap: 16px;
+  width: 85%;
+  justify-content: center;
+}
+
+.choice-btn {
+  flex: 1;
+  padding: 18px 10px;
+  border-radius: 18px;
+  border: 4px solid var(--text-dark);
   font-size: 1.3rem;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 4px 0 var(--text-dark);
-  transition: all 0.1s ease;
+  box-shadow: 0 6px 0 var(--text-dark);
+  transition: transform 0.08s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
-.seq-btn:active, .seq-btn.active-flash {
-  background: var(--secondary-accent) !important;
-  color: white;
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 var(--text-dark);
+.choice-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--text-dark);
 }
 
-.seq-btn.error-flash {
-  background: var(--primary-accent) !important;
-  animation: shake-btn 0.3s ease;
+/* 8. 鍵差し込み */
+.keyhole-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.keyhole-target {
+  width: 70px;
+  height: 70px;
+  border-radius: 18px;
+  background: #f1f2f6;
+  border: 4px dashed var(--blue-accent);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+}
+
+.key-draggable {
+  padding: 10px 24px;
+  background: var(--yellow-accent);
+  border: 4px solid var(--text-dark);
+  border-radius: 20px;
+  font-size: 1.5rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 0 var(--text-dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.key-draggable:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--text-dark);
+}
+
+/* 9. ダイヤル回転 */
+.dial-knob-ui {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: #f1f2f6;
+  border: 5px solid var(--text-dark);
+  position: relative;
+  cursor: pointer;
+  box-shadow: 0 6px 0 var(--text-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dial-indicator {
+  position: absolute;
+  top: 8px;
+  width: 10px;
+  height: 24px;
+  background: var(--primary-accent);
+  border-radius: 5px;
+}
+
+.dial-center-label {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+/* 10. スクラッチ（こすって解除） */
+.scratch-box {
+  width: 80%;
+  height: 100px;
+  background: #ced6e0;
+  border: 4px solid var(--text-dark);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 900;
+  box-shadow: 0 6px 0 var(--text-dark);
+  transition: background 0.1s ease;
+}
+
+.scratch-progress {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 4px;
 }
 
 /* フッターヒント */
