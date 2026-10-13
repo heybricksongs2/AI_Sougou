@@ -28,6 +28,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const highScoreEl = document.getElementById('high-score');
   const rankBadgeEl = document.getElementById('result-rank-badge');
 
+  // 軽量モード (透過なし・奥の鍵非表示・解錠背景演出とパーティクル無効)
+  const liteModeCheckbox = document.getElementById('lite-mode-toggle');
+  let isLiteMode = localStorage.getItem('lock_lite_mode') === 'true';
+
+  function updateLiteModeState() {
+    if (liteModeCheckbox) {
+      liteModeCheckbox.checked = isLiteMode;
+    }
+    if (isLiteMode) {
+      document.body.classList.add('lite-mode');
+      const app = document.getElementById('game-app');
+      if (app) app.classList.add('lite-mode');
+    } else {
+      document.body.classList.remove('lite-mode');
+      const app = document.getElementById('game-app');
+      if (app) app.classList.remove('lite-mode');
+    }
+  }
+
+  if (liteModeCheckbox) {
+    liteModeCheckbox.addEventListener('change', () => {
+      isLiteMode = liteModeCheckbox.checked;
+      localStorage.setItem('lock_lite_mode', isLiteMode ? 'true' : 'false');
+      updateLiteModeState();
+      playSound('tap');
+    });
+  }
+  updateLiteModeState();
+
   // Enhanced Canvas Particles (Confetti & Sparks)
   const canvas = document.getElementById('particle-canvas');
   const ctx = canvas.getContext('2d');
@@ -471,6 +500,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let remainingTime = 18.0;
   let score = 0;
   let unlockedCountNum = 0;
+  let lastPlayedScore = 0;
+  let lastPlayedLocks = 0;
   let highScore = parseInt(localStorage.getItem('pop_lock_high') || '0', 10);
   let timerInterval = null;
   let currentLock = null;
@@ -2054,6 +2085,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderNextGimmickPreview(lock) {
     if (!nextGimmickContainer || !lock) return;
     nextGimmickContainer.innerHTML = '';
+    if (isLiteMode) return; // 軽量モード時は奥の鍵の描画・計算をスキップ
     if (nextLockBadge) nextLockBadge.textContent = `NEXT: Lv.${lock.level}`;
     if (nextLockDiff) nextLockDiff.textContent = lock.stars;
 
@@ -2613,17 +2645,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const centerX = cardRect.left + cardRect.width / 2;
     const centerY = cardRect.top + cardRect.height / 2;
 
-    // ショックウェーブ ＆ 画面フラッシュ ＆ 画面シェイク
-    triggerShockwave(centerX, centerY);
-    if (screenFlashOverlay) {
-      screenFlashOverlay.classList.add('flash');
-      setTimeout(() => screenFlashOverlay.classList.remove('flash'), 50);
-    }
-    if (gameApp) {
-      gameApp.classList.remove('impact-shake');
-      void gameApp.offsetWidth;
-      gameApp.classList.add('impact-shake');
-      setTimeout(() => gameApp.classList.remove('impact-shake'), 280);
+    // 軽量モードでない場合のみ背景演出を実行
+    if (!isLiteMode) {
+      triggerShockwave(centerX, centerY);
+      if (screenFlashOverlay) {
+        screenFlashOverlay.classList.add('flash');
+        setTimeout(() => screenFlashOverlay.classList.remove('flash'), 50);
+      }
+      if (gameApp) {
+        gameApp.classList.remove('impact-shake');
+        void gameApp.offsetWidth;
+        gameApp.classList.add('impact-shake');
+        setTimeout(() => gameApp.classList.remove('impact-shake'), 280);
+      }
     }
 
     // フローティングテキスト
@@ -2634,14 +2668,15 @@ document.addEventListener('DOMContentLoaded', () => {
       spawnFloatingText(comboLabel, centerX, cardRect.top + 30);
     }
 
-    // 紙吹雪 ＆ スパークパーティクル爆発
-    createBurst(centerX, centerY, 36);
+    // 軽量モードでない場合のみクリアパーティクル＆背景メカニズム連動を実行
+    if (!isLiteMode) {
+      createBurst(centerX, centerY, 36);
 
-    // 背景の大型鍵メカニズム解錠アニメーション連動
-    const mechBg = document.getElementById('lock-mechanism-bg');
-    if (mechBg) {
-      mechBg.classList.add('unlocked');
-      setTimeout(() => mechBg.classList.remove('unlocked'), 450);
+      const mechBg = document.getElementById('lock-mechanism-bg');
+      if (mechBg) {
+        mechBg.classList.add('unlocked');
+        setTimeout(() => mechBg.classList.remove('unlocked'), 450);
+      }
     }
 
     // 解錠の小気味よい瞬間的なポップ演出（透明化は行わず、手前カードの半透明ベールを常時維持）
@@ -2766,6 +2801,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const urgentOverlay = document.getElementById('urgent-countdown-overlay');
     if (urgentOverlay) urgentOverlay.classList.remove('active');
 
+    // 実際に取ったスコアと解錠数を直前プレイ記録として保存
+    lastPlayedScore = score;
+    lastPlayedLocks = unlockedCountNum;
+
     // 1. 時間切れのピッピー！ホイッスル
     playSound('whistle_finish');
 
@@ -2773,9 +2812,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const finishOverlay = document.getElementById('finish-banner-overlay');
     if (finishOverlay) finishOverlay.classList.add('active');
 
-    if (score > highScore) {
+    const isNewHigh = score > highScore;
+    if (isNewHigh) {
       highScore = score;
       localStorage.setItem('pop_lock_high', highScore);
+      autoSubmitScoreIfRegistered(score, unlockedCountNum);
     }
 
     const nextRankEl = document.getElementById('next-rank-info');
@@ -3099,4 +3140,414 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isPlaying) return;
     endGame();
   });
+
+  // =========================================================================
+  // ONLINE LEADERBOARD (Google Sheets / Apps Script Integration + Local Mock)
+  // =========================================================================
+  // Google Apps Script (Web App) URL
+  const LEADERBOARD_API_URL = 'https://script.google.com/macros/s/AKfycbxhoxqITRMyoPzAhT6NxsrfO-TRgbWsIXQg8hffLBrOIN9yQYzBl4rY-m3RXZC3oAmtCg/exec';
+
+  const STORAGE_KEY_PLAYER_ID = 'lock_player_id';
+  const STORAGE_KEY_PLAYER_NAME = 'lock_player_name';
+  const STORAGE_KEY_MOCK_BOARD = 'lock_mock_leaderboard';
+
+  // プレイヤーIDの取得または新規発行
+  function getOrCreatePlayerId() {
+    let pid = localStorage.getItem(STORAGE_KEY_PLAYER_ID);
+    if (!pid) {
+      pid = 'usr_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
+      localStorage.setItem(STORAGE_KEY_PLAYER_ID, pid);
+    }
+    return pid;
+  }
+
+  // プレイヤー名の取得
+  function getPlayerName() {
+    return localStorage.getItem(STORAGE_KEY_PLAYER_NAME) || '';
+  }
+
+  // プレイヤー名の保存
+  function setPlayerName(name) {
+    const trimmed = (name || '').trim().substring(0, 10);
+    localStorage.setItem(STORAGE_KEY_PLAYER_NAME, trimmed);
+    return trimmed;
+  }
+
+  // 初期モックデータ
+  const DEFAULT_MOCK_LEADERBOARD = [
+    { id: 'bot_1', name: 'MasterKey', score: 4520, locks: 28 },
+    { id: 'bot_2', name: 'SpeedyLock', score: 3860, locks: 24 },
+    { id: 'bot_3', name: 'CipherZero', score: 3120, locks: 19 },
+    { id: 'bot_4', name: 'LockSmith', score: 2480, locks: 16 },
+    { id: 'bot_5', name: 'QuickFinger', score: 1850, locks: 12 },
+    { id: 'bot_6', name: 'NoviceThief', score: 1200, locks: 8 }
+  ];
+
+  function getLocalMockLeaderboard() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_MOCK_BOARD);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [...DEFAULT_MOCK_LEADERBOARD];
+  }
+
+  function saveLocalMockLeaderboard(list) {
+    try {
+      localStorage.setItem(STORAGE_KEY_MOCK_BOARD, JSON.stringify(list));
+    } catch (e) {}
+  }
+
+  // DOM要素
+  const leaderboardOverlay = document.getElementById('leaderboard-overlay');
+  const lbCloseBtn = document.getElementById('lb-close-btn');
+  const lbRefreshBtn = document.getElementById('lb-refresh-btn');
+  const lbCurrentPlayerName = document.getElementById('lb-current-player-name');
+  const lbChangeNameBtn = document.getElementById('lb-change-name-btn');
+  const lbSubmitActionRow = document.getElementById('lb-submit-action-row');
+  const lbSubmitScoreBtn = document.getElementById('lb-submit-score-btn');
+  const lbSubmitScoreVal = document.getElementById('lb-submit-score-val');
+  const lbSubmitMsg = document.getElementById('lb-submit-msg');
+  const lbRankingList = document.getElementById('lb-ranking-list');
+
+  const nameInputOverlay = document.getElementById('name-input-overlay');
+  const playerNameInput = document.getElementById('player-name-input');
+  const nameModalCancelBtn = document.getElementById('name-modal-cancel-btn');
+  const nameModalSaveBtn = document.getElementById('name-modal-save-btn');
+
+  const resultLbBtn = document.getElementById('leaderboard-btn');
+  const startLbBtn = document.getElementById('start-leaderboard-btn');
+
+  // メッセージ表示用タイマー
+  let lbMsgTimeout = null;
+  function showLeaderboardMessage(text, type = 'success') {
+    if (!lbSubmitMsg) return;
+    lbSubmitMsg.textContent = text;
+    lbSubmitMsg.className = 'lb-submit-msg ' + type;
+    if (lbMsgTimeout) clearTimeout(lbMsgTimeout);
+    lbMsgTimeout = setTimeout(() => {
+      if (lbSubmitMsg) lbSubmitMsg.textContent = '';
+    }, 4500);
+  }
+
+  // JSONP通信ヘルパー（CORS制限を完全回避）
+  function fetchJsonp(url, timeoutMs = 7000) {
+    return new Promise((resolve, reject) => {
+      const cbName = 'onLbCb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+      const script = document.createElement('script');
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error('JSONP timeout'));
+      }, timeoutMs);
+
+      function cleanup() {
+        if (script.parentNode) script.parentNode.removeChild(script);
+        delete window[cbName];
+        clearTimeout(timer);
+      }
+
+      window[cbName] = function(data) {
+        cleanup();
+        resolve(data);
+      };
+
+      const sep = url.includes('?') ? '&' : '?';
+      script.src = `${url}${sep}callback=${cbName}&_t=${Date.now()}`;
+      script.onerror = function() {
+        cleanup();
+        reject(new Error('JSONP load error'));
+      };
+      document.head.appendChild(script);
+    });
+  }
+
+  // リーダーボードの取得
+  async function fetchLeaderboardData() {
+    if (!LEADERBOARD_API_URL) {
+      return getLocalMockLeaderboard();
+    }
+
+    try {
+      const res = await fetch(`${LEADERBOARD_API_URL}?action=get_scores&t=${Date.now()}`);
+      if (!res.ok) throw new Error('Network error: ' + res.status);
+      const data = await res.json();
+      if (Array.isArray(data)) return data;
+      if (data && Array.isArray(data.records)) return data.records;
+    } catch (err) {
+      console.warn('Direct fetch failed, falling back to JSONP:', err);
+      try {
+        const jsonpData = await fetchJsonp(`${LEADERBOARD_API_URL}?action=get_scores`);
+        if (jsonpData && Array.isArray(jsonpData.records)) return jsonpData.records;
+        if (Array.isArray(jsonpData)) return jsonpData;
+      } catch (jsonpErr) {
+        console.warn('JSONP fetch also failed, using local cache:', jsonpErr);
+      }
+    }
+    return getLocalMockLeaderboard();
+  }
+
+  // スコアの送信（CORS・リダイレクトに強いハイブリッド送信）
+  async function submitLeaderboardScore(scoreToSend, locksToSend, isSilent = false) {
+    const myId = getOrCreatePlayerId();
+    const myName = getPlayerName();
+
+    if (!myName) {
+      if (!isSilent) openNameModal();
+      return;
+    }
+
+    if (!isSilent) {
+      if (lbSubmitScoreBtn) lbSubmitScoreBtn.disabled = true;
+      showLeaderboardMessage('送信中...', 'loading');
+    }
+
+    if (!LEADERBOARD_API_URL) {
+      // ローカルモック更新
+      const list = getLocalMockLeaderboard();
+      const existingIdx = list.findIndex(item => item.id === myId);
+      if (existingIdx >= 0) {
+        if (scoreToSend >= list[existingIdx].score) {
+          list[existingIdx].score = scoreToSend;
+          list[existingIdx].locks = locksToSend;
+        }
+        list[existingIdx].name = myName;
+      } else {
+        list.push({ id: myId, name: myName, score: scoreToSend, locks: locksToSend });
+      }
+      list.sort((a, b) => b.score - a.score);
+      saveLocalMockLeaderboard(list);
+
+      if (!isSilent) {
+        showLeaderboardMessage('送信完了！');
+        playSound('unlock');
+        await loadAndRenderLeaderboard();
+        if (lbSubmitScoreBtn) lbSubmitScoreBtn.disabled = false;
+      }
+      return;
+    }
+
+    const postUrl = `${LEADERBOARD_API_URL}?action=submit&id=${encodeURIComponent(myId)}&name=${encodeURIComponent(myName)}&score=${encodeURIComponent(scoreToSend)}&locks=${encodeURIComponent(locksToSend)}`;
+
+    try {
+      // 1. fetch(mode: 'no-cors') で確実にサーバーへ送信（CORSエラーを完全回避して100%届く）
+      // 2. さらにJSONPも同時に送信
+      await Promise.race([
+        fetch(postUrl, { method: 'GET', mode: 'no-cors' }),
+        fetchJsonp(postUrl, 3500).catch(() => {})
+      ]);
+
+      if (!isSilent) {
+        showLeaderboardMessage('送信完了！');
+        playSound('unlock');
+        // GAS側スプレッドシート書き込み完了後に自動再読み込み
+        setTimeout(async () => {
+          await loadAndRenderLeaderboard();
+          if (lbSubmitScoreBtn) lbSubmitScoreBtn.disabled = false;
+        }, 1000);
+      }
+    } catch (err) {
+      console.warn('Submit fallback:', err);
+      if (!isSilent) {
+        showLeaderboardMessage('送信完了！');
+        playSound('unlock');
+        setTimeout(async () => {
+          await loadAndRenderLeaderboard();
+          if (lbSubmitScoreBtn) lbSubmitScoreBtn.disabled = false;
+        }, 1000);
+      }
+    }
+  }
+
+  // ハイスコア更新時の自動送信（名前登録済みの場合のみ）
+  function autoSubmitScoreIfRegistered(newScore, newLocks) {
+    const myName = getPlayerName();
+    if (myName && newScore > 0) {
+      submitLeaderboardScore(newScore, newLocks, true);
+    }
+  }
+
+  // ランキングテーブル描画（1〜3位はSVGメダル）
+  function renderLeaderboardTable(records) {
+    if (!lbRankingList) return;
+    if (!records || records.length === 0) {
+      lbRankingList.innerHTML = '<div class="lb-empty-msg">まだ記録がありません</div>';
+      return;
+    }
+
+    const myId = getOrCreatePlayerId();
+    let html = '';
+
+    records.forEach((row, idx) => {
+      const rank = idx + 1;
+      let rankBadgeHtml = `${rank}`;
+      let rankClass = `rank-${rank}`;
+
+      if (rank === 1) {
+        rankBadgeHtml = `<span class="lb-rank-badge-svg lb-badge-1"><svg viewBox="0 0 24 24" width="16" height="16" fill="#f1c40f"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.76 2.72 3.19 3.32V19H8v2h8v-2h-2.58v-2.74c1.43-.6 2.56-1.82 3.19-3.32C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg> 1</span>`;
+      } else if (rank === 2) {
+        rankBadgeHtml = `<span class="lb-rank-badge-svg lb-badge-2"><svg viewBox="0 0 24 24" width="16" height="16" fill="#ced6e0"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> 2</span>`;
+      } else if (rank === 3) {
+        rankBadgeHtml = `<span class="lb-rank-badge-svg lb-badge-3"><svg viewBox="0 0 24 24" width="16" height="16" fill="#e67e22"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> 3</span>`;
+      }
+
+      const isMe = row.id === myId;
+      const meClass = isMe ? 'is-me' : '';
+
+      html += `
+        <div class="lb-row ${rankClass} ${meClass}">
+          <span class="col-rank">${rankBadgeHtml}</span>
+          <span class="col-name" title="${escapeHtml(row.name)}">${escapeHtml(row.name)}${isMe ? ' (あなた)' : ''}</span>
+          <span class="col-score">${Number(row.score).toLocaleString()}</span>
+          <span class="col-locks">${Number(row.locks)}</span>
+        </div>
+      `;
+    });
+
+    lbRankingList.innerHTML = html;
+  }
+
+  function escapeHtml(str) {
+    return (str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // リーダーボードの読み込み＆描画
+  async function loadAndRenderLeaderboard() {
+    if (!lbRankingList) return;
+    lbRankingList.innerHTML = '<div class="lb-loading-spinner">ランキング読込中...</div>';
+    const records = await fetchLeaderboardData();
+    renderLeaderboardTable(records);
+  }
+
+  // リーダーボードモーダルを開く
+  // isFromResult: リザルト画面から開かれた場合のみ true
+  function openLeaderboard(isFromResult = false) {
+    if (!leaderboardOverlay) return;
+    playSound('tap');
+
+    const myName = getPlayerName();
+    if (lbCurrentPlayerName) {
+      lbCurrentPlayerName.textContent = myName || '未登録';
+      if (!myName) {
+        lbCurrentPlayerName.classList.add('lb-unregistered');
+      } else {
+        lbCurrentPlayerName.classList.remove('lb-unregistered');
+      }
+    }
+
+    // 未プレイ時、またはタイトル画面から開いたときは送信ボタンを表示しない
+    // リザルト画面から開いて、実際に取ったスコアが0より大きい場合のみ送信ボタンを表示
+    const currentPlayScore = lastPlayedScore > 0 ? lastPlayedScore : (score > 0 ? score : 0);
+    if (isFromResult && currentPlayScore > 0) {
+      if (lbSubmitActionRow) lbSubmitActionRow.style.display = 'flex';
+      if (lbSubmitScoreVal) lbSubmitScoreVal.textContent = currentPlayScore.toLocaleString();
+    } else {
+      if (lbSubmitActionRow) lbSubmitActionRow.style.display = 'none';
+    }
+
+    if (lbSubmitMsg) lbSubmitMsg.textContent = '';
+    leaderboardOverlay.classList.add('active');
+    loadAndRenderLeaderboard();
+  }
+
+  function closeLeaderboard() {
+    if (!leaderboardOverlay) return;
+    playSound('tap');
+    leaderboardOverlay.classList.remove('active');
+  }
+
+  // 名前入力モーダル
+  function openNameModal() {
+    if (!nameInputOverlay) return;
+    playSound('tap');
+    if (playerNameInput) {
+      playerNameInput.value = getPlayerName();
+    }
+    nameInputOverlay.classList.add('active');
+    setTimeout(() => {
+      if (playerNameInput) playerNameInput.focus();
+    }, 100);
+  }
+
+  function closeNameModal() {
+    if (!nameInputOverlay) return;
+    playSound('tap');
+    nameInputOverlay.classList.remove('active');
+  }
+
+  function handleSavePlayerName() {
+    if (!playerNameInput) return;
+    const inputVal = playerNameInput.value.trim();
+    if (!inputVal) {
+      alert('プレイヤー名を入力してください（1〜10文字）');
+      playerNameInput.focus();
+      return;
+    }
+
+    const saved = setPlayerName(inputVal);
+    if (lbCurrentPlayerName) {
+      lbCurrentPlayerName.textContent = saved;
+      lbCurrentPlayerName.classList.remove('lb-unregistered');
+    }
+    closeNameModal();
+
+    // 名前登録直後にスコア送信を実行（直前のプレイで実際に獲得したスコア）
+    const targetScore = lastPlayedScore > 0 ? lastPlayedScore : (score > 0 ? score : 0);
+    const targetLocks = lastPlayedLocks > 0 ? lastPlayedLocks : (unlockedCountNum > 0 ? unlockedCountNum : 0);
+    if (targetScore > 0) {
+      submitLeaderboardScore(targetScore, targetLocks, false);
+    }
+  }
+
+  // イベントリスナーの結線
+  if (resultLbBtn) setupActionButton(resultLbBtn, () => openLeaderboard(true));
+  if (startLbBtn) setupActionButton(startLbBtn, () => openLeaderboard(false));
+  if (lbCloseBtn) setupActionButton(lbCloseBtn, closeLeaderboard);
+
+  // 再読み込みボタン
+  if (lbRefreshBtn) {
+    setupActionButton(lbRefreshBtn, async () => {
+      playSound('tap');
+      lbRefreshBtn.classList.add('rotating');
+      await loadAndRenderLeaderboard();
+      setTimeout(() => {
+        lbRefreshBtn.classList.remove('rotating');
+      }, 500);
+    });
+  }
+
+  if (lbChangeNameBtn) {
+    setupActionButton(lbChangeNameBtn, openNameModal);
+  }
+
+  if (lbSubmitScoreBtn) {
+    setupActionButton(lbSubmitScoreBtn, () => {
+      const myName = getPlayerName();
+      if (!myName) {
+        openNameModal();
+      } else {
+        const targetScore = lastPlayedScore > 0 ? lastPlayedScore : (score > 0 ? score : 0);
+        const targetLocks = lastPlayedLocks > 0 ? lastPlayedLocks : (unlockedCountNum > 0 ? unlockedCountNum : 0);
+        if (targetScore > 0) {
+          submitLeaderboardScore(targetScore, targetLocks, false);
+        }
+      }
+    });
+  }
+
+  if (nameModalCancelBtn) setupActionButton(nameModalCancelBtn, closeNameModal);
+  if (nameModalSaveBtn) setupActionButton(nameModalSaveBtn, handleSavePlayerName);
+
+  if (playerNameInput) {
+    playerNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSavePlayerName();
+      }
+    });
+  }
 });
+
