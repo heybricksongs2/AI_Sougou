@@ -1,4 +1,4 @@
-// POP LOCK RUSH! - 10 Gimmicks with Strict Difficulty Progression & Round-Robin Deck
+// POP LOCK RUSH! - 100% Non-Verbal & Intuitive Gimmicks
 document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const timeDisplay = document.getElementById('time-display');
@@ -8,12 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const soundBtn = document.getElementById('sound-btn');
   const currentCard = document.getElementById('current-lock-card');
   const nextCard = document.getElementById('next-lock-card');
-  const lockName = document.getElementById('lock-name');
+  const lockLevelBadge = document.getElementById('lock-level-badge');
   const lockDiff = document.getElementById('lock-difficulty');
   const lockFace = document.getElementById('lock-face');
   const currentShackle = document.getElementById('current-shackle');
   const gimmickContainer = document.getElementById('gimmick-container');
-  const hintText = document.getElementById('hint-text');
 
   const startOverlay = document.getElementById('start-overlay');
   const startBtn = document.getElementById('start-btn');
@@ -21,10 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const retryBtn = document.getElementById('retry-btn');
   const finalScoreEl = document.getElementById('final-score');
   const finalLocksEl = document.getElementById('final-locks');
-  const finalBonusEl = document.getElementById('final-bonus');
   const highScoreEl = document.getElementById('high-score');
   const rankBadgeEl = document.getElementById('result-rank-badge');
-  const resultTitleComment = document.getElementById('result-title-comment');
 
   // Canvas Particles
   const canvas = document.getElementById('particle-canvas');
@@ -138,21 +135,20 @@ document.addEventListener('DOMContentLoaded', () => {
     soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
   });
 
-  // 10 Lock Types Ranked from Easiest (Level 1) to Hardest (Level 10)
+  // 10 Lock Types: Level 1 to 10
   const LOCK_DEFINITIONS = [
-    { level: 1,  type: 'single_tap',    name: 'ワンタップ',       stars: '★☆☆☆☆', basePoints: 100 },
-    { level: 2,  type: 'toggle_switch', name: '電源スイッチ',     stars: '★☆☆☆☆', basePoints: 120 },
-    { level: 3,  type: 'key_insert',    name: '鍵差し込み',       stars: '★★☆☆☆', basePoints: 150 },
-    { level: 4,  type: 'double_tap',    name: 'ダブルタップ',     stars: '★★☆☆☆', basePoints: 180 },
-    { level: 5,  type: 'slide_right',   name: '横スライド',       stars: '★★★☆☆', basePoints: 220 },
-    { level: 6,  type: 'slide_up',      name: '上引きレバー',     stars: '★★★☆☆', basePoints: 260 },
-    { level: 7,  type: 'color_choice',  name: 'カラー二択判断',   stars: '★★★★☆', basePoints: 320 },
-    { level: 8,  type: 'rapid_mash',    name: '激連打ロック',     stars: '★★★★☆', basePoints: 380 },
-    { level: 9,  type: 'hold_charge',   name: '長押しチャージ',   stars: '★★★★★', basePoints: 450 },
-    { level: 10, type: 'dial_turn',     name: 'ダイヤル合わせ',   stars: '★★★★★', basePoints: 550 }
+    { level: 1,  type: 'single_tap',    icon: '👆', stars: '★☆☆☆☆', basePoints: 100 },
+    { level: 2,  type: 'toggle_switch', icon: '🎚️', stars: '★☆☆☆☆', basePoints: 120 },
+    { level: 3,  type: 'key_insert',    icon: '🔑', stars: '★★☆☆☆', basePoints: 150 },
+    { level: 4,  type: 'double_tap',    icon: '✌️', stars: '★★☆☆☆', basePoints: 180 },
+    { level: 5,  type: 'slide_right',   icon: '➡️', stars: '★★★☆☆', basePoints: 220 },
+    { level: 6,  type: 'slide_up',      icon: '⬆️', stars: '★★★☆☆', basePoints: 260 },
+    { level: 7,  type: 'color_choice',  icon: '🎨', stars: '★★★★☆', basePoints: 320 },
+    { level: 8,  type: 'rapid_mash',    icon: '⚡', stars: '★★★★☆', basePoints: 380 },
+    { level: 9,  type: 'hold_charge',   icon: '⏳', stars: '★★★★★', basePoints: 450 },
+    { level: 10, type: 'dial_turn',     icon: '🧭', stars: '★★★★★', basePoints: 550 }
   ];
 
-  // Comic Lock Expressions
   const faces = {
     normal: ['😏', '😎', '🤖', '🦊', '🎩', '😺', '🤠'],
     trying: ['😬', '🤨', '😲', '😅', '🥵'],
@@ -165,23 +161,17 @@ document.addEventListener('DOMContentLoaded', () => {
     return list[Math.floor(Math.random() * list.length)];
   }
 
-  // Round-Robin Queue System (一度解いた鍵は他の9種類を解くまで再出現しない)
+  // Round-Robin Queue System
   let lockQueue = [];
   let roundNumber = 1;
 
   function buildRoundQueue(round) {
-    // 最初の周は確実に難易度順 (Level 1 -> 10)
-    // 2周目以降は同じ難易度プール内で若干の揺らぎを持たせつつ、レベル昇順ベースで10個全種類を配置
-    const queue = LOCK_DEFINITIONS.map(def => {
-      return {
-        ...def,
-        round,
-        // 周回が進むと得点も倍増
-        points: def.basePoints + (round - 1) * 80,
-        face: getRandomFace('normal')
-      };
-    });
-    return queue;
+    return LOCK_DEFINITIONS.map(def => ({
+      ...def,
+      round,
+      points: def.basePoints + (round - 1) * 80,
+      face: getRandomFace('normal')
+    }));
   }
 
   function getNextLockFromQueue() {
@@ -203,29 +193,27 @@ document.addEventListener('DOMContentLoaded', () => {
   let nextLock = null;
   let warningBeepTimer = 0;
 
-  // Render 10 Gimmicks
+  // Render 10 Non-Verbal Gimmicks
   function renderGimmick(lock) {
     gimmickContainer.innerHTML = '';
-    lockName.textContent = `Lv.${lock.level} ${lock.name}`;
+    lockLevelBadge.textContent = `Lv.${lock.level} ${lock.icon}`;
     lockDiff.textContent = lock.stars;
     lockFace.textContent = lock.face;
     currentShackle.classList.remove('open');
 
-    // 1. ワンタップ (Lv.1)
+    // 1. ワンタップ: 巨大な👆アイコンボタン
     if (lock.type === 'single_tap') {
-      hintText.textContent = 'ボタンをポチッと1回押せ！';
       const btn = document.createElement('button');
-      btn.className = 'pop-action-btn';
-      btn.innerHTML = '<span>PUSH!</span><span style="font-size:1rem;">👆</span>';
+      btn.className = 'icon-action-btn';
+      btn.textContent = '👆';
       btn.addEventListener('click', () => {
         playSound('tap');
         resolveLockSuccess();
       });
       gimmickContainer.appendChild(btn);
 
-    // 2. 電源スイッチ (Lv.2)
+    // 2. 電源スイッチ: 見ればわかるトグル
     } else if (lock.type === 'toggle_switch') {
-      hintText.textContent = 'スイッチをタップしてONにせよ！';
       const wrap = document.createElement('div');
       wrap.className = 'switch-container';
 
@@ -233,21 +221,20 @@ document.addEventListener('DOMContentLoaded', () => {
       sw.className = 'toggle-switch-ui';
       const thumb = document.createElement('div');
       thumb.className = 'switch-thumb-ui';
-      thumb.textContent = 'OFF';
+      thumb.textContent = '⚪';
       sw.appendChild(thumb);
       wrap.appendChild(sw);
 
       sw.addEventListener('click', () => {
         playSound('tap');
         sw.classList.add('on');
-        thumb.textContent = 'ON';
+        thumb.textContent = '🟢';
         setTimeout(() => resolveLockSuccess(), 120);
       });
       gimmickContainer.appendChild(wrap);
 
-    // 3. 鍵差し込み (Lv.3)
+    // 3. 鍵差し込み: 鍵穴 🕳️ と 鍵 🔑 と上向き矢印
     } else if (lock.type === 'key_insert') {
-      hintText.textContent = '「🔑鍵」をタップして差し込め！';
       const zone = document.createElement('div');
       zone.className = 'keyhole-zone';
 
@@ -255,57 +242,79 @@ document.addEventListener('DOMContentLoaded', () => {
       hole.className = 'keyhole-target';
       hole.textContent = '🕳️';
 
+      const guide = document.createElement('div');
+      guide.className = 'key-arrow-guide';
+      guide.textContent = '⬆️';
+
       const keyBtn = document.createElement('button');
       keyBtn.className = 'key-draggable';
-      keyBtn.innerHTML = '<span>🔑</span><span>INSERT!</span>';
+      keyBtn.textContent = '🔑';
 
       keyBtn.addEventListener('click', () => {
         playSound('tap');
-        keyBtn.style.transform = 'translateY(-30px) scale(0.9)';
+        keyBtn.style.transform = 'translateY(-36px) scale(0.85)';
         hole.textContent = '🗝️';
         setTimeout(() => resolveLockSuccess(), 120);
       });
 
       zone.appendChild(hole);
+      zone.appendChild(guide);
       zone.appendChild(keyBtn);
       gimmickContainer.appendChild(zone);
 
-    // 4. ダブルタップ (Lv.4)
+    // 4. ダブルタップ: ✌️ と 2つのインジケータードット
     } else if (lock.type === 'double_tap') {
-      hintText.textContent = 'リズムよく素早く2回トントン！';
       let lastTapTime = 0;
 
       const btn = document.createElement('button');
-      btn.className = 'pop-action-btn';
-      btn.innerHTML = '<span>2 TAP</span><span style="font-size:1.1rem;">✌️</span>';
+      btn.className = 'double-tap-btn';
+
+      const iconSpan = document.createElement('span');
+      iconSpan.textContent = '✌️';
+
+      const dotRow = document.createElement('div');
+      dotRow.className = 'double-dot-row';
+      const dot1 = document.createElement('div');
+      dot1.className = 'tap-dot';
+      const dot2 = document.createElement('div');
+      dot2.className = 'tap-dot';
+      dotRow.appendChild(dot1);
+      dotRow.appendChild(dot2);
+
+      btn.appendChild(iconSpan);
+      btn.appendChild(dotRow);
 
       btn.addEventListener('click', () => {
         const now = Date.now();
         playSound('tap');
         if (now - lastTapTime < 450) {
-          btn.innerHTML = '<span>OK!</span>';
-          resolveLockSuccess();
+          dot2.classList.add('active');
+          setTimeout(() => resolveLockSuccess(), 80);
         } else {
-          btn.innerHTML = '<span>1/2</span>';
+          dot1.classList.add('active');
         }
         lastTapTime = now;
       });
       gimmickContainer.appendChild(btn);
 
-    // 5. 横スライド (Lv.5)
+    // 5. 横スライド: >>> の点滅矢印と右のゴール
     } else if (lock.type === 'slide_right') {
-      hintText.textContent = 'つまみを右端までグッと引け！';
       const track = document.createElement('div');
       track.className = 'slider-horizontal';
 
+      const arrows = document.createElement('div');
+      arrows.className = 'slider-arrows-bg';
+      arrows.textContent = '▶ ▶ ▶';
+
       const goal = document.createElement('div');
       goal.className = 'slider-goal-h';
-      goal.textContent = 'GOAL!';
+      goal.textContent = '🔓';
 
       const knob = document.createElement('div');
       knob.className = 'slider-knob-h';
       knob.textContent = '👉';
 
+      track.appendChild(arrows);
       track.appendChild(goal);
       track.appendChild(knob);
       gimmickContainer.appendChild(track);
@@ -319,8 +328,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isDragging) return;
         const curX = (e.touches ? e.touches[0].clientX : e.clientX);
         const rect = track.getBoundingClientRect();
-        const maxDist = rect.width - 64;
-        let diff = curX - rect.left - 26;
+        const maxDist = rect.width - 66;
+        let diff = curX - rect.left - 27;
         diff = Math.max(6, Math.min(maxDist, diff));
         knob.style.left = diff + 'px';
         if (diff >= maxDist - 8) {
@@ -332,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isDragging) {
           isDragging = false;
           knob.style.left = '6px';
-          triggerMistake('すっぽ抜けた！端まで引き切ろう');
+          triggerMistake();
         }
       }
       knob.addEventListener('mousedown', onStart);
@@ -342,20 +351,24 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('mouseup', onEnd);
       window.addEventListener('touchend', onEnd);
 
-    // 6. 上引きレバー (Lv.6)
+    // 6. 上引きレバー: ^^^ の点滅矢印と上のゴール
     } else if (lock.type === 'slide_up') {
-      hintText.textContent = 'かんぬきを真上へ引き上げろ！';
       const track = document.createElement('div');
       track.className = 'slider-vertical';
 
+      const arrows = document.createElement('div');
+      arrows.className = 'slider-arrows-v-bg';
+      arrows.textContent = '▲ ▲';
+
       const goal = document.createElement('div');
       goal.className = 'slider-goal-v';
-      goal.textContent = 'UP!';
+      goal.textContent = '🔓';
 
       const knob = document.createElement('div');
       knob.className = 'slider-knob-v';
       knob.textContent = '☝️';
 
+      track.appendChild(arrows);
       track.appendChild(goal);
       track.appendChild(knob);
       gimmickContainer.appendChild(track);
@@ -369,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isDragging) return;
         const curY = (e.touches ? e.touches[0].clientY : e.clientY);
         const rect = track.getBoundingClientRect();
-        const maxDist = rect.height - 58;
+        const maxDist = rect.height - 60;
         let diff = rect.bottom - curY - 26;
         diff = Math.max(6, Math.min(maxDist, diff));
         knob.style.bottom = diff + 'px';
@@ -382,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isDragging) {
           isDragging = false;
           knob.style.bottom = '6px';
-          triggerMistake('途中で落ちた！上まで引き上げろ');
+          triggerMistake();
         }
       }
       knob.addEventListener('mousedown', onStart);
@@ -392,32 +405,35 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('mouseup', onEnd);
       window.addEventListener('touchend', onEnd);
 
-    // 7. カラー二択 (Lv.7)
+    // 7. カラー一致: 上にターゲット色円、下に2色ボタン
     } else if (lock.type === 'color_choice') {
       const isBlueTarget = Math.random() > 0.5;
-      hintText.textContent = isBlueTarget ? '【 青 】のボタンを押せ！' : '【 赤 】のボタンを押せ！';
+
+      const wrap = document.createElement('div');
+      wrap.className = 'color-match-wrap';
+
+      const targetCircle = document.createElement('div');
+      targetCircle.className = 'color-target-display';
+      targetCircle.style.background = isBlueTarget ? '#1e90ff' : '#ff4757';
+      wrap.appendChild(targetCircle);
 
       const row = document.createElement('div');
       row.className = 'choice-row';
 
       const btnA = document.createElement('button');
-      btnA.className = 'choice-btn';
+      btnA.className = 'color-choice-btn';
       btnA.style.background = '#1e90ff';
-      btnA.style.color = '#ffffff';
-      btnA.textContent = '青 🔵';
 
       const btnB = document.createElement('button');
-      btnB.className = 'choice-btn';
+      btnB.className = 'color-choice-btn';
       btnB.style.background = '#ff4757';
-      btnB.style.color = '#ffffff';
-      btnB.textContent = '赤 🔴';
 
       btnA.addEventListener('click', () => {
         if (isBlueTarget) {
           playSound('tap');
           resolveLockSuccess();
         } else {
-          triggerMistake('色が違う！');
+          triggerMistake();
         }
       });
 
@@ -426,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
           playSound('tap');
           resolveLockSuccess();
         } else {
-          triggerMistake('色が違う！');
+          triggerMistake();
         }
       });
 
@@ -437,13 +453,16 @@ document.addEventListener('DOMContentLoaded', () => {
         row.appendChild(btnB);
         row.appendChild(btnA);
       }
-      gimmickContainer.appendChild(row);
+      wrap.appendChild(row);
+      gimmickContainer.appendChild(wrap);
 
-    // 8. 激連打 (Lv.8)
+    // 8. 激連打: ⚡ アイコンとプログレスバー
     } else if (lock.type === 'rapid_mash') {
-      const targetClicks = 4 + lock.round * 2; // 6〜10回
+      const targetClicks = 4 + lock.round * 2;
       let count = 0;
-      hintText.textContent = `猛烈に連打せよ！ (${targetClicks}回)`;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'mash-wrap';
 
       const bar = document.createElement('div');
       bar.className = 'mash-bar';
@@ -452,8 +471,8 @@ document.addEventListener('DOMContentLoaded', () => {
       bar.appendChild(fill);
 
       const btn = document.createElement('button');
-      btn.className = 'pop-action-btn';
-      btn.innerHTML = '<span>MASH!</span><span style="font-size:0.9rem;">⚡連打⚡</span>';
+      btn.className = 'icon-action-btn';
+      btn.textContent = '⚡';
       btn.addEventListener('click', () => {
         count++;
         playSound('tap');
@@ -462,27 +481,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (count >= targetClicks) resolveLockSuccess();
       });
 
-      gimmickContainer.appendChild(bar);
-      gimmickContainer.appendChild(btn);
+      wrap.appendChild(bar);
+      wrap.appendChild(btn);
+      gimmickContainer.appendChild(wrap);
 
-    // 9. 長押しチャージ (Lv.9)
+    // 9. 長押しチャージ: 👇 アイコンと円形プログレス
     } else if (lock.type === 'hold_charge') {
       const requiredHoldMs = 850 + lock.round * 100;
-      hintText.textContent = '長押ししてリングを満タンにせよ！';
 
       const wrap = document.createElement('div');
       wrap.className = 'hold-circle-wrap';
 
       wrap.innerHTML = `
-        <svg class="hold-svg-ring" viewBox="0 0 120 120">
-          <circle class="hold-ring-bg" cx="60" cy="60" r="54" />
-          <circle id="hold-ring-fill" class="hold-ring-fill" cx="60" cy="60" r="54" />
+        <svg class="hold-svg-ring" viewBox="0 0 125 125">
+          <circle class="hold-ring-bg" cx="62.5" cy="62.5" r="54" />
+          <circle id="hold-ring-fill" class="hold-ring-fill" cx="62.5" cy="62.5" r="54" />
         </svg>
       `;
 
       const btn = document.createElement('button');
       btn.className = 'hold-btn';
-      btn.textContent = 'HOLD!';
+      btn.textContent = '👇';
       wrap.appendChild(btn);
       gimmickContainer.appendChild(wrap);
 
@@ -494,14 +513,12 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         holdStart = Date.now();
         playSound('tap');
-        btn.textContent = 'CHARGING';
         holdTimer = setInterval(() => {
           const elapsed = Date.now() - holdStart;
           const pct = Math.min(1, elapsed / requiredHoldMs);
           fill.style.strokeDashoffset = (339 * (1 - pct)) + '';
           if (elapsed >= requiredHoldMs) {
             clearInterval(holdTimer);
-            btn.textContent = 'FULL!';
             resolveLockSuccess();
           }
         }, 30);
@@ -512,8 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
           clearInterval(holdTimer);
           holdTimer = null;
           fill.style.strokeDashoffset = '339';
-          btn.textContent = 'HOLD!';
-          triggerMistake('離すのが早い！満タンまでホールド');
+          triggerMistake();
         }
       }
 
@@ -522,9 +538,14 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('mouseup', onCancel);
       window.addEventListener('touchend', onCancel);
 
-    // 10. ダイヤル合わせ (Lv.10)
+    // 10. ダイヤル合わせ: 上部の▼マークと回転ノブ
     } else if (lock.type === 'dial_turn') {
-      hintText.textContent = 'ダイヤルをタップして▲を真上に合わせろ！';
+      const wrap = document.createElement('div');
+      wrap.className = 'dial-wrap';
+
+      const targetMark = document.createElement('div');
+      targetMark.className = 'dial-target-mark';
+      targetMark.textContent = '▼';
 
       let rotation = (Math.floor(Math.random() * 3) + 1) * 90;
       const dial = document.createElement('div');
@@ -533,13 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const ind = document.createElement('div');
       ind.className = 'dial-indicator';
-      const label = document.createElement('div');
-      label.className = 'dial-center-label';
-      label.textContent = '▲';
-
       dial.appendChild(ind);
-      dial.appendChild(label);
-      gimmickContainer.appendChild(dial);
 
       dial.addEventListener('click', () => {
         playSound('tap');
@@ -549,19 +564,20 @@ document.addEventListener('DOMContentLoaded', () => {
           setTimeout(() => resolveLockSuccess(), 120);
         }
       });
+
+      wrap.appendChild(targetMark);
+      wrap.appendChild(dial);
+      gimmickContainer.appendChild(wrap);
     }
   }
 
   // Mistake Trigger
-  function triggerMistake(msg) {
+  function triggerMistake() {
     playSound('mistake');
     lockFace.textContent = getRandomFace('error');
     lockFace.classList.add('shake');
-    hintText.textContent = msg;
-    hintText.style.color = '#ff4757';
     setTimeout(() => {
       lockFace.classList.remove('shake');
-      hintText.style.color = '#a4b0be';
     }, 400);
   }
 
@@ -577,7 +593,6 @@ document.addEventListener('DOMContentLoaded', () => {
     void timeAddedAnim.offsetWidth;
     timeAddedAnim.classList.add('animate');
 
-    // Score based on difficulty points
     score += currentLock.points;
     unlockedCountNum++;
     scoreDisplay.textContent = score;
@@ -599,7 +614,8 @@ document.addEventListener('DOMContentLoaded', () => {
       currentCard.style.transform = 'translateY(0) scale(1)';
       currentCard.style.opacity = '1';
 
-      nextCard.querySelector('.card-badge').textContent = `NEXT: Lv.${nextLock.level} ${nextLock.name}`;
+      const nextBadge = document.getElementById('next-lock-badge');
+      if (nextBadge) nextBadge.textContent = `NEXT: Lv.${nextLock.level} ${nextLock.icon}`;
       nextCard.querySelector('.lock-face').textContent = nextLock.face;
     }, 200);
   }
@@ -646,13 +662,13 @@ document.addEventListener('DOMContentLoaded', () => {
     startOverlay.classList.remove('active');
     resultOverlay.classList.remove('active');
 
-    // Build Round 1 Queue (Level 1 to 10 strictly in order)
     lockQueue = buildRoundQueue(1);
     currentLock = getNextLockFromQueue();
     nextLock = getNextLockFromQueue();
 
     renderGimmick(currentLock);
-    nextCard.querySelector('.card-badge').textContent = `NEXT: Lv.${nextLock.level} ${nextLock.name}`;
+    const nextBadge = document.getElementById('next-lock-badge');
+    if (nextBadge) nextBadge.textContent = `NEXT: Lv.${nextLock.level} ${nextLock.icon}`;
     nextCard.querySelector('.lock-face').textContent = nextLock.face;
 
     startTimer();
@@ -668,16 +684,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let rank = 'C';
-    let titleComment = '「まだまだ見習いピッカー」';
+    let commentIcon = '🥉';
     if (score >= 4500) {
       rank = 'S';
-      titleComment = '「伝説の神速怪盗ルパン！🗝️」';
+      commentIcon = '👑';
     } else if (score >= 2800) {
       rank = 'A';
-      titleComment = '「超一流の解錠プロフェッショナル！✨」';
+      commentIcon = '🥇';
     } else if (score >= 1400) {
       rank = 'B';
-      titleComment = '「手際のいいベテラン泥棒！🏃」';
+      commentIcon = '🥈';
     }
 
     rankBadgeEl.textContent = `RANK ${rank}`;
@@ -686,10 +702,11 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (rank === 'B') rankBadgeEl.style.background = '#1e90ff';
     else rankBadgeEl.style.background = '#a4b0be';
 
-    resultTitleComment.textContent = titleComment;
+    const resultComment = document.getElementById('result-title-comment');
+    if (resultComment) resultComment.textContent = commentIcon;
+
     finalScoreEl.textContent = score;
-    finalLocksEl.textContent = `${unlockedCountNum} 個`;
-    finalBonusEl.textContent = `+${Math.floor(score * 0.25)} pts`;
+    finalLocksEl.textContent = unlockedCountNum;
     highScoreEl.textContent = highScore;
 
     resultOverlay.classList.add('active');

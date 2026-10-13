@@ -36,7 +36,7 @@
         <div class="card-shackle"></div>
         <div class="card-body">
           <div class="lock-face">👀</div>
-          <div class="card-badge">NEXT LOCK</div>
+          <div class="card-badge" id="next-lock-badge">NEXT 🔒</div>
         </div>
       </div>
 
@@ -45,37 +45,32 @@
         <div class="card-shackle" id="current-shackle"></div>
         <div class="card-body">
           <div class="lock-header">
-            <span id="lock-name" class="lock-type-title">TAP LOCK</span>
-            <span id="lock-difficulty" class="difficulty-stars">★☆☆</span>
+            <span id="lock-level-badge" class="level-badge">Lv.1</span>
+            <span id="lock-difficulty" class="difficulty-stars">★☆☆☆☆</span>
           </div>
 
           <!-- コミカルな南京錠の表情 -->
           <div id="lock-face" class="lock-face">😏</div>
 
-          <!-- ギミック操作エリア（動的に切り替え） -->
+          <!-- ギミック操作エリア（ピクトグラム・図形による直感UI） -->
           <div id="gimmick-container" class="gimmick-area">
-            <!-- JavaScriptでギミックUIを動的挿入 -->
+            <!-- JavaScriptで言語不要の直感ギミックUIを挿入 -->
           </div>
         </div>
       </div>
     </main>
 
-    <!-- フッターヒント -->
-    <footer id="footer-hint">
-      <p id="hint-text">画面の指示に従ってすばやく解錠せよ！</p>
-    </footer>
-
-    <!-- スタート画面オーバーレイ -->
+    <!-- スタート画面オーバーレイ（文字を最小限にし、直感アイコンで提示） -->
     <div id="start-overlay" class="screen-overlay active">
       <div class="overlay-card bounce-in">
-        <div class="hero-icon">🔐✨</div>
+        <div class="hero-icon">🔐💥🔓</div>
         <h1 class="game-title">POP LOCK RUSH!</h1>
-        <p class="game-desc">
-          次々現れる鍵をすばやく解除せよ！<br>
-          1つ解錠するごとに <strong>+0.5秒</strong> 制限時間延長！<br>
-          難易度の高い鍵ほど高得点！
-        </p>
-        <button id="start-btn" class="pop-btn primary-btn">START RUSH!</button>
+        <div class="icon-tutorial">
+          <div class="tuto-item">👆 <span>TAP</span></div>
+          <div class="tuto-item">👉 <span>SLIDE</span></div>
+          <div class="tuto-item">⏱️ <span>+0.5s</span></div>
+        </div>
+        <button id="start-btn" class="pop-btn primary-btn">START ▶</button>
       </div>
     </div>
 
@@ -84,28 +79,24 @@
       <div class="overlay-card pop-up">
         <div id="result-rank-badge" class="rank-badge">RANK S</div>
         <h2 id="result-title" class="result-title">TIME'S UP!</h2>
-        <div id="result-title-comment" class="result-comment">「神速のピッキングマスター！」</div>
+        <div id="result-title-comment" class="result-comment">🏆</div>
 
         <div class="result-stats">
           <div class="stat-row">
-            <span>最終スコア:</span>
+            <span>SCORE:</span>
             <strong id="final-score" class="highlight-val">0</strong>
           </div>
           <div class="stat-row">
-            <span>解錠した数:</span>
-            <strong id="final-locks">0 個</strong>
+            <span>UNLOCKED:</span>
+            <strong id="final-locks">0</strong>
           </div>
           <div class="stat-row">
-            <span>難易度ボーナス:</span>
-            <strong id="final-bonus">+0 pts</strong>
-          </div>
-          <div class="stat-row">
-            <span>ハイスコア:</span>
+            <span>HIGH SCORE:</span>
             <strong id="high-score">0</strong>
           </div>
         </div>
 
-        <button id="retry-btn" class="pop-btn primary-btn">もう一度挑戦！ 🔄</button>
+        <button id="retry-btn" class="pop-btn primary-btn">RETRY 🔄</button>
       </div>
     </div>
   </div>
