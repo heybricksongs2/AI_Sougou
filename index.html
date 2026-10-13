@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>🔐 POP LOCK RUSH! 🔓</title>
+  <title>🔐 LOCK LOCKER LOCKEST 🔓</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -70,17 +70,40 @@
       </div>
     </main>
 
-    <!-- スタート画面オーバーレイ（文字を最小限にし、直感アイコンで提示） -->
+    <!-- スタート画面オーバーレイ（LOCK LOCKER LOCKEST） -->
     <div id="start-overlay" class="screen-overlay active">
       <div class="overlay-card bounce-in">
         <div class="hero-icon">🔐💥🔓</div>
-        <h1 class="game-title">POP LOCK RUSH!</h1>
-        <div class="icon-tutorial">
-          <div class="tuto-item">👆 <span>TAP</span></div>
-          <div class="tuto-item">👉 <span>SLIDE</span></div>
-          <div class="tuto-item">⏱️ <span>+1.0s</span></div>
+        <h1 class="game-title">LOCK LOCKER LOCKEST</h1>
+        
+        <!-- ノンバーバル説明: 🔒 ➔ 🔓 ➔ +1.0s ⏱️ -->
+        <div class="lock-tutorial-flow">
+          <div class="tuto-flow-step">
+            <span class="flow-icon">🔒</span>
+          </div>
+          <div class="tuto-flow-arrow">➔</div>
+          <div class="tuto-flow-step">
+            <span class="flow-icon">🔓</span>
+          </div>
+          <div class="tuto-flow-arrow">➔</div>
+          <div class="tuto-flow-step reward-step">
+            <span class="flow-badge">+1.0s</span>
+            <span class="flow-icon">⏱️</span>
+          </div>
         </div>
-        <button id="start-btn" class="pop-btn primary-btn">START ▶</button>
+
+        <!-- 長押しSTARTボタン（3, 2, 1 カウントダウン） -->
+        <button id="start-btn" class="pop-btn primary-btn hold-start-btn">
+          <div class="hold-progress-fill" id="hold-progress-fill"></div>
+          <div class="hold-content" id="hold-content">
+            <span class="hold-icon">👆</span>
+            <span class="hold-label">HOLD TO START</span>
+          </div>
+          <div class="hold-countdown-box" id="hold-countdown-box" style="display: none;">
+            <span class="hold-num" id="hold-countdown-num">3</span>
+          </div>
+        </button>
+
         <button id="start-debug-btn" class="debug-start-link">🛠️ DEBUG MODE</button>
       </div>
     </div>
