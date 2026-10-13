@@ -1,4 +1,4 @@
-// POP LOCK RUSH! - 15 Non-Verbal Iconic Gimmicks with Strict Progression
+// POP LOCK RUSH! - 30 Non-Verbal Gimmicks (Progression 1-30 & Round 2 Random)
 document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const timeDisplay = document.getElementById('time-display');
@@ -135,23 +135,41 @@ document.addEventListener('DOMContentLoaded', () => {
     soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
   });
 
-  // 15 Gimmick Types: Ranked Level 1 to 15
+  // 30 Gimmick Definitions: Level 1 to 30
   const LOCK_DEFINITIONS = [
-    { level: 1,  type: 'single_tap',    icon: '👆', stars: '★☆☆☆☆', basePoints: 100 },
-    { level: 2,  type: 'toggle_switch', icon: '🎚️', stars: '★☆☆☆☆', basePoints: 120 },
-    { level: 3,  type: 'key_insert',    icon: '🔑', stars: '★☆☆☆☆', basePoints: 140 },
-    { level: 4,  type: 'key_twist',     icon: '🗝️', stars: '★★☆☆☆', basePoints: 160 },
-    { level: 5,  type: 'double_tap',    icon: '✌️', stars: '★★☆☆☆', basePoints: 180 },
-    { level: 6,  type: 'slide_right',   icon: '➡️', stars: '★★☆☆☆', basePoints: 200 },
-    { level: 7,  type: 'slide_left',    icon: '⬅️', stars: '★★★☆☆', basePoints: 230 },
-    { level: 8,  type: 'slide_up',      icon: '⬆️', stars: '★★★☆☆', basePoints: 260 },
-    { level: 9,  type: 'slide_down',    icon: '⬇️', stars: '★★★☆☆', basePoints: 290 },
-    { level: 10, type: 'color_choice',  icon: '🎨', stars: '★★★★☆', basePoints: 330 },
-    { level: 11, type: 'shape_choice',  icon: '🔷', stars: '★★★★☆', basePoints: 360 },
-    { level: 12, type: 'triple_tap',    icon: '👌', stars: '★★★★☆', basePoints: 400 },
-    { level: 13, type: 'rapid_mash',    icon: '⚡', stars: '★★★★★', basePoints: 450 },
-    { level: 14, type: 'fingerprint',   icon: '🛡️', stars: '★★★★★', basePoints: 500 },
-    { level: 15, type: 'dial_turn',     icon: '🧭', stars: '★★★★★', basePoints: 580 }
+    // --- 通常版 (Lv.1 〜 Lv.15) ---
+    { level: 1,  type: 'single_tap',       icon: '👆', stars: '★☆☆☆☆', basePoints: 100 },
+    { level: 2,  type: 'switch_slide',     icon: '🎚️', stars: '★☆☆☆☆', basePoints: 120 },
+    { level: 3,  type: 'key_drag',         icon: '🔑', stars: '★☆☆☆☆', basePoints: 140 },
+    { level: 4,  type: 'slide_twist',      icon: '🗝️', stars: '★★☆☆☆', basePoints: 160 },
+    { level: 5,  type: 'double_tap',       icon: '✌️', stars: '★★☆☆☆', basePoints: 180 },
+    { level: 6,  type: 'slide_right',      icon: '➡️', stars: '★★☆☆☆', basePoints: 200 },
+    { level: 7,  type: 'slide_left',       icon: '⬅️', stars: '★★★☆☆', basePoints: 220 },
+    { level: 8,  type: 'slide_up',         icon: '⬆️', stars: '★★★☆☆', basePoints: 240 },
+    { level: 9,  type: 'slide_down',       icon: '⬇️', stars: '★★★☆☆', basePoints: 260 },
+    { level: 10, type: 'color_choice_2',   icon: '🎨', stars: '★★★☆☆', basePoints: 280 },
+    { level: 11, type: 'shape_choice_2',   icon: '🔷', stars: '★★★★☆', basePoints: 310 },
+    { level: 12, type: 'triple_tap',       icon: '👌', stars: '★★★★☆', basePoints: 340 },
+    { level: 13, type: 'rapid_mash',       icon: '⚡', stars: '★★★★☆', basePoints: 370 },
+    { level: 14, type: 'fingerprint',      icon: '🛡️', stars: '★★★★★', basePoints: 420 },
+    { level: 15, type: 'dial_turn',        icon: '🧭', stars: '★★★★★', basePoints: 480 },
+
+    // --- 高難度・Ex版 (Lv.16 〜 Lv.30) ---
+    { level: 16, type: 'tiny_tap',         icon: '🔍', stars: '★★☆☆☆', basePoints: 200 }, // Lv.1の極小版
+    { level: 17, type: 'switch_slide_rev', icon: '🎛️', stars: '★★☆☆☆', basePoints: 230 }, // Lv.2の逆向きスライド
+    { level: 18, type: 'key_drag_precise', icon: '🎯', stars: '★★★☆☆', basePoints: 260 }, // Lv.3の極小鍵穴ドラッグ
+    { level: 19, type: 'slide_twist_180',  icon: '🔄', stars: '★★★☆☆', basePoints: 290 }, // Lv.4の180度回転
+    { level: 20, type: 'quad_tap',         icon: '✋', stars: '★★★☆☆', basePoints: 320 }, // Lv.5の4連打
+    { level: 21, type: 'slide_bounce_r',   icon: '⏩', stars: '★★★★☆', basePoints: 360 }, // Lv.6の往復スライド右
+    { level: 22, type: 'slide_bounce_l',   icon: '⏪', stars: '★★★★☆', basePoints: 390 }, // Lv.7の往復スライド左
+    { level: 23, type: 'slide_up_long',    icon: '🚀', stars: '★★★★☆', basePoints: 430 }, // Lv.8のロング引き上げ
+    { level: 24, type: 'slide_down_long',  icon: '⚓', stars: '★★★★☆', basePoints: 460 }, // Lv.9のロング引き下げ
+    { level: 25, type: 'color_choice_3',   icon: '🌈', stars: '★★★★☆', basePoints: 500 }, // Lv.10の3択カラー
+    { level: 26, type: 'shape_choice_3',   icon: '💠', stars: '★★★★★', basePoints: 540 }, // Lv.11の3択シェイプ
+    { level: 27, type: 'five_tap',         icon: '🖐️', stars: '★★★★★', basePoints: 580 }, // Lv.12の5連タップ
+    { level: 28, type: 'super_mash',       icon: '💥', stars: '★★★★★', basePoints: 630 }, // Lv.13の超激連打
+    { level: 29, type: 'fingerprint_long', icon: '🧬', stars: '★★★★★', basePoints: 690 }, // Lv.14の長時間精密スキャン
+    { level: 30, type: 'dial_turn_precise',icon: '⏰', stars: '★★★★★', basePoints: 750 }  // Lv.15の微細ダイヤル
   ];
 
   const faces = {
@@ -166,17 +184,31 @@ document.addEventListener('DOMContentLoaded', () => {
     return list[Math.floor(Math.random() * list.length)];
   }
 
-  // Round-Robin Queue: 1周15種類すべて解き終えるまで同じ鍵は再出現しない
+  // Queue System
+  // Round 1: Level 1 to 30 strictly in order
+  // Round 2+: Completely Random (完全ランダム)
   let lockQueue = [];
   let roundNumber = 1;
 
   function buildRoundQueue(round) {
-    return LOCK_DEFINITIONS.map(def => ({
-      ...def,
-      round,
-      points: def.basePoints + (round - 1) * 90,
-      face: getRandomFace('normal')
-    }));
+    if (round === 1) {
+      // 1周目は難易度順 (Lv.1 -> Lv.30)
+      return LOCK_DEFINITIONS.map(def => ({
+        ...def,
+        round,
+        points: def.basePoints,
+        face: getRandomFace('normal')
+      }));
+    } else {
+      // 2周目以降は完全ランダムにシャッフル
+      const shuffled = [...LOCK_DEFINITIONS].sort(() => Math.random() - 0.5);
+      return shuffled.map(def => ({
+        ...def,
+        round,
+        points: def.basePoints + (round - 1) * 100,
+        face: getRandomFace('normal')
+      }));
+    }
   }
 
   function getNextLockFromQueue() {
@@ -198,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let nextLock = null;
   let warningBeepTimer = 0;
 
-  // Render 15 Non-Verbal Gimmicks
+  // Render 30 Non-Verbal Gimmicks
   function renderGimmick(lock) {
     gimmickContainer.innerHTML = '';
     lockLevelBadge.textContent = `Lv.${lock.level} ${lock.icon}`;
@@ -206,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lockFace.textContent = lock.face;
     currentShackle.classList.remove('open');
 
-    // 1. ワンタップ
+    // 1. ワンタップ (通常)
     if (lock.type === 'single_tap') {
       const btn = document.createElement('button');
       btn.className = 'icon-action-btn';
@@ -217,423 +249,246 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       gimmickContainer.appendChild(btn);
 
-    // 2. 電源スイッチ (トグル)
-    } else if (lock.type === 'toggle_switch') {
-      const wrap = document.createElement('div');
-      wrap.className = 'switch-container';
-
-      const sw = document.createElement('div');
-      sw.className = 'toggle-switch-ui';
-      const thumb = document.createElement('div');
-      thumb.className = 'switch-thumb-ui';
-      thumb.textContent = '⚪';
-      sw.appendChild(thumb);
-      wrap.appendChild(sw);
-
-      sw.addEventListener('click', () => {
+    // 16. 極小ボタンタップ (Ex Lv.1)
+    } else if (lock.type === 'tiny_tap') {
+      const btn = document.createElement('button');
+      btn.className = 'tiny-action-btn';
+      btn.textContent = '🎯';
+      // ランダムな位置に配置
+      const offsetX = (Math.random() - 0.5) * 160;
+      const offsetY = (Math.random() - 0.5) * 100;
+      btn.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+      btn.addEventListener('click', () => {
         playSound('tap');
-        sw.classList.add('on');
-        thumb.textContent = '🟢';
-        setTimeout(() => resolveLockSuccess(), 120);
+        resolveLockSuccess();
       });
-      gimmickContainer.appendChild(wrap);
+      gimmickContainer.appendChild(btn);
 
-    // 3. 鍵差し込み
-    } else if (lock.type === 'key_insert') {
-      const zone = document.createElement('div');
-      zone.className = 'keyhole-zone';
+    // 2. スイッチ（左から右へ小さいスライド操作）
+    } else if (lock.type === 'switch_slide') {
+      const track = document.createElement('div');
+      track.className = 'switch-slider-track';
 
-      const hole = document.createElement('div');
-      hole.className = 'keyhole-target';
-      hole.textContent = '🕳️';
+      const arrows = document.createElement('div');
+      arrows.className = 'switch-arrows-hint';
+      arrows.textContent = '▶▶';
+
+      const knob = document.createElement('div');
+      knob.className = 'switch-draggable-knob';
+      knob.textContent = '⚪';
+
+      track.appendChild(arrows);
+      track.appendChild(knob);
+      gimmickContainer.appendChild(track);
+
+      let isDragging = false;
+      function onStart() { isDragging = true; playSound('tap'); }
+      function onMove(e) {
+        if (!isDragging) return;
+        const curX = (e.touches ? e.touches[0].clientX : e.clientX);
+        const rect = track.getBoundingClientRect();
+        const maxDist = rect.width - 56;
+        let diff = curX - rect.left - 24;
+        diff = Math.max(4, Math.min(maxDist, diff));
+        knob.style.left = diff + 'px';
+        if (diff >= maxDist - 6) {
+          isDragging = false;
+          track.classList.add('on');
+          knob.textContent = '🟢';
+          setTimeout(() => resolveLockSuccess(), 100);
+        }
+      }
+      function onEnd() {
+        if (isDragging) {
+          isDragging = false;
+          knob.style.left = '4px';
+          triggerMistake();
+        }
+      }
+      knob.addEventListener('mousedown', onStart);
+      knob.addEventListener('touchstart', onStart, { passive: true });
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, { passive: true });
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+
+    // 17. 逆向きスイッチスライド (Ex Lv.2: 右から左へ倒す)
+    } else if (lock.type === 'switch_slide_rev') {
+      const track = document.createElement('div');
+      track.className = 'switch-slider-track on';
+
+      const arrows = document.createElement('div');
+      arrows.className = 'switch-arrows-hint';
+      arrows.textContent = '◀◀';
+
+      const knob = document.createElement('div');
+      knob.className = 'switch-draggable-knob';
+      knob.style.left = 'auto';
+      knob.style.right = '4px';
+      knob.textContent = '🔴';
+
+      track.appendChild(arrows);
+      track.appendChild(knob);
+      gimmickContainer.appendChild(track);
+
+      let isDragging = false;
+      function onStart() { isDragging = true; playSound('tap'); }
+      function onMove(e) {
+        if (!isDragging) return;
+        const curX = (e.touches ? e.touches[0].clientX : e.clientX);
+        const rect = track.getBoundingClientRect();
+        const maxDist = rect.width - 56;
+        let diff = rect.right - curX - 24;
+        diff = Math.max(4, Math.min(maxDist, diff));
+        knob.style.right = diff + 'px';
+        if (diff >= maxDist - 6) {
+          isDragging = false;
+          track.classList.remove('on');
+          knob.textContent = '🟢';
+          setTimeout(() => resolveLockSuccess(), 100);
+        }
+      }
+      function onEnd() {
+        if (isDragging) {
+          isDragging = false;
+          knob.style.right = '4px';
+          triggerMistake();
+        }
+      }
+      knob.addEventListener('mousedown', onStart);
+      knob.addEventListener('touchstart', onStart, { passive: true });
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, { passive: true });
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+
+    // 3. 鍵ドラッグ差し込み (スライドさせて鍵穴まで持っていく)
+    } else if (lock.type === 'key_drag' || lock.type === 'key_drag_precise') {
+      const isPrecise = (lock.type === 'key_drag_precise');
+      const container = document.createElement('div');
+      container.className = 'key-drag-container';
+
+      const targetHole = document.createElement('div');
+      targetHole.className = 'key-drop-target';
+      if (isPrecise) {
+        targetHole.style.width = '52px';
+        targetHole.style.height = '52px';
+        targetHole.style.fontSize = '1.8rem';
+      }
+      targetHole.textContent = '🕳️';
 
       const guide = document.createElement('div');
       guide.className = 'key-arrow-guide';
       guide.textContent = '⬆️';
 
-      const keyBtn = document.createElement('button');
-      keyBtn.className = 'key-draggable';
-      keyBtn.textContent = '🔑';
+      const keyItem = document.createElement('div');
+      keyItem.className = 'drag-key-item';
+      keyItem.textContent = '🔑';
 
-      keyBtn.addEventListener('click', () => {
+      container.appendChild(targetHole);
+      container.appendChild(guide);
+      container.appendChild(keyItem);
+      gimmickContainer.appendChild(container);
+
+      let isDragging = false;
+      let startMouseY = 0;
+      let startMouseX = 0;
+
+      function onStart(e) {
+        isDragging = true;
         playSound('tap');
-        keyBtn.style.transform = 'translateY(-36px) scale(0.85)';
-        hole.textContent = '🗝️';
-        setTimeout(() => resolveLockSuccess(), 120);
-      });
+        const point = e.touches ? e.touches[0] : e;
+        startMouseX = point.clientX;
+        startMouseY = point.clientY;
+      }
+      function onMove(e) {
+        if (!isDragging) return;
+        const point = e.touches ? e.touches[0] : e;
+        const dy = point.clientY - startMouseY;
+        const dx = point.clientX - startMouseX;
+        keyItem.style.transform = `translate(${dx}px, ${dy}px) scale(1.05)`;
 
-      zone.appendChild(hole);
-      zone.appendChild(guide);
-      zone.appendChild(keyBtn);
-      gimmickContainer.appendChild(zone);
+        // 鍵穴との衝突判定
+        const keyRect = keyItem.getBoundingClientRect();
+        const holeRect = targetHole.getBoundingClientRect();
+        const dist = Math.hypot(
+          (keyRect.left + keyRect.width / 2) - (holeRect.left + holeRect.width / 2),
+          (keyRect.top + keyRect.height / 2) - (holeRect.top + holeRect.height / 2)
+        );
 
-    // 4. 鍵をひねる (Key Twist)
-    } else if (lock.type === 'key_twist') {
-      const btn = document.createElement('button');
-      btn.className = 'key-twist-btn';
-      btn.textContent = '🗝️';
+        const threshold = isPrecise ? 32 : 55;
+        if (dist < threshold) {
+          targetHole.classList.add('hovered');
+        } else {
+          targetHole.classList.remove('hovered');
+        }
+      }
+      function onEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        if (targetHole.classList.contains('hovered')) {
+          keyItem.style.display = 'none';
+          targetHole.textContent = '🗝️';
+          resolveLockSuccess();
+        } else {
+          keyItem.style.transform = 'translate(0, 0)';
+          targetHole.classList.remove('hovered');
+          triggerMistake();
+        }
+      }
+      keyItem.addEventListener('mousedown', onStart);
+      keyItem.addEventListener('touchstart', onStart, { passive: true });
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, { passive: true });
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
 
-      let twisted = false;
-      btn.addEventListener('click', () => {
-        if (!twisted) {
-          twisted = true;
-          playSound('tap');
-          btn.style.transform = 'rotate(90deg) scale(1.05)';
+    // 4. スライドして回転 (Slide & Twist) & 19 (180度回転)
+    } else if (lock.type === 'slide_twist' || lock.type === 'slide_twist_180') {
+      const is180 = (lock.type === 'slide_twist_180');
+      const stage = document.createElement('div');
+      stage.className = 'twist-stage';
+
+      const lockBox = document.createElement('div');
+      lockBox.className = 'twist-lock-box';
+
+      const keyEl = document.createElement('div');
+      keyEl.className = 'twistable-key';
+      keyEl.textContent = '🗝️';
+      keyEl.style.transform = 'translateX(-35px)';
+
+      const guideArrow = document.createElement('div');
+      guideArrow.style.fontSize = '1.3rem';
+      guideArrow.style.color = '#1e90ff';
+      guideArrow.textContent = '➡️ ↻';
+
+      lockBox.appendChild(keyEl);
+      stage.appendChild(guideArrow);
+      stage.appendChild(lockBox);
+      gimmickContainer.appendChild(stage);
+
+      let step = 0; // 0: slid, 1: twisted
+      keyEl.addEventListener('click', () => {
+        playSound('tap');
+        if (step === 0) {
+          // まずスライドイン
+          step = 1;
+          keyEl.style.transform = 'translateX(0px)';
+          guideArrow.textContent = is180 ? '↺ 180°' : '↻ 90°';
+        } else if (step === 1) {
+          // 次に回転
+          const targetDeg = is180 ? -180 : 90;
+          keyEl.style.transform = `translateX(0px) rotate(${targetDeg}deg)`;
           setTimeout(() => resolveLockSuccess(), 120);
         }
       });
-      gimmickContainer.appendChild(btn);
 
-    // 5. ダブルタップ (2回)
-    } else if (lock.type === 'double_tap') {
-      let lastTapTime = 0;
+    // 5, 12, 20, 27: マルチタップ系 (ダブル/3回/4回/5回)
+    } else if (['double_tap', 'triple_tap', 'quad_tap', 'five_tap'].includes(lock.type)) {
+      const counts = { double_tap: 2, triple_tap: 3, quad_tap: 4, five_tap: 5 };
+      const icons = { double_tap: '✌️', triple_tap: '👌', quad_tap: '✋', five_tap: '🖐️' };
+      const targetCount = counts[lock.type];
 
-      const btn = document.createElement('button');
-      btn.className = 'multi-tap-btn';
-
-      const iconSpan = document.createElement('span');
-      iconSpan.textContent = '✌️';
-
-      const dotRow = document.createElement('div');
-      dotRow.className = 'multi-dot-row';
-      const dot1 = document.createElement('div');
-      dot1.className = 'tap-dot';
-      const dot2 = document.createElement('div');
-      dot2.className = 'tap-dot';
-      dotRow.appendChild(dot1);
-      dotRow.appendChild(dot2);
-
-      btn.appendChild(iconSpan);
-      btn.appendChild(dotRow);
-
-      btn.addEventListener('click', () => {
-        const now = Date.now();
-        playSound('tap');
-        if (now - lastTapTime < 450) {
-          dot2.classList.add('active');
-          setTimeout(() => resolveLockSuccess(), 80);
-        } else {
-          dot1.classList.add('active');
-        }
-        lastTapTime = now;
-      });
-      gimmickContainer.appendChild(btn);
-
-    // 6. 横スライド・右 (Slide Right)
-    } else if (lock.type === 'slide_right') {
-      const track = document.createElement('div');
-      track.className = 'slider-horizontal';
-
-      const arrows = document.createElement('div');
-      arrows.className = 'slider-arrows-bg';
-      arrows.textContent = '▶ ▶ ▶';
-
-      const goal = document.createElement('div');
-      goal.className = 'slider-goal-h right';
-      goal.textContent = '🔓';
-
-      const knob = document.createElement('div');
-      knob.className = 'slider-knob-h';
-      knob.style.left = '6px';
-      knob.textContent = '👉';
-
-      track.appendChild(arrows);
-      track.appendChild(goal);
-      track.appendChild(knob);
-      gimmickContainer.appendChild(track);
-
-      let isDragging = false;
-      function onStart() { isDragging = true; playSound('tap'); }
-      function onMove(e) {
-        if (!isDragging) return;
-        const curX = (e.touches ? e.touches[0].clientX : e.clientX);
-        const rect = track.getBoundingClientRect();
-        const maxDist = rect.width - 66;
-        let diff = curX - rect.left - 27;
-        diff = Math.max(6, Math.min(maxDist, diff));
-        knob.style.left = diff + 'px';
-        if (diff >= maxDist - 8) {
-          isDragging = false;
-          resolveLockSuccess();
-        }
-      }
-      function onEnd() {
-        if (isDragging) {
-          isDragging = false;
-          knob.style.left = '6px';
-          triggerMistake();
-        }
-      }
-      knob.addEventListener('mousedown', onStart);
-      knob.addEventListener('touchstart', onStart, { passive: true });
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: true });
-      window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
-
-    // 7. 横スライド・左 (Slide Left)
-    } else if (lock.type === 'slide_left') {
-      const track = document.createElement('div');
-      track.className = 'slider-horizontal';
-
-      const arrows = document.createElement('div');
-      arrows.className = 'slider-arrows-bg';
-      arrows.textContent = '◀ ◀ ◀';
-
-      const goal = document.createElement('div');
-      goal.className = 'slider-goal-h left';
-      goal.textContent = '🔓';
-
-      const knob = document.createElement('div');
-      knob.className = 'slider-knob-h';
-      knob.style.right = '6px';
-      knob.style.left = 'auto';
-      knob.textContent = '👈';
-
-      track.appendChild(arrows);
-      track.appendChild(goal);
-      track.appendChild(knob);
-      gimmickContainer.appendChild(track);
-
-      let isDragging = false;
-      function onStart() { isDragging = true; playSound('tap'); }
-      function onMove(e) {
-        if (!isDragging) return;
-        const curX = (e.touches ? e.touches[0].clientX : e.clientX);
-        const rect = track.getBoundingClientRect();
-        const maxDist = rect.width - 66;
-        let diff = rect.right - curX - 27;
-        diff = Math.max(6, Math.min(maxDist, diff));
-        knob.style.right = diff + 'px';
-        if (diff >= maxDist - 8) {
-          isDragging = false;
-          resolveLockSuccess();
-        }
-      }
-      function onEnd() {
-        if (isDragging) {
-          isDragging = false;
-          knob.style.right = '6px';
-          triggerMistake();
-        }
-      }
-      knob.addEventListener('mousedown', onStart);
-      knob.addEventListener('touchstart', onStart, { passive: true });
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: true });
-      window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
-
-    // 8. 上引きレバー (Slide Up)
-    } else if (lock.type === 'slide_up') {
-      const track = document.createElement('div');
-      track.className = 'slider-vertical';
-
-      const arrows = document.createElement('div');
-      arrows.className = 'slider-arrows-v-bg';
-      arrows.textContent = '▲ ▲';
-
-      const goal = document.createElement('div');
-      goal.className = 'slider-goal-v top';
-      goal.textContent = '🔓';
-
-      const knob = document.createElement('div');
-      knob.className = 'slider-knob-v';
-      knob.style.bottom = '6px';
-      knob.textContent = '☝️';
-
-      track.appendChild(arrows);
-      track.appendChild(goal);
-      track.appendChild(knob);
-      gimmickContainer.appendChild(track);
-
-      let isDragging = false;
-      function onStart() { isDragging = true; playSound('tap'); }
-      function onMove(e) {
-        if (!isDragging) return;
-        const curY = (e.touches ? e.touches[0].clientY : e.clientY);
-        const rect = track.getBoundingClientRect();
-        const maxDist = rect.height - 60;
-        let diff = rect.bottom - curY - 26;
-        diff = Math.max(6, Math.min(maxDist, diff));
-        knob.style.bottom = diff + 'px';
-        if (diff >= maxDist - 8) {
-          isDragging = false;
-          resolveLockSuccess();
-        }
-      }
-      function onEnd() {
-        if (isDragging) {
-          isDragging = false;
-          knob.style.bottom = '6px';
-          triggerMistake();
-        }
-      }
-      knob.addEventListener('mousedown', onStart);
-      knob.addEventListener('touchstart', onStart, { passive: true });
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: true });
-      window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
-
-    // 9. 下引きレバー (Slide Down)
-    } else if (lock.type === 'slide_down') {
-      const track = document.createElement('div');
-      track.className = 'slider-vertical';
-
-      const arrows = document.createElement('div');
-      arrows.className = 'slider-arrows-v-bg';
-      arrows.textContent = '▼ ▼';
-
-      const goal = document.createElement('div');
-      goal.className = 'slider-goal-v bottom';
-      goal.textContent = '🔓';
-
-      const knob = document.createElement('div');
-      knob.className = 'slider-knob-v';
-      knob.style.top = '6px';
-      knob.style.bottom = 'auto';
-      knob.textContent = '👇';
-
-      track.appendChild(arrows);
-      track.appendChild(goal);
-      track.appendChild(knob);
-      gimmickContainer.appendChild(track);
-
-      let isDragging = false;
-      function onStart() { isDragging = true; playSound('tap'); }
-      function onMove(e) {
-        if (!isDragging) return;
-        const curY = (e.touches ? e.touches[0].clientY : e.clientY);
-        const rect = track.getBoundingClientRect();
-        const maxDist = rect.height - 60;
-        let diff = curY - rect.top - 26;
-        diff = Math.max(6, Math.min(maxDist, diff));
-        knob.style.top = diff + 'px';
-        if (diff >= maxDist - 8) {
-          isDragging = false;
-          resolveLockSuccess();
-        }
-      }
-      function onEnd() {
-        if (isDragging) {
-          isDragging = false;
-          knob.style.top = '6px';
-          triggerMistake();
-        }
-      }
-      knob.addEventListener('mousedown', onStart);
-      knob.addEventListener('touchstart', onStart, { passive: true });
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: true });
-      window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
-
-    // 10. カラー一致
-    } else if (lock.type === 'color_choice') {
-      const isBlueTarget = Math.random() > 0.5;
-
-      const wrap = document.createElement('div');
-      wrap.className = 'color-match-wrap';
-
-      const targetCircle = document.createElement('div');
-      targetCircle.className = 'color-target-display';
-      targetCircle.style.background = isBlueTarget ? '#1e90ff' : '#ff4757';
-      wrap.appendChild(targetCircle);
-
-      const row = document.createElement('div');
-      row.className = 'choice-row';
-
-      const btnA = document.createElement('button');
-      btnA.className = 'color-choice-btn';
-      btnA.style.background = '#1e90ff';
-
-      const btnB = document.createElement('button');
-      btnB.className = 'color-choice-btn';
-      btnB.style.background = '#ff4757';
-
-      btnA.addEventListener('click', () => {
-        if (isBlueTarget) {
-          playSound('tap');
-          resolveLockSuccess();
-        } else {
-          triggerMistake();
-        }
-      });
-
-      btnB.addEventListener('click', () => {
-        if (!isBlueTarget) {
-          playSound('tap');
-          resolveLockSuccess();
-        } else {
-          triggerMistake();
-        }
-      });
-
-      if (Math.random() > 0.5) {
-        row.appendChild(btnA);
-        row.appendChild(btnB);
-      } else {
-        row.appendChild(btnB);
-        row.appendChild(btnA);
-      }
-      wrap.appendChild(row);
-      gimmickContainer.appendChild(wrap);
-
-    // 11. 形状一致 (Shape Match: ■ vs ●)
-    } else if (lock.type === 'shape_choice') {
-      const isSquareTarget = Math.random() > 0.5;
-
-      const wrap = document.createElement('div');
-      wrap.className = 'color-match-wrap';
-
-      const targetShape = document.createElement('div');
-      targetShape.className = 'shape-target-display';
-      targetShape.textContent = isSquareTarget ? '■' : '●';
-      targetShape.style.color = '#ffa502';
-      wrap.appendChild(targetShape);
-
-      const row = document.createElement('div');
-      row.className = 'choice-row';
-
-      const btnSquare = document.createElement('button');
-      btnSquare.className = 'shape-choice-btn';
-      btnSquare.textContent = '■';
-
-      const btnCircle = document.createElement('button');
-      btnCircle.className = 'shape-choice-btn';
-      btnCircle.textContent = '●';
-
-      btnSquare.addEventListener('click', () => {
-        if (isSquareTarget) {
-          playSound('tap');
-          resolveLockSuccess();
-        } else {
-          triggerMistake();
-        }
-      });
-
-      btnCircle.addEventListener('click', () => {
-        if (!isSquareTarget) {
-          playSound('tap');
-          resolveLockSuccess();
-        } else {
-          triggerMistake();
-        }
-      });
-
-      if (Math.random() > 0.5) {
-        row.appendChild(btnSquare);
-        row.appendChild(btnCircle);
-      } else {
-        row.appendChild(btnCircle);
-        row.appendChild(btnSquare);
-      }
-      wrap.appendChild(row);
-      gimmickContainer.appendChild(wrap);
-
-    // 12. 3回タップ (Triple Tap)
-    } else if (lock.type === 'triple_tap') {
       let currentTaps = 0;
       let lastTapTime = 0;
 
@@ -641,19 +496,17 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.className = 'multi-tap-btn';
 
       const iconSpan = document.createElement('span');
-      iconSpan.textContent = '👌';
+      iconSpan.textContent = icons[lock.type];
 
       const dotRow = document.createElement('div');
       dotRow.className = 'multi-dot-row';
-      const dots = [
-        document.createElement('div'),
-        document.createElement('div'),
-        document.createElement('div')
-      ];
-      dots.forEach(d => {
+      const dots = [];
+      for (let i = 0; i < targetCount; i++) {
+        const d = document.createElement('div');
         d.className = 'tap-dot';
         dotRow.appendChild(d);
-      });
+        dots.push(d);
+      }
 
       btn.appendChild(iconSpan);
       btn.appendChild(dotRow);
@@ -664,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentTaps === 0 || now - lastTapTime < 500) {
           currentTaps++;
           dots[currentTaps - 1].classList.add('active');
-          if (currentTaps >= 3) {
+          if (currentTaps >= targetCount) {
             setTimeout(() => resolveLockSuccess(), 80);
           }
         } else {
@@ -676,9 +529,253 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       gimmickContainer.appendChild(btn);
 
-    // 13. 激連打 (Mash)
-    } else if (lock.type === 'rapid_mash') {
-      const targetClicks = 5 + lock.round * 2;
+    // 6, 7, 21, 22: 横スライド (右/左/往復)
+    } else if (['slide_right', 'slide_left', 'slide_bounce_r', 'slide_bounce_l'].includes(lock.type)) {
+      const isLeft = (lock.type === 'slide_left' || lock.type === 'slide_bounce_l');
+      const isBounce = (lock.type === 'slide_bounce_r' || lock.type === 'slide_bounce_l');
+
+      const track = document.createElement('div');
+      track.className = 'slider-horizontal';
+
+      const arrows = document.createElement('div');
+      arrows.className = 'slider-arrows-bg';
+      arrows.textContent = isBounce ? '⇋ ⇋' : (isLeft ? '◀ ◀ ◀' : '▶ ▶ ▶');
+
+      const goal = document.createElement('div');
+      goal.className = `slider-goal-h ${isLeft ? 'left' : 'right'}`;
+      goal.textContent = isBounce ? '⚡' : '🔓';
+
+      const knob = document.createElement('div');
+      knob.className = 'slider-knob-h';
+      if (isLeft) {
+        knob.style.right = '6px';
+        knob.style.left = 'auto';
+        knob.textContent = '👈';
+      } else {
+        knob.style.left = '6px';
+        knob.textContent = '👉';
+      }
+
+      track.appendChild(arrows);
+      track.appendChild(goal);
+      track.appendChild(knob);
+      gimmickContainer.appendChild(track);
+
+      let isDragging = false;
+      let hitEnd = false;
+
+      function onStart() { isDragging = true; playSound('tap'); }
+      function onMove(e) {
+        if (!isDragging) return;
+        const curX = (e.touches ? e.touches[0].clientX : e.clientX);
+        const rect = track.getBoundingClientRect();
+        const maxDist = rect.width - 66;
+
+        if (!isLeft) {
+          let diff = curX - rect.left - 27;
+          diff = Math.max(6, Math.min(maxDist, diff));
+          knob.style.left = diff + 'px';
+          if (diff >= maxDist - 8) {
+            if (isBounce) {
+              hitEnd = true;
+              goal.className = 'slider-goal-h left';
+              goal.textContent = '🔓';
+            } else {
+              isDragging = false;
+              resolveLockSuccess();
+            }
+          }
+          if (isBounce && hitEnd && diff <= 12) {
+            isDragging = false;
+            resolveLockSuccess();
+          }
+        } else {
+          let diff = rect.right - curX - 27;
+          diff = Math.max(6, Math.min(maxDist, diff));
+          knob.style.right = diff + 'px';
+          if (diff >= maxDist - 8) {
+            if (isBounce) {
+              hitEnd = true;
+              goal.className = 'slider-goal-h right';
+              goal.textContent = '🔓';
+            } else {
+              isDragging = false;
+              resolveLockSuccess();
+            }
+          }
+          if (isBounce && hitEnd && diff <= 12) {
+            isDragging = false;
+            resolveLockSuccess();
+          }
+        }
+      }
+      function onEnd() {
+        if (isDragging) {
+          isDragging = false;
+          if (isLeft) knob.style.right = '6px';
+          else knob.style.left = '6px';
+          triggerMistake();
+        }
+      }
+      knob.addEventListener('mousedown', onStart);
+      knob.addEventListener('touchstart', onStart, { passive: true });
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, { passive: true });
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+
+    // 8, 9, 23, 24: 縦スライド (上/下/ロング)
+    } else if (['slide_up', 'slide_down', 'slide_up_long', 'slide_down_long'].includes(lock.type)) {
+      const isDown = (lock.type === 'slide_down' || lock.type === 'slide_down_long');
+      const isLong = (lock.type.includes('long'));
+
+      const track = document.createElement('div');
+      track.className = 'slider-vertical';
+      if (isLong) track.style.height = '190px';
+
+      const arrows = document.createElement('div');
+      arrows.className = 'slider-arrows-v-bg';
+      arrows.textContent = isDown ? '▼ ▼' : '▲ ▲';
+
+      const goal = document.createElement('div');
+      goal.className = `slider-goal-v ${isDown ? 'bottom' : 'top'}`;
+      goal.textContent = '🔓';
+
+      const knob = document.createElement('div');
+      knob.className = 'slider-knob-v';
+      if (isDown) {
+        knob.style.top = '6px';
+        knob.style.bottom = 'auto';
+        knob.textContent = '👇';
+      } else {
+        knob.style.bottom = '6px';
+        knob.textContent = '☝️';
+      }
+
+      track.appendChild(arrows);
+      track.appendChild(goal);
+      track.appendChild(knob);
+      gimmickContainer.appendChild(track);
+
+      let isDragging = false;
+      function onStart() { isDragging = true; playSound('tap'); }
+      function onMove(e) {
+        if (!isDragging) return;
+        const curY = (e.touches ? e.touches[0].clientY : e.clientY);
+        const rect = track.getBoundingClientRect();
+        const maxDist = rect.height - 60;
+
+        if (!isDown) {
+          let diff = rect.bottom - curY - 26;
+          diff = Math.max(6, Math.min(maxDist, diff));
+          knob.style.bottom = diff + 'px';
+          if (diff >= maxDist - 8) {
+            isDragging = false;
+            resolveLockSuccess();
+          }
+        } else {
+          let diff = curY - rect.top - 26;
+          diff = Math.max(6, Math.min(maxDist, diff));
+          knob.style.top = diff + 'px';
+          if (diff >= maxDist - 8) {
+            isDragging = false;
+            resolveLockSuccess();
+          }
+        }
+      }
+      function onEnd() {
+        if (isDragging) {
+          isDragging = false;
+          if (isDown) knob.style.top = '6px';
+          else knob.style.bottom = '6px';
+          triggerMistake();
+        }
+      }
+      knob.addEventListener('mousedown', onStart);
+      knob.addEventListener('touchstart', onStart, { passive: true });
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, { passive: true });
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+
+    // 10 & 25: カラー一致 (2択 & 3択)
+    } else if (lock.type === 'color_choice_2' || lock.type === 'color_choice_3') {
+      const colors = ['#1e90ff', '#ff4757'];
+      if (lock.type === 'color_choice_3') colors.push('#ffa502');
+
+      const targetColor = colors[Math.floor(Math.random() * colors.length)];
+
+      const wrap = document.createElement('div');
+      wrap.className = 'color-match-wrap';
+
+      const targetCircle = document.createElement('div');
+      targetCircle.className = 'color-target-display';
+      targetCircle.style.background = targetColor;
+      wrap.appendChild(targetCircle);
+
+      const row = document.createElement('div');
+      row.className = 'choice-row';
+
+      const shuffledColors = [...colors].sort(() => Math.random() - 0.5);
+      shuffledColors.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'color-choice-btn';
+        btn.style.background = c;
+        btn.addEventListener('click', () => {
+          if (c === targetColor) {
+            playSound('tap');
+            resolveLockSuccess();
+          } else {
+            triggerMistake();
+          }
+        });
+        row.appendChild(btn);
+      });
+
+      wrap.appendChild(row);
+      gimmickContainer.appendChild(wrap);
+
+    // 11 & 26: 形状一致 (2択 & 3択)
+    } else if (lock.type === 'shape_choice_2' || lock.type === 'shape_choice_3') {
+      const shapes = ['■', '●'];
+      if (lock.type === 'shape_choice_3') shapes.push('▲');
+
+      const targetShape = shapes[Math.floor(Math.random() * shapes.length)];
+
+      const wrap = document.createElement('div');
+      wrap.className = 'color-match-wrap';
+
+      const targetEl = document.createElement('div');
+      targetEl.className = 'shape-target-display';
+      targetEl.textContent = targetShape;
+      targetEl.style.color = '#ffa502';
+      wrap.appendChild(targetEl);
+
+      const row = document.createElement('div');
+      row.className = 'choice-row';
+
+      const shuffledShapes = [...shapes].sort(() => Math.random() - 0.5);
+      shuffledShapes.forEach(s => {
+        const btn = document.createElement('button');
+        btn.className = 'shape-choice-btn';
+        btn.textContent = s;
+        btn.addEventListener('click', () => {
+          if (s === targetShape) {
+            playSound('tap');
+            resolveLockSuccess();
+          } else {
+            triggerMistake();
+          }
+        });
+        row.appendChild(btn);
+      });
+
+      wrap.appendChild(row);
+      gimmickContainer.appendChild(wrap);
+
+    // 13 & 28: 激連打 & 超連打
+    } else if (lock.type === 'rapid_mash' || lock.type === 'super_mash') {
+      const targetClicks = (lock.type === 'super_mash') ? 10 : 5;
       let count = 0;
 
       const wrap = document.createElement('div');
@@ -692,7 +789,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const btn = document.createElement('button');
       btn.className = 'icon-action-btn';
-      btn.textContent = '⚡';
+      btn.textContent = (lock.type === 'super_mash') ? '💥' : '⚡';
       btn.addEventListener('click', () => {
         count++;
         playSound('tap');
@@ -705,9 +802,9 @@ document.addEventListener('DOMContentLoaded', () => {
       wrap.appendChild(btn);
       gimmickContainer.appendChild(wrap);
 
-    // 14. 指紋認証スキャン (Hold)
-    } else if (lock.type === 'fingerprint') {
-      const requiredHoldMs = 750 + lock.round * 80;
+    // 14 & 29: 指紋スキャナー & 長時間精密スキャン
+    } else if (lock.type === 'fingerprint' || lock.type === 'fingerprint_long') {
+      const requiredHoldMs = (lock.type === 'fingerprint_long') ? 1200 : 700;
 
       const btn = document.createElement('button');
       btn.className = 'fingerprint-btn';
@@ -750,8 +847,9 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('touchend', onCancel);
       gimmickContainer.appendChild(btn);
 
-    // 15. ダイヤル合わせ
-    } else if (lock.type === 'dial_turn') {
+    // 15 & 30: ダイヤル合わせ & 微細ダイヤル
+    } else if (lock.type === 'dial_turn' || lock.type === 'dial_turn_precise') {
+      const isPrecise = (lock.type === 'dial_turn_precise');
       const wrap = document.createElement('div');
       wrap.className = 'dial-wrap';
 
@@ -759,7 +857,9 @@ document.addEventListener('DOMContentLoaded', () => {
       targetMark.className = 'dial-target-mark';
       targetMark.textContent = '▼';
 
-      let rotation = (Math.floor(Math.random() * 3) + 1) * 90;
+      const stepDeg = isPrecise ? 45 : 90;
+      let rotation = (Math.floor(Math.random() * (isPrecise ? 7 : 3)) + 1) * stepDeg;
+
       const dial = document.createElement('div');
       dial.className = 'dial-knob-ui';
       dial.style.transform = `rotate(${rotation}deg)`;
@@ -770,7 +870,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       dial.addEventListener('click', () => {
         playSound('tap');
-        rotation = (rotation + 90) % 360;
+        rotation = (rotation + stepDeg) % 360;
         dial.style.transform = `rotate(${rotation}deg)`;
         if (rotation === 0) {
           setTimeout(() => resolveLockSuccess(), 120);
@@ -874,7 +974,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startOverlay.classList.remove('active');
     resultOverlay.classList.remove('active');
 
-    // Build Round 1 Queue (Level 1 to 15 in strict progression)
+    // Build Round 1 Queue (Level 1 to 30 in strict progression)
     lockQueue = buildRoundQueue(1);
     currentLock = getNextLockFromQueue();
     nextLock = getNextLockFromQueue();
@@ -898,13 +998,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let rank = 'C';
     let commentIcon = '🥉';
-    if (score >= 5500) {
+    if (score >= 7000) {
       rank = 'S';
       commentIcon = '👑';
-    } else if (score >= 3500) {
+    } else if (score >= 4000) {
       rank = 'A';
       commentIcon = '🥇';
-    } else if (score >= 1800) {
+    } else if (score >= 2000) {
       rank = 'B';
       commentIcon = '🥈';
     }
