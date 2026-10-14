@@ -565,7 +565,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderGimmick(lock) {
     cleanupCurrentGimmick();
     lockLevelBadge.textContent = `Lv.${lock.level}`;
-    lockDiff.textContent = lock.stars;
     currentShackle.classList.remove('open');
 
     // 1. 特大ボタン (一撃タップ)
