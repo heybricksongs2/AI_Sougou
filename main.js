@@ -3537,7 +3537,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupTitleLockHold(el) {
     if (!el) return;
     let holdTimer = null;
-    const HOLD_TIME_MS = 1500;
+    const HOLD_TIME_MS = 3000;
 
     function startHold(e) {
       if (e && e.pointerType === 'mouse' && e.button !== 0) return;
