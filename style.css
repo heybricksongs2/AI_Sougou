@@ -786,10 +786,18 @@ body {
   width: 100%;
 }
 
+.key-match-targets-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-height: 80px;
+}
+
 .key-match-hole-target {
-  width: 80px;
-  height: 80px;
-  border-radius: 20px;
+  width: 76px;
+  height: 76px;
+  border-radius: 18px;
   background: #2f3542;
   border: 3px solid #f1c40f;
   box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
@@ -798,6 +806,35 @@ body {
   align-items: center;
   font-size: 2.2rem;
   color: #f1c40f;
+  transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.key-match-hole-target.target-size-1 {
+  width: 76px;
+  height: 76px;
+  font-size: 2.2rem;
+}
+
+.key-match-hole-target.target-size-2 {
+  width: 62px;
+  height: 62px;
+  font-size: 1.8rem;
+  border-radius: 15px;
+}
+
+.key-match-hole-target.target-size-3 {
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+  border-radius: 12px;
+}
+
+.key-match-hole-target.cleared {
+  background: #2ed573;
+  border-color: #26af5f;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(46, 213, 115, 0.6);
+  transform: scale(1.06);
 }
 
 .key-choices-grid-6 {
@@ -820,6 +857,15 @@ body {
   cursor: pointer;
   box-shadow: 0 4px 0 var(--text-dark);
   touch-action: manipulation;
+  transition: all 0.1s ease;
+}
+
+.key-choice-gold-btn.selected-gold {
+  opacity: 0.35;
+  filter: grayscale(0.8);
+  transform: scale(0.92);
+  box-shadow: none;
+  pointer-events: none;
 }
 
 .key-choice-gold-btn:active {
@@ -979,6 +1025,28 @@ body {
 .rapid-mash-big-btn:active {
   transform: translateY(6px);
   box-shadow: 0 2px 0 var(--text-dark);
+}
+
+.rapid-mash-big-btn.is-moving {
+  animation: rapid-mash-glide 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes rapid-mash-glide {
+  0% {
+    transform: translate(-55px, 0px);
+  }
+  30% {
+    transform: translate(-15px, 25px);
+  }
+  60% {
+    transform: translate(50px, 8px);
+  }
+  85% {
+    transform: translate(20px, 28px);
+  }
+  100% {
+    transform: translate(-55px, 0px);
+  }
 }
 
 .rapid-mash-gauge-track {
@@ -1486,6 +1554,7 @@ body {
 }
 
 .slider-goal-h.right { right: 6px; }
+.slider-goal-h.left { left: 6px; }
 
 .slider-knob-h {
   position: absolute;
@@ -1545,6 +1614,7 @@ body {
 }
 
 .slider-goal-v.top { top: 6px; }
+.slider-goal-v.bottom { bottom: 6px; }
 
 .slider-knob-v {
   position: absolute;
@@ -3590,6 +3660,36 @@ body.lite-mode #next-lock-card,
   padding: 3px 12px;
   border-radius: 10px;
   margin-top: 4px;
+}
+
+/* 一時停止モーダル */
+.pause-modal-card {
+  text-align: center;
+  max-width: 310px;
+  width: 88%;
+  padding: 28px 22px;
+}
+
+.pause-modal-title {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--text-dark);
+  letter-spacing: 3px;
+  margin: 0 0 4px 0;
+}
+
+.pause-modal-desc {
+  font-size: 0.95rem;
+  color: #747d8c;
+  font-weight: 700;
+  margin: 0 0 22px 0;
+}
+
+.pause-modal-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
 }
 
 

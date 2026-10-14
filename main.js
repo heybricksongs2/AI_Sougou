@@ -478,6 +478,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  const IRIRA_MAZE_TRACKS = [
+    {
+      path: "M 30 25 L 85 25 L 85 65 L 155 65 L 155 30 L 225 30 L 225 115",
+      points: [
+        { x: 30, y: 25 }, { x: 85, y: 25 }, { x: 85, y: 65 },
+        { x: 155, y: 65 }, { x: 155, y: 30 }, { x: 225, y: 30 }, { x: 225, y: 115 }
+      ],
+      start: { x: 30, y: 25 },
+      goal: { x: 225, y: 115 }
+    },
+    {
+      path: "M 30 115 L 30 40 L 100 40 L 100 115 L 175 115 L 175 40 L 225 40",
+      points: [
+        { x: 30, y: 115 }, { x: 30, y: 40 }, { x: 100, y: 40 },
+        { x: 100, y: 115 }, { x: 175, y: 115 }, { x: 175, y: 40 }, { x: 225, y: 40 }
+      ],
+      start: { x: 30, y: 115 },
+      goal: { x: 225, y: 40 }
+    },
+    {
+      path: "M 30 25 L 220 25 L 220 70 L 60 70 L 60 115 L 220 115",
+      points: [
+        { x: 30, y: 25 }, { x: 220, y: 25 }, { x: 220, y: 70 },
+        { x: 60, y: 70 }, { x: 60, y: 115 }, { x: 220, y: 115 }
+      ],
+      start: { x: 30, y: 25 },
+      goal: { x: 220, y: 115 }
+    }
+  ];
+
   // ギミックごとのランダム課題内容（混色色、鍵合わせ記号、ダイヤル初期値等）を生成・保持する関数
   function initLockGimmickState(lock) {
     if (!lock) return lock;
@@ -486,7 +516,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (lock.type === 'match_key') {
       const symbols = ['●', '▲', '★', '◆', '■', '✚'];
-      lock.matchKeyTarget = symbols[Math.floor(Math.random() * symbols.length)];
+      const isSecondLap = (lock.round || roundNumber) >= 2;
+      const targetCount = isSecondLap ? (Math.random() < 0.5 ? 2 : 3) : 1;
+      const shuffledSyms = [...symbols].sort(() => Math.random() - 0.5);
+      lock.matchKeyTargets = shuffledSyms.slice(0, targetCount);
+      lock.matchKeyTarget = lock.matchKeyTargets[0];
       lock.matchKeyShuffled = [...symbols].sort(() => Math.random() - 0.5);
     } else if (lock.type === 'color_mix') {
       const recipes = [
@@ -496,15 +530,45 @@ document.addEventListener('DOMContentLoaded', () => {
       ];
       lock.colorMixRecipe = recipes[Math.floor(Math.random() * recipes.length)];
     } else if (lock.type === 'dial_code') {
-      const tapDistributions = [
-        [2, 2, 2], [1, 2, 3], [3, 1, 2], [2, 3, 1],
-        [1, 3, 2], [2, 1, 3], [3, 2, 1], [1, 2, 2],
-        [2, 2, 1], [2, 2, 3], [3, 2, 2], [2, 3, 2]
+      const targetDigits = [
+        Math.floor(Math.random() * 10),
+        Math.floor(Math.random() * 10),
+        Math.floor(Math.random() * 10)
       ];
-      const chosenTaps = tapDistributions[Math.floor(Math.random() * tapDistributions.length)];
-      lock.dialCurrentDigits = chosenTaps.map(t => (7 - t + 10) % 10);
+      lock.dialTargetDigits = targetDigits;
+
+      const validDistributions = [
+        [1, 2, 2], [2, 1, 2], [2, 2, 1], [3, 1, 1], [1, 3, 1], [1, 1, 3],
+        [2, 2, 2], [1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]
+      ];
+      const chosenTaps = validDistributions[Math.floor(Math.random() * validDistributions.length)];
+      lock.dialCurrentDigits = targetDigits.map((tgt, i) => (tgt - chosenTaps[i] + 10) % 10);
     } else if (lock.type === 'color_choice_2') {
       lock.colorChoiceIndex = Math.floor(Math.random() * 4);
+    } else if (lock.type === 'slide_right') {
+      const dirs = ['right', 'left', 'down', 'up'];
+      lock.slideDir = dirs[Math.floor(Math.random() * dirs.length)];
+    } else if (lock.type === 'crank_slide') {
+      const variants = ['right_down', 'down_right', 'left_down', 'down_left'];
+      lock.crankVariant = variants[Math.floor(Math.random() * variants.length)];
+    } else if (lock.type === 'star_trace') {
+      lock.starStartIndex = Math.floor(Math.random() * 5);
+    } else if (lock.type === 'morse_code') {
+      const patterns = [
+        ['dot', 'dash', 'dot'],
+        ['dot', 'dot', 'dash'],
+        ['dash', 'dot', 'dot'],
+        ['dash', 'dash', 'dot'],
+        ['dash', 'dot', 'dash'],
+        ['dot', 'dash', 'dash'],
+        ['dot', 'dot', 'dot']
+      ];
+      lock.morsePattern = patterns[Math.floor(Math.random() * patterns.length)];
+    } else if (lock.type === 'wheel_turn') {
+      const isSecondLap = (lock.round || roundNumber) >= 2;
+      lock.wheelTurnMultiplier = isSecondLap ? (0.5 + Math.random() * 1.0) : 1.0;
+    } else if (lock.type === 'irira_key_maze') {
+      lock.iriraTrackIndex = Math.floor(Math.random() * 3);
     }
     return lock;
   }
@@ -563,6 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Render 24 Non-Verbal Gimmicks
   function renderGimmick(lock) {
+    window.__currentLock = lock;
     cleanupCurrentGimmick();
     lockLevelBadge.textContent = `Lv.${lock.level}`;
     currentShackle.classList.remove('open');
@@ -774,23 +839,44 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', (e) => e.preventDefault());
       gimmickContainer.appendChild(wrapper);
 
-    // 5. スライド右
+    // 5. 直線スライド (4方向ランダム: 右, 左, 下, 上)
     } else if (lock.type === 'slide_right') {
+      const dir = lock.slideDir || 'right';
+      const isVertical = (dir === 'down' || dir === 'up');
+
       const track = document.createElement('div');
-      track.className = 'slider-horizontal';
+      track.className = isVertical ? 'slider-vertical' : 'slider-horizontal';
+
       const arrows = document.createElement('div');
-      arrows.className = 'slider-arrows-bg';
-      arrows.textContent = '▶ ▶ ▶';
+      arrows.className = isVertical ? 'slider-arrows-v-bg' : 'slider-arrows-bg';
+      if (dir === 'right') arrows.textContent = '▶ ▶ ▶';
+      else if (dir === 'left') arrows.textContent = '◀ ◀ ◀';
+      else if (dir === 'down') arrows.innerHTML = '<span>▼</span><span>▼</span><span>▼</span>';
+      else if (dir === 'up') arrows.innerHTML = '<span>▲</span><span>▲</span><span>▲</span>';
+
       const goal = document.createElement('div');
-      goal.className = 'slider-goal-h right';
-      goal.textContent = '';
-      goal.style.fontSize = '0.9rem';
-      goal.style.fontWeight = '900';
+      goal.className = isVertical
+        ? (dir === 'down' ? 'slider-goal-v bottom' : 'slider-goal-v top')
+        : (dir === 'right' ? 'slider-goal-h right' : 'slider-goal-h left');
+
       const knob = document.createElement('div');
-      knob.className = 'slider-knob-h';
-      knob.style.left = '6px';
-      knob.textContent = '▶';
+      knob.className = isVertical ? 'slider-knob-v' : 'slider-knob-h';
       knob.style.fontSize = '1.3rem';
+
+      if (dir === 'right') {
+        knob.style.left = '6px';
+        knob.textContent = '▶';
+      } else if (dir === 'left') {
+        knob.style.left = '165px';
+        knob.textContent = '◀';
+      } else if (dir === 'down') {
+        knob.style.top = '6px';
+        knob.textContent = '▼';
+      } else if (dir === 'up') {
+        knob.style.top = '100px';
+        knob.textContent = '▲';
+      }
+
       track.appendChild(arrows);
       track.appendChild(goal);
       track.appendChild(knob);
@@ -800,20 +886,40 @@ document.addEventListener('DOMContentLoaded', () => {
       function onStart() { isDragging = true; playSound('tap'); }
       function onMove(e) {
         if (!isDragging) return;
-        const curX = (e.touches ? e.touches[0].clientX : e.clientX);
+        const cur = e.touches ? e.touches[0] : e;
         const rect = track.getBoundingClientRect();
-        const maxDist = rect.width - 66;
-        let diff = Math.max(6, Math.min(maxDist, curX - rect.left - 27));
-        knob.style.left = diff + 'px';
-        if (diff >= maxDist - 8) {
-          isDragging = false;
-          resolveLockSuccess();
+
+        if (!isVertical) {
+          const maxDist = rect.width - 66;
+          let diff = Math.max(6, Math.min(maxDist, cur.clientX - rect.left - 27));
+          knob.style.left = diff + 'px';
+          if (dir === 'right' && diff >= maxDist - 8) {
+            isDragging = false;
+            resolveLockSuccess();
+          } else if (dir === 'left' && diff <= 14) {
+            isDragging = false;
+            resolveLockSuccess();
+          }
+        } else {
+          const maxDistY = rect.height - 64;
+          let diffY = Math.max(6, Math.min(maxDistY, cur.clientY - rect.top - 26));
+          knob.style.top = diffY + 'px';
+          if (dir === 'down' && diffY >= maxDistY - 8) {
+            isDragging = false;
+            resolveLockSuccess();
+          } else if (dir === 'up' && diffY <= 14) {
+            isDragging = false;
+            resolveLockSuccess();
+          }
         }
       }
       function onEnd() {
         if (isDragging) {
           isDragging = false;
-          knob.style.left = '6px';
+          if (dir === 'right') knob.style.left = '6px';
+          else if (dir === 'left') knob.style.left = '165px';
+          else if (dir === 'down') knob.style.top = '6px';
+          else if (dir === 'up') knob.style.top = '100px';
           triggerMistake();
         }
       }
@@ -824,28 +930,79 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 
-    // 6. カクカクっと2回スライド (一体型L字クランクレール & 精密ゴール)
+    // 6. カクカクっと2回スライド (4種類のL字バリエーション & 精密ゴール)
     } else if (lock.type === 'crank_slide') {
+      const vKey = lock.crankVariant || 'right_down';
+      const variantDefs = {
+        right_down: {
+          path: "M 38 38 L 118 38 L 118 132",
+          start: { x: 18, y: 18, text: '▶' },
+          turn: { text: '▼' },
+          goal: { x: 118, y: 132 },
+          isStep0Horiz: true,
+          step0Check: (x) => x >= 94,
+          step1Check: (y) => y >= 106,
+          clamp0: (v) => Math.max(18, Math.min(98, v)),
+          clamp1: (v) => Math.max(18, Math.min(112, v)),
+        },
+        down_right: {
+          path: "M 38 38 L 38 132 L 118 132",
+          start: { x: 18, y: 18, text: '▼' },
+          turn: { text: '▶' },
+          goal: { x: 118, y: 132 },
+          isStep0Horiz: false,
+          step0Check: (y) => y >= 106,
+          step1Check: (x) => x >= 94,
+          clamp0: (v) => Math.max(18, Math.min(112, v)),
+          clamp1: (v) => Math.max(18, Math.min(98, v)),
+        },
+        left_down: {
+          path: "M 118 38 L 38 38 L 38 132",
+          start: { x: 98, y: 18, text: '◀' },
+          turn: { text: '▼' },
+          goal: { x: 38, y: 132 },
+          isStep0Horiz: true,
+          step0Check: (x) => x <= 22,
+          step1Check: (y) => y >= 106,
+          clamp0: (v) => Math.max(18, Math.min(98, v)),
+          clamp1: (v) => Math.max(18, Math.min(112, v)),
+        },
+        down_left: {
+          path: "M 118 38 L 118 132 L 38 132",
+          start: { x: 98, y: 18, text: '▼' },
+          turn: { text: '◀' },
+          goal: { x: 38, y: 132 },
+          isStep0Horiz: false,
+          step0Check: (y) => y >= 106,
+          step1Check: (x) => x <= 22,
+          clamp0: (v) => Math.max(18, Math.min(112, v)),
+          clamp1: (v) => Math.max(18, Math.min(98, v)),
+        }
+      };
+      const v = variantDefs[vKey] || variantDefs.right_down;
+
       const area = document.createElement('div');
       area.className = 'crank-slider-area';
 
       area.innerHTML = `
         <svg class="crank-slot-svg" viewBox="0 0 170 170">
-          <path d="M 38 38 L 118 38 L 118 132" fill="none" stroke="var(--text-dark)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M 38 38 L 118 38 L 118 132" fill="none" stroke="#f1f2f6" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M 38 38 L 118 38 L 118 132" fill="none" stroke="rgba(0, 0, 0, 0.08)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="${v.path}" fill="none" stroke="var(--text-dark)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="${v.path}" fill="none" stroke="#f1f2f6" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="${v.path}" fill="none" stroke="rgba(0, 0, 0, 0.08)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       `;
 
       const goal = document.createElement('div');
       goal.className = 'crank-goal';
       goal.textContent = '★';
+      goal.style.left = v.goal.x + 'px';
+      goal.style.top = v.goal.y + 'px';
 
       const knob = document.createElement('div');
       knob.className = 'crank-knob';
-      knob.textContent = '▶';
-      knob.style.left = '18px';
-      knob.style.top = '18px';
+      knob.textContent = v.start.text;
+      knob.style.left = v.start.x + 'px';
+      knob.style.top = v.start.y + 'px';
 
       area.appendChild(goal);
       area.appendChild(knob);
@@ -863,19 +1020,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const relY = cur.clientY - rect.top - 20;
 
         if (step === 0) {
-          let x = Math.max(18, Math.min(98, relX));
-          knob.style.left = x + 'px';
-          if (x >= 94) {
-            step = 1;
-            knob.textContent = '▼';
-            playSound('tap');
+          if (v.isStep0Horiz) {
+            let x = v.clamp0(relX);
+            knob.style.left = x + 'px';
+            if (v.step0Check(x)) {
+              step = 1;
+              knob.textContent = v.turn.text;
+              playSound('tap');
+            }
+          } else {
+            let y = v.clamp0(relY);
+            knob.style.top = y + 'px';
+            if (v.step0Check(y)) {
+              step = 1;
+              knob.textContent = v.turn.text;
+              playSound('tap');
+            }
           }
         } else if (step === 1) {
-          let y = Math.max(18, Math.min(112, relY));
-          knob.style.top = y + 'px';
-          if (y >= 106) {
-            isDragging = false;
-            resolveLockSuccess();
+          if (v.isStep0Horiz) {
+            let y = v.clamp1(relY);
+            knob.style.top = y + 'px';
+            if (v.step1Check(y)) {
+              isDragging = false;
+              resolveLockSuccess();
+            }
+          } else {
+            let x = v.clamp1(relX);
+            knob.style.left = x + 'px';
+            if (v.step1Check(x)) {
+              isDragging = false;
+              resolveLockSuccess();
+            }
           }
         }
       }
@@ -883,9 +1059,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isDragging) {
           isDragging = false;
           step = 0;
-          knob.style.left = '18px';
-          knob.style.top = '18px';
-          knob.textContent = '▶';
+          knob.style.left = v.start.x + 'px';
+          knob.style.top = v.start.y + 'px';
+          knob.textContent = v.start.text;
           triggerMistake();
         }
       }
@@ -1075,30 +1251,54 @@ document.addEventListener('DOMContentLoaded', () => {
       const stage = document.createElement('div');
       stage.className = 'key-match-stage';
 
-      const symbols = ['●', '▲', '★', '◆', '■', '✚'];
-      const targetSym = lock.matchKeyTarget || symbols[Math.floor(Math.random() * symbols.length)];
-      lock.matchKeyTarget = targetSym;
+      const targets = lock.matchKeyTargets || (lock.matchKeyTarget ? [lock.matchKeyTarget] : ['★']);
+      const count = targets.length;
 
-      const hole = document.createElement('div');
-      hole.className = 'key-match-hole-target';
-      hole.textContent = targetSym;
-      stage.appendChild(hole);
+      const targetWrap = document.createElement('div');
+      targetWrap.className = `key-match-targets-wrap targets-${count}`;
+
+      const targetEls = [];
+      targets.forEach(sym => {
+        const hole = document.createElement('div');
+        hole.className = `key-match-hole-target target-size-${count}`;
+        hole.textContent = sym;
+        hole.dataset.sym = sym;
+        targetWrap.appendChild(hole);
+        targetEls.push({ sym, el: hole, cleared: false });
+      });
+      stage.appendChild(targetWrap);
 
       const grid = document.createElement('div');
       grid.className = 'key-choices-grid-6';
 
-      const shuffled = lock.matchKeyShuffled || [...symbols].sort(() => Math.random() - 0.5);
-      lock.matchKeyShuffled = shuffled;
+      const shuffled = lock.matchKeyShuffled || ['●', '▲', '★', '◆', '■', '✚'];
       shuffled.forEach(sym => {
         const item = document.createElement('button');
         item.className = 'key-choice-gold-btn';
         item.textContent = sym;
         setupActionButton(item, () => {
-          if (sym === targetSym) {
+          const matchTarget = targetEls.find(t => t.sym === sym && !t.cleared);
+          if (matchTarget) {
+            matchTarget.cleared = true;
+            matchTarget.el.classList.add('cleared');
+            matchTarget.el.textContent = '✔';
             playSound('tap');
-            resolveLockSuccess();
+            item.classList.add('selected-gold');
+
+            if (targetEls.every(t => t.cleared)) {
+              resolveLockSuccess();
+            }
           } else {
             triggerMistake();
+            // 間違えた場合はリセットしてやり直し
+            targetEls.forEach(t => {
+              t.cleared = false;
+              t.el.classList.remove('cleared');
+              t.el.textContent = t.sym;
+            });
+            grid.querySelectorAll('.key-choice-gold-btn').forEach(btn => {
+              btn.classList.remove('selected-gold');
+            });
           }
         });
         grid.appendChild(item);
@@ -1212,6 +1412,11 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.className = 'rapid-mash-big-btn';
       btn.type = 'button';
 
+      const isSecondLap = (lock.round || roundNumber) >= 2;
+      if (isSecondLap) {
+        btn.classList.add('is-moving');
+      }
+
       function handleMash(e) {
         if (e) {
           e.preventDefault();
@@ -1319,14 +1524,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const area = document.createElement('div');
       area.className = 'star-trace-area';
 
-      const starPoints = [
-        { x: 95, y: 22 },
-        { x: 148, y: 165 },
-        { x: 12, y: 74 },
-        { x: 178, y: 74 },
-        { x: 42, y: 165 },
-        { x: 95, y: 22 }
+      const baseStarPoints = [
+        { x: 95, y: 22 },   // 0: 上
+        { x: 148, y: 165 }, // 1: 右下
+        { x: 12, y: 74 },   // 2: 左
+        { x: 178, y: 74 },  // 3: 右
+        { x: 42, y: 165 }   // 4: 左下
       ];
+      const startIdx = (lock.starStartIndex !== undefined) ? lock.starStartIndex : Math.floor(Math.random() * 5);
+      lock.starStartIndex = startIdx;
+
+      const starPoints = [];
+      for (let i = 0; i <= 5; i++) {
+        starPoints.push(baseStarPoints[(startIdx + i) % 5]);
+      }
 
       const stepInd = document.createElement('div');
       stepInd.className = 'star-step-indicator';
@@ -1467,30 +1678,35 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 
-    // 15. ダイヤル式のカギ (平均6タップで終わるようタップ数を精密調整)
+    // 15. ダイヤル式のカギ (5〜6回固定タップ & ランダム目標値)
     } else if (lock.type === 'dial_code') {
       const stage = document.createElement('div');
       stage.className = 'dial-lock-stage';
 
-      const targetDigits = [7, 7, 7];
+      const targetDigits = lock.dialTargetDigits || [
+        Math.floor(Math.random() * 10),
+        Math.floor(Math.random() * 10),
+        Math.floor(Math.random() * 10)
+      ];
+      lock.dialTargetDigits = targetDigits;
+
       const codeLabel = document.createElement('div');
       codeLabel.className = 'dial-lock-target-code';
-      codeLabel.textContent = '7 7 7';
+      codeLabel.textContent = targetDigits.join(' ');
 
       const row = document.createElement('div');
       row.className = 'dial-wheels-row';
 
-      const tapDistributions = [
-        [2, 2, 2], [1, 2, 3], [3, 1, 2], [2, 3, 1],
-        [1, 3, 2], [2, 1, 3], [3, 2, 1], [1, 2, 2],
-        [2, 2, 1], [2, 2, 3], [3, 2, 2], [2, 3, 2]
-      ];
       let currentDigits;
       if (lock.dialCurrentDigits) {
         currentDigits = [...lock.dialCurrentDigits];
       } else {
-        const chosenTaps = tapDistributions[Math.floor(Math.random() * tapDistributions.length)];
-        currentDigits = chosenTaps.map(t => (7 - t + 10) % 10);
+        const validDistributions = [
+          [1, 2, 2], [2, 1, 2], [2, 2, 1], [3, 1, 1], [1, 3, 1], [1, 1, 3],
+          [2, 2, 2], [1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]
+        ];
+        const chosenTaps = validDistributions[Math.floor(Math.random() * validDistributions.length)];
+        currentDigits = targetDigits.map((tgt, i) => (tgt - chosenTaps[i] + 10) % 10);
         lock.dialCurrentDigits = [...currentDigits];
       }
 
@@ -1547,22 +1763,22 @@ document.addEventListener('DOMContentLoaded', () => {
         resolveLockSuccess();
       });
 
-    // 17. モールス信号打つ奴 (トン・ツー・トン)
+    // 17. モールス信号打つ奴 (トン・ツー・トン バリエーション)
     } else if (lock.type === 'morse_code') {
       const stage = document.createElement('div');
       stage.className = 'morse-stage';
 
-      const targetPattern = ['dot', 'dash', 'dot'];
+      const targetPattern = lock.morsePattern || ['dot', 'dash', 'dot'];
       let currentIdx = 0;
 
       const display = document.createElement('div');
       display.className = 'morse-target-display';
-      const s1 = document.createElement('span'); s1.className = 'morse-symbol'; s1.textContent = '・';
-      const s2 = document.createElement('span'); s2.className = 'morse-symbol'; s2.textContent = '━';
-      const s3 = document.createElement('span'); s3.className = 'morse-symbol'; s3.textContent = '・';
-      display.appendChild(s1);
-      display.appendChild(s2);
-      display.appendChild(s3);
+      targetPattern.forEach(item => {
+        const s = document.createElement('span');
+        s.className = 'morse-symbol';
+        s.textContent = (item === 'dash' ? '━' : '・');
+        display.appendChild(s);
+      });
 
       const tapBtn = document.createElement('button');
       tapBtn.className = 'morse-tap-btn';
@@ -1635,6 +1851,10 @@ document.addEventListener('DOMContentLoaded', () => {
       stage.appendChild(center);
       gimmickContainer.appendChild(stage);
 
+      const baseTarget = Math.PI * 1.85;
+      const mult = (lock.wheelTurnMultiplier !== undefined) ? lock.wheelTurnMultiplier : 1.0;
+      const targetRotation = baseTarget * mult;
+
       let isDragging = false;
       let lastAngle = null;
       let totalRotated = 0;
@@ -1668,7 +1888,7 @@ document.addEventListener('DOMContentLoaded', () => {
         rim.style.transform = `rotate(${currentDeg}deg)`;
         lastAngle = angle;
 
-        const progress = Math.min(1, Math.abs(totalRotated) / (Math.PI * 1.85));
+        const progress = Math.min(1, Math.abs(totalRotated) / targetRotation);
         currentShackle.style.transform = `translateX(-50%) translateY(${-progress * 18}px)`;
 
         const pct = Math.floor(progress * 100);
@@ -1807,7 +2027,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const container = document.createElement('div');
       container.className = 'irira-maze-container';
 
-      const pathD = "M 30 25 L 85 25 L 85 65 L 155 65 L 155 30 L 225 30 L 225 120";
+      const trackIdx = (lock.iriraTrackIndex !== undefined) ? lock.iriraTrackIndex : Math.floor(Math.random() * 3);
+      lock.iriraTrackIndex = trackIdx;
+      const track = IRIRA_MAZE_TRACKS[trackIdx] || IRIRA_MAZE_TRACKS[0];
 
       container.innerHTML = `
         <svg class="irira-maze-svg" viewBox="0 0 250 140">
@@ -1817,11 +2039,11 @@ document.addEventListener('DOMContentLoaded', () => {
               <feComposite in="SourceGraphic" in2="glow" operator="over" />
             </filter>
           </defs>
-          <path class="electric-zap-path electric-zap-glow" d="${pathD}" 
+          <path class="electric-zap-path electric-zap-glow" d="${track.path}" 
                 fill="none" stroke="#ffa502" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-shock)" />
-          <path d="${pathD}" 
+          <path d="${track.path}" 
                 fill="none" stroke="#2f3542" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="${pathD}" 
+          <path d="${track.path}" 
                 fill="none" stroke="rgba(255, 255, 255, 0.4)" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       `;
@@ -1834,28 +2056,21 @@ document.addEventListener('DOMContentLoaded', () => {
           <polygon points="9.5,9.5 14.5,9.5 13.5,17 10.5,17" fill="#2ed573" />
         </svg>
       `;
-      goalHole.style.left = '222px';
-      goalHole.style.top = '117px';
+      goalHole.style.left = (track.goal.x - 3) + 'px';
+      goalHole.style.top = (track.goal.y - 3) + 'px';
       container.appendChild(goalHole);
 
       const keyDragger = document.createElement('div');
       keyDragger.className = 'irira-key-dragger';
       keyDragger.innerHTML = KEY_SVG;
-      keyDragger.style.left = '30px';
-      keyDragger.style.top = '25px';
+      keyDragger.style.left = track.start.x + 'px';
+      keyDragger.style.top = track.start.y + 'px';
       container.appendChild(keyDragger);
 
       gimmickContainer.appendChild(container);
 
-      const points = [
-        { x: 30, y: 25 },
-        { x: 85, y: 25 },
-        { x: 85, y: 65 },
-        { x: 155, y: 65 },
-        { x: 155, y: 30 },
-        { x: 225, y: 30 },
-        { x: 225, y: 120 }
-      ];
+      const points = track.points;
+      lock.iriraPoints = points;
 
       function distToSegment(px, py, x1, y1, x2, y2) {
         const dx = x2 - x1;
@@ -1904,15 +2119,15 @@ document.addEventListener('DOMContentLoaded', () => {
           setTimeout(() => {
             container.classList.remove('shocked');
           }, 350);
-          keyDragger.style.left = '30px';
-          keyDragger.style.top = '25px';
+          keyDragger.style.left = track.start.x + 'px';
+          keyDragger.style.top = track.start.y + 'px';
           return;
         }
 
-        if (Math.hypot(px - 222, py - 117) <= 20) {
+        if (Math.hypot(px - track.goal.x, py - track.goal.y) <= 20) {
           isDragging = false;
-          keyDragger.style.left = '222px';
-          keyDragger.style.top = '117px';
+          keyDragger.style.left = track.goal.x + 'px';
+          keyDragger.style.top = track.goal.y + 'px';
           setTimeout(() => resolveLockSuccess(), 100);
         }
       }
@@ -1920,8 +2135,8 @@ document.addEventListener('DOMContentLoaded', () => {
       function onEnd() {
         if (isDragging) {
           isDragging = false;
-          keyDragger.style.left = '30px';
-          keyDragger.style.top = '25px';
+          keyDragger.style.left = track.start.x + 'px';
+          keyDragger.style.top = track.start.y + 'px';
           triggerMistake();
         }
       }
@@ -1971,6 +2186,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let velocity = 0;
       let isThrusting = false;
       let insideTime = 0;
+      let zoneT = 0;
       const targetDuration = 550;
 
       function onStart(e) { e.preventDefault(); isThrusting = true; playSound('tap'); }
@@ -1983,6 +2199,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       function hoverPhysics() {
         if (!isPlaying || currentLock.type !== lock.type) return;
+
+        // 緑のエリアがゆっくり上下に動く
+        zoneT += 0.025;
+        const zoneTop = 55 + Math.sin(zoneT) * 28;
+        zone.style.top = zoneTop + 'px';
+
         if (isThrusting) velocity += 0.55;
         else velocity -= 0.35;
 
@@ -2227,20 +2449,44 @@ document.addEventListener('DOMContentLoaded', () => {
       wrapper.appendChild(btn);
       nextGimmickContainer.appendChild(wrapper);
 
-    // 5. スライド右 (矢印レール & ノブ)
+    // 5. 直線スライド (4方向プレビュー)
     } else if (t === 'slide_right') {
+      const dir = lock.slideDir || 'right';
+      const isVertical = (dir === 'down' || dir === 'up');
+
       const track = document.createElement('div');
-      track.className = 'slider-horizontal';
+      track.className = isVertical ? 'slider-vertical' : 'slider-horizontal';
+
       const arrows = document.createElement('div');
-      arrows.className = 'slider-arrows-bg';
-      arrows.textContent = '▶ ▶ ▶';
+      arrows.className = isVertical ? 'slider-arrows-v-bg' : 'slider-arrows-bg';
+      if (dir === 'right') arrows.textContent = '▶ ▶ ▶';
+      else if (dir === 'left') arrows.textContent = '◀ ◀ ◀';
+      else if (dir === 'down') arrows.innerHTML = '<span>▼</span><span>▼</span><span>▼</span>';
+      else if (dir === 'up') arrows.innerHTML = '<span>▲</span><span>▲</span><span>▲</span>';
+
       const goal = document.createElement('div');
-      goal.className = 'slider-goal-h right';
+      goal.className = isVertical
+        ? (dir === 'down' ? 'slider-goal-v bottom' : 'slider-goal-v top')
+        : (dir === 'right' ? 'slider-goal-h right' : 'slider-goal-h left');
+
       const knob = document.createElement('div');
-      knob.className = 'slider-knob-h';
-      knob.style.left = '6px';
-      knob.textContent = '▶';
+      knob.className = isVertical ? 'slider-knob-v' : 'slider-knob-h';
       knob.style.fontSize = '1.3rem';
+
+      if (dir === 'right') {
+        knob.style.left = '6px';
+        knob.textContent = '▶';
+      } else if (dir === 'left') {
+        knob.style.left = '165px';
+        knob.textContent = '◀';
+      } else if (dir === 'down') {
+        knob.style.top = '6px';
+        knob.textContent = '▼';
+      } else if (dir === 'up') {
+        knob.style.top = '100px';
+        knob.textContent = '▲';
+      }
+
       track.appendChild(arrows);
       track.appendChild(goal);
       track.appendChild(knob);
@@ -2248,18 +2494,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 6. クランクスライド (一体型L字レール & 星ゴール)
     } else if (t === 'crank_slide') {
+      const vKey = lock.crankVariant || 'right_down';
+      const previewPaths = {
+        right_down: { path: "M 38 38 L 118 38 L 118 132", sx: '18px', sy: '18px', st: '▶', gx: '118px', gy: '132px' },
+        down_right: { path: "M 38 38 L 38 132 L 118 132", sx: '18px', sy: '18px', st: '▼', gx: '118px', gy: '132px' },
+        left_down: { path: "M 118 38 L 38 38 L 38 132", sx: '98px', sy: '18px', st: '◀', gx: '38px', gy: '132px' },
+        down_left: { path: "M 118 38 L 118 132 L 38 132", sx: '98px', sy: '18px', st: '▼', gx: '38px', gy: '132px' },
+      };
+      const pv = previewPaths[vKey] || previewPaths.right_down;
       const area = document.createElement('div');
       area.className = 'crank-slider-area';
       area.innerHTML = `
         <svg class="crank-slot-svg" viewBox="0 0 170 170">
-          <path d="M 38 38 L 118 38 L 118 132" fill="none" stroke="var(--text-dark)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M 38 38 L 118 38 L 118 132" fill="none" stroke="#f1f2f6" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M 38 38 L 118 38 L 118 132" fill="none" stroke="rgba(0, 0, 0, 0.08)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="${pv.path}" fill="none" stroke="var(--text-dark)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="${pv.path}" fill="none" stroke="#f1f2f6" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="${pv.path}" fill="none" stroke="rgba(0, 0, 0, 0.08)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       `;
       const goal = document.createElement('div'); goal.className = 'crank-goal'; goal.textContent = '★';
-      const knob = document.createElement('div'); knob.className = 'crank-knob'; knob.textContent = '▶';
-      knob.style.left = '18px'; knob.style.top = '18px';
+      goal.style.left = pv.gx; goal.style.top = pv.gy;
+      const knob = document.createElement('div'); knob.className = 'crank-knob'; knob.textContent = pv.st;
+      knob.style.left = pv.sx; knob.style.top = pv.sy;
       area.appendChild(goal); area.appendChild(knob);
       nextGimmickContainer.appendChild(area);
 
@@ -2317,10 +2572,17 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (t === 'match_key') {
       const stage = document.createElement('div');
       stage.className = 'key-match-stage';
-      const hole = document.createElement('div');
-      hole.className = 'key-match-hole-target';
-      hole.textContent = lock.matchKeyTarget || '★';
-      stage.appendChild(hole);
+      const targets = lock.matchKeyTargets || (lock.matchKeyTarget ? [lock.matchKeyTarget] : ['★']);
+      const count = targets.length;
+      const targetWrap = document.createElement('div');
+      targetWrap.className = `key-match-targets-wrap targets-${count}`;
+      targets.forEach(sym => {
+        const hole = document.createElement('div');
+        hole.className = `key-match-hole-target target-size-${count}`;
+        hole.textContent = sym;
+        targetWrap.appendChild(hole);
+      });
+      stage.appendChild(targetWrap);
       const grid = document.createElement('div');
       grid.className = 'key-choices-grid-6';
       const syms = lock.matchKeyShuffled || ['●', '▲', '★', '◆', '■', '✚'];
@@ -2428,11 +2690,19 @@ document.addEventListener('DOMContentLoaded', () => {
       bgPolygon.setAttribute('stroke-linecap', 'round');
       svg.appendChild(bgPolygon);
       area.appendChild(svg);
+      const basePoints = [
+        { x: 95, y: 22 },
+        { x: 148, y: 165 },
+        { x: 12, y: 74 },
+        { x: 178, y: 74 },
+        { x: 42, y: 165 }
+      ];
+      const startPt = basePoints[lock.starStartIndex || 0];
       const knob = document.createElement('div');
       knob.className = 'star-knob';
       knob.innerHTML = getStarSvg(true);
-      knob.style.left = '95px';
-      knob.style.top = '22px';
+      knob.style.left = startPt.x + 'px';
+      knob.style.top = startPt.y + 'px';
       area.appendChild(knob);
       nextGimmickContainer.appendChild(area);
 
@@ -2442,7 +2712,8 @@ document.addEventListener('DOMContentLoaded', () => {
       stage.className = 'dial-lock-stage';
       const codeLabel = document.createElement('div');
       codeLabel.className = 'dial-lock-target-code';
-      codeLabel.textContent = '7 7 7';
+      const targetDigits = lock.dialTargetDigits || [7, 7, 7];
+      codeLabel.textContent = targetDigits.join(' ');
       const row = document.createElement('div');
       row.className = 'dial-wheels-row';
       const initVals = lock.dialCurrentDigits || [5, 4, 6];
@@ -2470,16 +2741,19 @@ document.addEventListener('DOMContentLoaded', () => {
       box.appendChild(btn);
       nextGimmickContainer.appendChild(box);
 
-    // 16. モールス信号 (・ ━ ・)
+    // 16. モールス信号 (バリエーション対応)
     } else if (t === 'morse_code') {
       const stage = document.createElement('div');
       stage.className = 'morse-stage';
       const display = document.createElement('div');
       display.className = 'morse-target-display';
-      const s1 = document.createElement('span'); s1.className = 'morse-symbol'; s1.textContent = '・';
-      const s2 = document.createElement('span'); s2.className = 'morse-symbol'; s2.textContent = '━';
-      const s3 = document.createElement('span'); s3.className = 'morse-symbol'; s3.textContent = '・';
-      display.appendChild(s1); display.appendChild(s2); display.appendChild(s3);
+      const pat = lock.morsePattern || ['dot', 'dash', 'dot'];
+      pat.forEach(item => {
+        const s = document.createElement('span');
+        s.className = 'morse-symbol';
+        s.textContent = (item === 'dash' ? '━' : '・');
+        display.appendChild(s);
+      });
       const tapBtn = document.createElement('button');
       tapBtn.className = 'morse-tap-btn';
       tapBtn.textContent = '●';
@@ -2553,7 +2827,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (t === 'irira_key_maze') {
       const container = document.createElement('div');
       container.className = 'irira-maze-container';
-      const pathD = "M 30 25 L 85 25 L 85 65 L 155 65 L 155 30 L 225 30 L 225 120";
+      const track = IRIRA_MAZE_TRACKS[lock.iriraTrackIndex || 0];
       container.innerHTML = `
         <svg class="irira-maze-svg" viewBox="0 0 250 140">
           <defs>
@@ -2562,11 +2836,11 @@ document.addEventListener('DOMContentLoaded', () => {
               <feComposite in="SourceGraphic" in2="glow" operator="over" />
             </filter>
           </defs>
-          <path class="electric-zap-path electric-zap-glow" d="${pathD}" 
+          <path class="electric-zap-path electric-zap-glow" d="${track.path}" 
                 fill="none" stroke="#ffa502" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-shock-prev)" />
-          <path d="${pathD}" 
+          <path d="${track.path}" 
                 fill="none" stroke="#2f3542" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="${pathD}" 
+          <path d="${track.path}" 
                 fill="none" stroke="rgba(255, 255, 255, 0.4)" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       `;
@@ -2578,14 +2852,14 @@ document.addEventListener('DOMContentLoaded', () => {
           <polygon points="9.5,9.5 14.5,9.5 13.5,17 10.5,17" fill="#2ed573" />
         </svg>
       `;
-      goalHole.style.left = '222px';
-      goalHole.style.top = '117px';
+      goalHole.style.left = (track.goal.x - 3) + 'px';
+      goalHole.style.top = (track.goal.y - 3) + 'px';
       container.appendChild(goalHole);
       const keyDragger = document.createElement('div');
       keyDragger.className = 'irira-key-dragger';
       keyDragger.innerHTML = KEY_SVG;
-      keyDragger.style.left = '30px';
-      keyDragger.style.top = '25px';
+      keyDragger.style.left = track.start.x + 'px';
+      keyDragger.style.top = track.start.y + 'px';
       container.appendChild(keyDragger);
       nextGimmickContainer.appendChild(container);
 
@@ -2797,6 +3071,46 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   let isTimeFrozen = false;
+  let isPaused = false;
+
+  const pauseBtn = document.getElementById('pause-btn');
+  const pauseOverlay = document.getElementById('pause-overlay');
+  const pauseResumeBtn = document.getElementById('pause-resume-btn');
+  const pauseRetryBtn = document.getElementById('pause-retry-btn');
+  const pauseTitleBtn = document.getElementById('pause-title-btn');
+
+  function pauseGame() {
+    if (!isPlaying || isPaused) return;
+    isPaused = true;
+    playSound('tap');
+    if (pauseOverlay) pauseOverlay.classList.add('active');
+  }
+
+  function resumeGame() {
+    if (!isPaused) return;
+    isPaused = false;
+    playSound('tap');
+    if (pauseOverlay) pauseOverlay.classList.remove('active');
+  }
+
+  if (pauseBtn) pauseBtn.addEventListener('click', pauseGame);
+  if (pauseResumeBtn) pauseResumeBtn.addEventListener('click', resumeGame);
+  if (pauseRetryBtn) {
+    pauseRetryBtn.addEventListener('click', () => {
+      resumeGame();
+      startGame();
+    });
+  }
+  if (pauseTitleBtn) {
+    pauseTitleBtn.addEventListener('click', () => {
+      resumeGame();
+      isPlaying = false;
+      cleanupCurrentGimmick();
+      if (timerInterval) clearInterval(timerInterval);
+      startOverlay.classList.add('active');
+      resultOverlay.classList.remove('active');
+    });
+  }
 
   // Timer loop
   function startTimer() {
@@ -2804,7 +3118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const urgentNum = document.getElementById('urgent-count-num');
 
     timerInterval = setInterval(() => {
-      if (isTimeFrozen) return;
+      if (isTimeFrozen || isPaused) return;
 
       remainingTime -= 0.1;
       if (remainingTime <= 0) {
@@ -2849,9 +3163,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initAudio();
     cleanupCurrentGimmick();
     isPlaying = true;
+    isPaused = false;
     isResolvingLock = false;
     const urgentOverlay = document.getElementById('urgent-countdown-overlay');
     if (urgentOverlay) urgentOverlay.classList.remove('active');
+    if (pauseOverlay) pauseOverlay.classList.remove('active');
 
     if (gimmickContainer) {
       gimmickContainer.style.pointerEvents = 'auto';
@@ -3207,11 +3523,12 @@ document.addEventListener('DOMContentLoaded', () => {
       startGame();
     }
 
-    currentLock = {
+    const debugRound = window.__debugRound || roundNumber || 1;
+    currentLock = initLockGimmickState({
       ...targetDef,
-      round: 1,
+      round: debugRound,
       points: targetDef.basePoints
-    };
+    });
     renderGimmick(currentLock);
     renderNextGimmickPreview(nextLock);
     playSound('tap');
