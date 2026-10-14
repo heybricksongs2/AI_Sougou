@@ -824,16 +824,18 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 
-    // 6. カクカクっと2回スライド (L字クランク)
+    // 6. カクカクっと2回スライド (一体型L字クランクレール & 精密ゴール)
     } else if (lock.type === 'crank_slide') {
       const area = document.createElement('div');
       area.className = 'crank-slider-area';
 
-      const pathH = document.createElement('div');
-      pathH.className = 'crank-slot-path';
-
-      const pathV = document.createElement('div');
-      pathV.className = 'crank-slot-path-v';
+      area.innerHTML = `
+        <svg class="crank-slot-svg" viewBox="0 0 170 170">
+          <path d="M 38 38 L 118 38 L 118 132" fill="none" stroke="var(--text-dark)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M 38 38 L 118 38 L 118 132" fill="none" stroke="#f1f2f6" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M 38 38 L 118 38 L 118 132" fill="none" stroke="rgba(0, 0, 0, 0.08)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      `;
 
       const goal = document.createElement('div');
       goal.className = 'crank-goal';
@@ -842,9 +844,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const knob = document.createElement('div');
       knob.className = 'crank-knob';
       knob.textContent = '▶';
+      knob.style.left = '18px';
+      knob.style.top = '18px';
 
-      area.appendChild(pathH);
-      area.appendChild(pathV);
       area.appendChild(goal);
       area.appendChild(knob);
       gimmickContainer.appendChild(area);
@@ -861,17 +863,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const relY = cur.clientY - rect.top - 20;
 
         if (step === 0) {
-          let x = Math.max(18, Math.min(90, relX));
+          let x = Math.max(18, Math.min(98, relX));
           knob.style.left = x + 'px';
-          if (x >= 86) {
+          if (x >= 94) {
             step = 1;
             knob.textContent = '▼';
             playSound('tap');
           }
         } else if (step === 1) {
-          let y = Math.max(18, Math.min(96, relY));
+          let y = Math.max(18, Math.min(112, relY));
           knob.style.top = y + 'px';
-          if (y >= 92) {
+          if (y >= 106) {
             isDragging = false;
             resolveLockSuccess();
           }
@@ -2244,16 +2246,21 @@ document.addEventListener('DOMContentLoaded', () => {
       track.appendChild(knob);
       nextGimmickContainer.appendChild(track);
 
-    // 6. クランクスライド (L字レール & 星ゴール)
+    // 6. クランクスライド (一体型L字レール & 星ゴール)
     } else if (t === 'crank_slide') {
       const area = document.createElement('div');
       area.className = 'crank-slider-area';
-      const pathH = document.createElement('div'); pathH.className = 'crank-slot-path';
-      const pathV = document.createElement('div'); pathV.className = 'crank-slot-path-v';
+      area.innerHTML = `
+        <svg class="crank-slot-svg" viewBox="0 0 170 170">
+          <path d="M 38 38 L 118 38 L 118 132" fill="none" stroke="var(--text-dark)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M 38 38 L 118 38 L 118 132" fill="none" stroke="#f1f2f6" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M 38 38 L 118 38 L 118 132" fill="none" stroke="rgba(0, 0, 0, 0.08)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      `;
       const goal = document.createElement('div'); goal.className = 'crank-goal'; goal.textContent = '★';
       const knob = document.createElement('div'); knob.className = 'crank-knob'; knob.textContent = '▶';
       knob.style.left = '18px'; knob.style.top = '18px';
-      area.appendChild(pathH); area.appendChild(pathV); area.appendChild(goal); area.appendChild(knob);
+      area.appendChild(goal); area.appendChild(knob);
       nextGimmickContainer.appendChild(area);
 
     // 7. サークルループスライド (円弧トラック)

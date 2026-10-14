@@ -1033,46 +1033,32 @@ body {
   transform: scale(1.3);
 }
 
-/* 6. カクカクL字・クランクスライド (Lv6: 四角い囲いなし・Lv5同様のレールデザイン) */
+/* 6. カクカクL字・クランクスライド (Lv6: 一体型SVGレール & 精密ゴール位置) */
 .crank-slider-area {
   position: relative;
   width: 170px;
-  height: 160px;
+  height: 170px;
   background: none !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-.crank-slot-path {
+.crank-slot-svg {
   position: absolute;
-  top: 14px;
-  left: 14px;
-  width: 120px;
-  height: 48px;
-  background: #f1f2f6;
-  border: 4px solid var(--text-dark);
-  border-radius: 24px;
-  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.12);
-}
-
-.crank-slot-path-v {
-  position: absolute;
-  top: 14px;
-  left: 86px;
-  width: 48px;
-  height: 120px;
-  background: #f1f2f6;
-  border: 4px solid var(--text-dark);
-  border-radius: 24px;
-  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.12);
+  top: 0;
+  left: 0;
+  width: 170px;
+  height: 170px;
+  pointer-events: none;
 }
 
 .crank-goal {
   position: absolute;
-  bottom: 6px;
-  left: 86px;
-  width: 48px;
-  height: 48px;
+  left: 118px;
+  top: 132px;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
   background: rgba(46, 213, 115, 0.25);
   border: 3px dashed var(--secondary-accent);
   border-radius: 50%;
@@ -1080,6 +1066,8 @@ body {
   justify-content: center;
   align-items: center;
   font-size: 1.3rem;
+  color: var(--text-dark);
+  pointer-events: none;
   z-index: 2;
 }
 
