@@ -12,12 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const currentCard = document.getElementById('current-lock-card');
   const nextCard = document.getElementById('next-lock-card');
   const lockLevelBadge = document.getElementById('lock-level-badge');
-  const lockDiff = document.getElementById('lock-difficulty');
   const currentShackle = document.getElementById('current-shackle');
   const gimmickContainer = document.getElementById('gimmick-container');
   const nextGimmickContainer = document.getElementById('next-gimmick-container');
   const nextLockBadge = document.getElementById('next-lock-badge');
-  const nextLockDiff = document.getElementById('next-lock-difficulty');
 
   const startOverlay = document.getElementById('start-overlay');
   const startBtn = document.getElementById('start-btn');
@@ -313,9 +311,21 @@ document.addEventListener('DOMContentLoaded', () => {
       <polyline points="20 6 9 17 4 12"/>
     </svg>
   `;
+  // Lv8: 実寸180x180判定完全一致の黒色チェックマークガイド
   const CHECK_MARK_SVG = `
-    <svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="#2ed573" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
-      <polyline points="20 6 9 17 4 12"/>
+    <svg viewBox="0 0 180 180" width="180" height="180" fill="none" stroke="#2f3542" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" style="display:block; opacity:0.32;">
+      <polyline points="35 85 75 125 145 55"/>
+    </svg>
+  `;
+  // Lv7: 統一デザインの左右カーブ矢印SVG
+  const ARROW_CURVE_RIGHT_SVG = `
+    <svg viewBox="0 0 24 24" width="38" height="38" fill="currentColor" style="display:block;">
+      <path d="M19 9l-5-5v3C8.48 7 4 11.48 4 17c0 1.43.3 2.78.84 4 1.34-3.56 4.77-6 8.78-6h.38v3l5-5z"/>
+    </svg>
+  `;
+  const ARROW_CURVE_LEFT_SVG = `
+    <svg viewBox="0 0 24 24" width="38" height="38" fill="currentColor" style="display:block;">
+      <path d="M5 9l5-5v3c5.52 0 10 4.48 10 9.5 0 1.43-.3 2.78-.84 4-1.34-3.56-4.77-6-8.78-6h-.38v3L5 9z"/>
     </svg>
   `;
   const TARGET_ZONE_SVG = `
@@ -329,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </svg>
   `;
   const HAND_STOP_SVG = `
-    <svg viewBox="0 0 24 24" width="48" height="48" fill="#ff4757" stroke="#2f3542" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
+    <svg viewBox="0 0 24 24" width="48" height="48" fill="#ffbe76" stroke="#2f3542" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
       <path d="M18 11V6a2 2 0 0 0-4 0v4"/><path d="M14 10V4a2 2 0 0 0-4 0v7"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-5.9-2.3L2.3 14c-.4-.4-.3-1 .2-1.3.4-.3 1-.2 1.3.2L6 15"/>
     </svg>
   `;
@@ -357,6 +367,19 @@ document.addEventListener('DOMContentLoaded', () => {
       <path d="M 9 27 L 3 36 L 9 34 Z" fill="#ff4757" stroke="#2f3542" stroke-width="2" />
       <path d="M 23 27 L 29 36 L 23 34 Z" fill="#ff4757" stroke="#2f3542" stroke-width="2" />
       <path d="M 11 35 Q 16 46 21 35 Z" fill="#ffa502" />
+    </svg>
+  `;
+
+  // 2-B. UFO SVG (Lv21 精密ホバー高難易度用)
+  const UFO_SVG = `
+    <svg viewBox="0 0 36 36" width="34" height="34" style="display:block; overflow:visible;">
+      <path d="M 11 18 A 7 7 0 0 1 25 18 Z" fill="#00d2d3" stroke="#2f3542" stroke-width="2.2" />
+      <circle cx="18" cy="15" r="2" fill="#ffffff" />
+      <ellipse cx="18" cy="20" rx="15" ry="6" fill="#ffd32a" stroke="#2f3542" stroke-width="2.5" />
+      <circle cx="9" cy="20" r="1.5" fill="#ff4757" />
+      <circle cx="18" cy="21.5" r="1.5" fill="#2ed573" />
+      <circle cx="27" cy="20" r="1.5" fill="#1e90ff" />
+      <polygon points="14,24.5 22,24.5 25,32 11,32" fill="rgba(0, 210, 211, 0.55)" stroke="#2f3542" stroke-width="1.2" stroke-dasharray="2 2" />
     </svg>
   `;
 
@@ -481,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const chosenTaps = tapDistributions[Math.floor(Math.random() * tapDistributions.length)];
       lock.dialCurrentDigits = chosenTaps.map(t => (7 - t + 10) % 10);
     } else if (lock.type === 'color_choice_2') {
-      lock.colorChoiceIsBlue = Math.random() > 0.5;
+      lock.colorChoiceIndex = Math.floor(Math.random() * 4);
     }
     return lock;
   }
@@ -557,54 +580,71 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       gimmickContainer.appendChild(btn);
 
-    // 2. スイッチスライド
+    // 2. レバースイッチ (Lv2)
     } else if (lock.type === 'switch_slide') {
-      const track = document.createElement('div');
-      track.className = 'switch-slider-track';
+      const frame = document.createElement('div');
+      frame.className = 'lever-switch-frame';
 
-      const arrows = document.createElement('div');
-      arrows.className = 'switch-arrows-hint';
-      arrows.textContent = '▶▶';
+      const labels = document.createElement('div');
+      labels.className = 'lever-labels-row';
+      labels.innerHTML = '<span>OFF</span><span>ON</span>';
 
-      const knob = document.createElement('div');
-      knob.className = 'switch-draggable-knob';
-      knob.style.left = '4px';
-      knob.textContent = '●';
+      const slot = document.createElement('div');
+      slot.className = 'lever-slot-cutout';
 
-      track.appendChild(arrows);
-      track.appendChild(knob);
-      gimmickContainer.appendChild(track);
+      const pivot = document.createElement('div');
+      pivot.className = 'lever-pivot-base';
 
-      let isDragging = false;
-      function onStart() { isDragging = true; playSound('tap'); }
-      function onMove(e) {
-        if (!isDragging) return;
-        const curX = (e.touches ? e.touches[0].clientX : e.clientX);
-        const rect = track.getBoundingClientRect();
-        const maxDist = rect.width - 56;
-        let diff = curX - rect.left - 24;
-        diff = Math.max(4, Math.min(maxDist, diff));
-        knob.style.left = diff + 'px';
-        if (diff >= maxDist - 6) {
-          isDragging = false;
-          track.classList.add('on');
-          knob.style.color = '#2ed573';
-          setTimeout(() => resolveLockSuccess(), 100);
+      const arm = document.createElement('div');
+      arm.className = 'lever-arm-actor';
+      arm.innerHTML = `
+        <div class="lever-metal-rod"></div>
+        <div class="lever-handle-ball"></div>
+      `;
+
+      frame.appendChild(labels);
+      frame.appendChild(slot);
+      frame.appendChild(pivot);
+      frame.appendChild(arm);
+      gimmickContainer.appendChild(frame);
+
+      let isFlipped = false;
+      let startX = 0;
+
+      function flipOn() {
+        if (isFlipped) return;
+        isFlipped = true;
+        frame.classList.add('is-on');
+        playSound('unlock');
+        setTimeout(() => resolveLockSuccess(), 120);
+      }
+
+      function onPointerDown(e) {
+        if (isFlipped) return;
+        const pt = e.touches ? e.touches[0] : e;
+        startX = pt.clientX;
+      }
+
+      function onPointerMove(e) {
+        if (isFlipped) return;
+        const pt = e.touches ? e.touches[0] : e;
+        if (pt.clientX - startX > 20) {
+          flipOn();
         }
       }
-      function onEnd() {
-        if (isDragging) {
-          isDragging = false;
-          knob.style.left = '4px';
-          triggerMistake();
+
+      function onPointerUp(e) {
+        if (isFlipped) return;
+        const rect = frame.getBoundingClientRect();
+        const pt = e.changedTouches ? e.changedTouches[0] : e;
+        if (pt.clientX > rect.left + rect.width * 0.4) {
+          flipOn();
         }
       }
-      knob.addEventListener('mousedown', onStart);
-      knob.addEventListener('touchstart', onStart, { passive: true });
-      addTrackedListener(window, 'mousemove', onMove);
-      addTrackedListener(window, 'touchmove', onMove, { passive: true });
-      addTrackedListener(window, 'mouseup', onEnd);
-      addTrackedListener(window, 'touchend', onEnd);
+
+      frame.addEventListener('pointerdown', onPointerDown);
+      frame.addEventListener('pointermove', onPointerMove);
+      frame.addEventListener('pointerup', onPointerUp);
 
     // 3. 鍵ドラッグ差し込み (安定ベクターキー ＆ リアル鍵穴)
     } else if (lock.type === 'key_drag') {
@@ -683,7 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. ダブルタップ (ボタン外側に大きな光る点)
     } else if (lock.type === 'double_tap') {
       let currentTaps = 0;
-      let lastTapTime = 0;
+      let tapResetTimer = null;
 
       const wrapper = document.createElement('div');
       wrapper.className = 'multi-tap-wrapper';
@@ -711,18 +751,24 @@ document.addEventListener('DOMContentLoaded', () => {
           e.stopPropagation();
         }
         if (isResolvingLock) return;
-        const now = Date.now();
         playSound('tap');
-        if (currentTaps === 0 || now - lastTapTime < 550) {
-          currentTaps++;
-          dots[currentTaps - 1].classList.add('active');
-          if (currentTaps >= 2) setTimeout(() => resolveLockSuccess(), 80);
-        } else {
+
+        if (currentTaps === 0) {
           currentTaps = 1;
-          dots.forEach(d => d.classList.remove('active'));
           dots[0].classList.add('active');
+          if (tapResetTimer) clearTimeout(tapResetTimer);
+          // 1回押し後、判定が途切れた場合は0点灯に戻す (480ms)
+          tapResetTimer = setTimeout(() => {
+            currentTaps = 0;
+            dots[0].classList.remove('active');
+            dots[1].classList.remove('active');
+          }, 480);
+        } else if (currentTaps === 1) {
+          if (tapResetTimer) clearTimeout(tapResetTimer);
+          currentTaps = 2;
+          dots[1].classList.add('active');
+          setTimeout(() => resolveLockSuccess(), 80);
         }
-        lastTapTime = now;
       }
 
       btn.addEventListener('pointerdown', handleDoubleTap);
@@ -816,17 +862,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const relY = cur.clientY - rect.top - 20;
 
         if (step === 0) {
-          let x = Math.max(14, Math.min(104, relX));
+          let x = Math.max(18, Math.min(90, relX));
           knob.style.left = x + 'px';
-          if (x >= 98) {
+          if (x >= 86) {
             step = 1;
             knob.textContent = '▼';
             playSound('tap');
           }
         } else if (step === 1) {
-          let y = Math.max(14, Math.min(104, relY));
+          let y = Math.max(18, Math.min(96, relY));
           knob.style.top = y + 'px';
-          if (y >= 98) {
+          if (y >= 92) {
             isDragging = false;
             resolveLockSuccess();
           }
@@ -836,8 +882,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isDragging) {
           isDragging = false;
           step = 0;
-          knob.style.left = '14px';
-          knob.style.top = '14px';
+          knob.style.left = '18px';
+          knob.style.top = '18px';
           knob.textContent = '▶';
           triggerMistake();
         }
@@ -879,7 +925,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const turnIndicator = document.createElement('div');
       turnIndicator.className = 'loop-turn-indicator';
-      turnIndicator.textContent = '↷';
+      turnIndicator.innerHTML = ARROW_CURVE_RIGHT_SVG;
+      turnIndicator.style.color = '#1e90ff';
       stage.appendChild(turnIndicator);
 
       const knob = document.createElement('div');
@@ -918,7 +965,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (phase === 0) {
           if (angle > -0.25) {
             phase = 1;
-            turnIndicator.textContent = '↩';
+            turnIndicator.innerHTML = ARROW_CURVE_LEFT_SVG;
             turnIndicator.style.color = '#ffa502';
             knob.style.background = '#ffa502';
             playSound('tap');
@@ -937,8 +984,8 @@ document.addEventListener('DOMContentLoaded', () => {
           isDragging = false;
           phase = 0;
           knob.style.background = 'var(--primary-accent)';
-          turnIndicator.textContent = '↷';
-          turnIndicator.style.color = 'var(--blue-accent)';
+          turnIndicator.innerHTML = ARROW_CURVE_RIGHT_SVG;
+          turnIndicator.style.color = '#1e90ff';
           knob.style.left = '27px';
           knob.style.top = '95px';
           triggerMistake();
@@ -1090,7 +1137,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const colorDefs = [
         { key: 'red', hex: '#ff4757' },
         { key: 'blue', hex: '#1e90ff' },
-        { key: 'yellow', hex: '#ffa502' }
+        { key: 'yellow', hex: '#ffd32a' }
       ];
 
       let selectedColors = [];
@@ -1100,7 +1147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if ((c1 === 'red' && c2 === 'blue') || (c1 === 'blue' && c2 === 'red')) return '#9b59b6';
         if ((c1 === 'blue' && c2 === 'yellow') || (c1 === 'yellow' && c2 === 'blue')) return '#2ed573';
         if ((c1 === 'red' && c2 === 'yellow') || (c1 === 'yellow' && c2 === 'red')) return '#e67e22';
-        return c1 === 'red' ? '#ff4757' : (c1 === 'blue' ? '#1e90ff' : '#ffa502');
+        return c1 === 'red' ? '#ff4757' : (c1 === 'blue' ? '#1e90ff' : '#ffd32a');
       }
 
       colorDefs.forEach(def => {
@@ -1716,25 +1763,41 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       activeAnimationId = requestAnimationFrame(waitLoop);
 
-    // 20. カラー二択 (UI位置・間隔・押しやすさを再調整)
+    // 20. カラー四択 (旧カラー二択: 赤・青・緑・黄)
     } else if (lock.type === 'color_choice_2') {
-      const isBlue = (lock.colorChoiceIsBlue !== undefined) ? lock.colorChoiceIsBlue : (Math.random() > 0.5);
-      lock.colorChoiceIsBlue = isBlue;
+      const colors = [
+        { key: 'red', hex: '#ff4757' },
+        { key: 'blue', hex: '#1e90ff' },
+        { key: 'green', hex: '#2ed573' },
+        { key: 'yellow', hex: '#ffd32a' }
+      ];
+      const targetIndex = (lock.colorChoiceIndex !== undefined) ? lock.colorChoiceIndex : Math.floor(Math.random() * 4);
+      lock.colorChoiceIndex = targetIndex;
+
       const wrap = document.createElement('div');
       wrap.className = 'color-match-wrap';
 
       const target = document.createElement('div');
       target.className = 'color-target-display';
-      target.style.background = isBlue ? '#1e90ff' : '#ff4757';
+      target.style.background = colors[targetIndex].hex;
       wrap.appendChild(target);
 
       const row = document.createElement('div');
-      row.className = 'choice-row';
-      const b1 = document.createElement('button'); b1.className = 'color-choice-btn'; b1.style.background = '#1e90ff';
-      const b2 = document.createElement('button'); b2.className = 'color-choice-btn'; b2.style.background = '#ff4757';
-      b1.addEventListener('click', () => { if (isBlue) { playSound('tap'); resolveLockSuccess(); } else triggerMistake(); });
-      b2.addEventListener('click', () => { if (!isBlue) { playSound('tap'); resolveLockSuccess(); } else triggerMistake(); });
-      row.appendChild(b1); row.appendChild(b2);
+      row.className = 'choice-row choice-row-4';
+      colors.forEach((c, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'color-choice-btn';
+        btn.style.background = c.hex;
+        btn.addEventListener('click', () => {
+          if (idx === targetIndex) {
+            playSound('tap');
+            resolveLockSuccess();
+          } else {
+            triggerMistake();
+          }
+        });
+        row.appendChild(btn);
+      });
       wrap.appendChild(row);
       gimmickContainer.appendChild(wrap);
 
@@ -1765,13 +1828,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const goalHole = document.createElement('div');
       goalHole.className = 'irira-goal-hole';
       goalHole.innerHTML = `
-        <svg viewBox="0 0 24 24" width="24" height="24">
-          <circle cx="12" cy="9" r="6" fill="#2ed573" />
-          <polygon points="9,10 15,10 14,20 10,20" fill="#2ed573" />
+        <svg viewBox="0 0 24 24" width="24" height="24" style="display:block;">
+          <circle cx="12" cy="9" r="5.5" fill="#2ed573" />
+          <polygon points="9.5,9.5 14.5,9.5 13.5,17 10.5,17" fill="#2ed573" />
         </svg>
       `;
-      goalHole.style.left = '225px';
-      goalHole.style.top = '120px';
+      goalHole.style.left = '222px';
+      goalHole.style.top = '117px';
       container.appendChild(goalHole);
 
       const keyDragger = document.createElement('div');
@@ -1845,10 +1908,10 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        if (Math.hypot(px - 225, py - 120) <= 18) {
+        if (Math.hypot(px - 222, py - 117) <= 20) {
           isDragging = false;
-          keyDragger.style.left = '225px';
-          keyDragger.style.top = '120px';
+          keyDragger.style.left = '222px';
+          keyDragger.style.top = '117px';
           setTimeout(() => resolveLockSuccess(), 100);
         }
       }
@@ -1891,7 +1954,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const rocket = document.createElement('div');
       rocket.className = 'hover-rocket';
-      rocket.innerHTML = ROCKET_SVG;
+      rocket.innerHTML = UFO_SVG;
 
       stage.appendChild(zone);
       stage.appendChild(rocket);
@@ -1954,7 +2017,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       activeAnimationId = requestAnimationFrame(hoverPhysics);
 
-    // 23. 極小・激しく動くボタン (クッキリ照準マーク ＆ 時間経過で減速)
+    // 23. 極小・激しく動くボタン (クッキリ照準マーク ＆ ランダム開始位置 ＆ 高速タップ即時判定)
     } else if (lock.type === 'tiny_moving_btn') {
       const box = document.createElement('div');
       box.className = 'moving-btn-container';
@@ -1966,8 +2029,11 @@ document.addEventListener('DOMContentLoaded', () => {
       box.appendChild(btn);
       gimmickContainer.appendChild(box);
 
-      let x = 80, y = 80;
-      let vx = 5.2, vy = 4.5;
+      // 開始位置を中央固定ではなくランダムに配置
+      let x = 25 + Math.random() * 190;
+      let y = 20 + Math.random() * 95;
+      let vx = (Math.random() > 0.5 ? 1 : -1) * (4.6 + Math.random() * 1.6);
+      let vy = (Math.random() > 0.5 ? 1 : -1) * (3.8 + Math.random() * 1.6);
 
       function tinyBounce() {
         if (!isPlaying || currentLock.type !== lock.type) return;
@@ -1987,10 +2053,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       activeAnimationId = requestAnimationFrame(tinyBounce);
 
-      btn.addEventListener('click', () => {
+      let isHit = false;
+      function onBtnHit(e) {
+        if (isHit) return;
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        isHit = true;
         playSound('tap');
         resolveLockSuccess();
-      });
+      }
+
+      // 高速移動中もタッチ・ポインターを逃さず即座に反応
+      btn.addEventListener('pointerdown', onBtnHit);
+      btn.addEventListener('touchstart', onBtnHit, { passive: false });
+      btn.addEventListener('mousedown', onBtnHit);
+      btn.addEventListener('click', onBtnHit);
 
     // 24. 超激連打 (連打しないとゲージがマイナスに減少して左に飛び出す ＆ リアル立体アーケードボタン)
     } else if (lock.type === 'super_mash') {
@@ -2045,7 +2124,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       function decayLoop() {
         if (!isPlaying || currentLock.type !== lock.type) return;
-        progress = Math.max(-40, progress - 0.35);
+        progress = Math.max(-40, progress - 0.525);
         updateBar();
         activeAnimationId = requestAnimationFrame(decayLoop);
       }
@@ -2087,7 +2166,6 @@ document.addEventListener('DOMContentLoaded', () => {
     nextGimmickContainer.innerHTML = '';
     if (isLiteMode) return; // 軽量モード時は奥の鍵の描画・計算をスキップ
     if (nextLockBadge) nextLockBadge.textContent = `NEXT: Lv.${lock.level}`;
-    if (nextLockDiff) nextLockDiff.textContent = lock.stars;
 
     const t = lock.type;
     // 1. 特大ボタン (TAP!)
@@ -2097,20 +2175,20 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.innerHTML = `<span>TAP!</span>`;
       nextGimmickContainer.appendChild(btn);
 
-    // 2. スイッチスライド
+    // 2. レバースイッチ (Lv2)
     } else if (t === 'switch_slide') {
-      const track = document.createElement('div');
-      track.className = 'switch-slider-track';
-      const arrows = document.createElement('div');
-      arrows.className = 'switch-arrows-hint';
-      arrows.textContent = '▶▶';
-      const knob = document.createElement('div');
-      knob.className = 'switch-draggable-knob';
-      knob.style.left = '4px';
-      knob.textContent = '●';
-      track.appendChild(arrows);
-      track.appendChild(knob);
-      nextGimmickContainer.appendChild(track);
+      const frame = document.createElement('div');
+      frame.className = 'lever-switch-frame';
+      frame.innerHTML = `
+        <div class="lever-labels-row"><span>OFF</span><span>ON</span></div>
+        <div class="lever-slot-cutout"></div>
+        <div class="lever-pivot-base"></div>
+        <div class="lever-arm-actor">
+          <div class="lever-metal-rod"></div>
+          <div class="lever-handle-ball"></div>
+        </div>
+      `;
+      nextGimmickContainer.appendChild(frame);
 
     // 3. 鍵ドラッグ差し込み (ゴールドキー & リアル鍵穴)
     } else if (t === 'key_drag') {
@@ -2175,7 +2253,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const pathV = document.createElement('div'); pathV.className = 'crank-slot-path-v';
       const goal = document.createElement('div'); goal.className = 'crank-goal'; goal.textContent = '★';
       const knob = document.createElement('div'); knob.className = 'crank-knob'; knob.textContent = '▶';
-      knob.style.left = '14px'; knob.style.top = '14px';
+      knob.style.left = '18px'; knob.style.top = '18px';
       area.appendChild(pathH); area.appendChild(pathV); area.appendChild(goal); area.appendChild(knob);
       nextGimmickContainer.appendChild(area);
 
@@ -2204,7 +2282,8 @@ document.addEventListener('DOMContentLoaded', () => {
       stage.appendChild(svg);
       const turnIndicator = document.createElement('div');
       turnIndicator.className = 'loop-turn-indicator';
-      turnIndicator.textContent = '↷';
+      turnIndicator.innerHTML = ARROW_CURVE_RIGHT_SVG;
+      turnIndicator.style.color = '#1e90ff';
       stage.appendChild(turnIndicator);
       const knob = document.createElement('div');
       knob.className = 'loop-knob';
@@ -2264,7 +2343,7 @@ document.addEventListener('DOMContentLoaded', () => {
       stage.appendChild(barContainer);
       const buttonsRow = document.createElement('div');
       buttonsRow.className = 'color-mix-buttons-row';
-      ['#ff4757', '#1e90ff', '#ffa502'].forEach(hex => {
+      ['#ff4757', '#1e90ff', '#ffd32a'].forEach(hex => {
         const btn = document.createElement('button');
         btn.className = 'color-mix-pill-btn';
         btn.style.background = hex;
@@ -2438,20 +2517,29 @@ document.addEventListener('DOMContentLoaded', () => {
       stage.appendChild(track);
       nextGimmickContainer.appendChild(stage);
 
-    // 19. カラー2択 (ターゲット & 2色ボタン)
+    // 19. カラー4択 (ターゲット & 4色ボタン)
     } else if (t === 'color_choice_2') {
-      const isBlue = (lock.colorChoiceIsBlue !== undefined) ? lock.colorChoiceIsBlue : true;
+      const colors = [
+        { key: 'red', hex: '#ff4757' },
+        { key: 'blue', hex: '#1e90ff' },
+        { key: 'green', hex: '#2ed573' },
+        { key: 'yellow', hex: '#ffd32a' }
+      ];
+      const targetIndex = (lock.colorChoiceIndex !== undefined) ? lock.colorChoiceIndex : 0;
       const wrap = document.createElement('div');
       wrap.className = 'color-match-wrap';
       const target = document.createElement('div');
       target.className = 'color-target-display';
-      target.style.background = isBlue ? '#1e90ff' : '#ff4757';
+      target.style.background = colors[targetIndex].hex;
       wrap.appendChild(target);
       const row = document.createElement('div');
-      row.className = 'choice-row';
-      const b1 = document.createElement('button'); b1.className = 'color-choice-btn'; b1.style.background = '#1e90ff';
-      const b2 = document.createElement('button'); b2.className = 'color-choice-btn'; b2.style.background = '#ff4757';
-      row.appendChild(b1); row.appendChild(b2);
+      row.className = 'choice-row choice-row-4';
+      colors.forEach(c => {
+        const b = document.createElement('button');
+        b.className = 'color-choice-btn';
+        b.style.background = c.hex;
+        row.appendChild(b);
+      });
       wrap.appendChild(row);
       nextGimmickContainer.appendChild(wrap);
 
@@ -2479,13 +2567,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const goalHole = document.createElement('div');
       goalHole.className = 'irira-goal-hole';
       goalHole.innerHTML = `
-        <svg viewBox="0 0 24 24" width="24" height="24">
-          <circle cx="12" cy="9" r="6" fill="#2ed573" />
-          <polygon points="9,10 15,10 14,20 10,20" fill="#2ed573" />
+        <svg viewBox="0 0 24 24" width="24" height="24" style="display:block;">
+          <circle cx="12" cy="9" r="5.5" fill="#2ed573" />
+          <polygon points="9.5,9.5 14.5,9.5 13.5,17 10.5,17" fill="#2ed573" />
         </svg>
       `;
-      goalHole.style.left = '225px';
-      goalHole.style.top = '120px';
+      goalHole.style.left = '222px';
+      goalHole.style.top = '117px';
       container.appendChild(goalHole);
       const keyDragger = document.createElement('div');
       keyDragger.className = 'irira-key-dragger';
@@ -2514,7 +2602,7 @@ document.addEventListener('DOMContentLoaded', () => {
       zone.appendChild(progressTrack);
       const rocket = document.createElement('div');
       rocket.className = 'hover-rocket';
-      rocket.innerHTML = ROCKET_SVG;
+      rocket.innerHTML = UFO_SVG;
       rocket.style.bottom = '15px';
       stage.appendChild(zone);
       stage.appendChild(rocket);
@@ -2821,14 +2909,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const nextRankEl = document.getElementById('next-rank-info');
     const resultCardEl = document.getElementById('result-card');
-    if (resultCardEl) resultCardEl.classList.remove('rank-s-card');
+    if (resultCardEl) {
+      resultCardEl.classList.remove('rank-s-card');
+      resultCardEl.classList.remove('rank-x-card');
+    }
 
     let rank = 'C';
-    if (score >= 4000) {
-      rank = 'S';
+    if (score >= 5500) {
+      rank = 'X';
       if (nextRankEl) {
-        nextRankEl.textContent = '★ MAX RANK 達成! ★';
-        nextRankEl.className = 'next-rank-info max-rank';
+        nextRankEl.textContent = '';
+        nextRankEl.className = 'next-rank-info';
+      }
+      if (resultCardEl) resultCardEl.classList.add('rank-x-card');
+    } else if (score >= 4000) {
+      rank = 'S';
+      const diff = 5500 - score;
+      if (nextRankEl) {
+        nextRankEl.textContent = `次のランク(X)まで あと ${diff.toLocaleString()} pt`;
+        nextRankEl.className = 'next-rank-info';
       }
       if (resultCardEl) resultCardEl.classList.add('rank-s-card');
     } else if (score >= 2500) {
@@ -2855,7 +2954,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     rankBadgeEl.textContent = `RANK ${rank}`;
-    if (rank === 'S') {
+    if (rank === 'X') {
+      rankBadgeEl.className = 'rank-badge rank-x';
+      rankBadgeEl.style.background = '';
+    } else if (rank === 'S') {
       rankBadgeEl.className = 'rank-badge rank-s-rainbow';
       rankBadgeEl.style.background = '';
     } else {
@@ -2876,8 +2978,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       if (finishOverlay) finishOverlay.classList.remove('active');
       resultOverlay.classList.add('active');
-      if (rank === 'S') {
-        startConfettiRain(5000); // Rank S 時に画面全体に紙吹雪を降らせる
+      if (rank === 'S' || rank === 'X') {
+        startConfettiRain(5000); // Rank S / X 時に画面全体に紙吹雪を降らせる
       }
     }, 1100);
   }

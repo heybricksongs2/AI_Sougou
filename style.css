@@ -556,25 +556,127 @@ body {
   height: 48px;
 }
 
-.drag-key-item {
-  width: 80px;
-  height: 56px;
-  background: linear-gradient(135deg, #f1c40f, #f39c12);
-  border: 3px solid var(--text-dark);
-  border-radius: 18px;
+/* 2. 工業用レバースイッチ (Lv2) */
+.lever-switch-frame {
+  position: relative;
+  width: 140px;
+  height: 90px;
+  background: #2f3542;
+  border-radius: 16px;
+  border: 4px solid var(--text-dark);
+  box-shadow: 0 6px 0 var(--text-dark), inset 0 2px 4px rgba(255, 255, 255, 0.15);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 2.2rem;
-  cursor: grab;
-  box-shadow: 0 5px 0 var(--text-dark);
-  position: absolute;
-  bottom: 8px;
   touch-action: none;
+  cursor: pointer;
+}
+
+.lever-slot-cutout {
+  position: absolute;
+  width: 104px;
+  height: 22px;
+  background: #1e272e;
+  border-radius: 11px;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.8);
+  border: 2px solid #57606f;
+}
+
+.lever-labels-row {
+  position: absolute;
+  top: 8px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #a4b0be;
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+
+.lever-pivot-base {
+  position: absolute;
+  bottom: 12px;
+  width: 32px;
+  height: 18px;
+  background: #747d8c;
+  border: 3px solid var(--text-dark);
+  border-radius: 8px 8px 4px 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.lever-arm-actor {
+  position: absolute;
+  bottom: 22px;
+  width: 16px;
+  height: 64px;
+  transform-origin: bottom center;
+  transform: rotate(-35deg);
+  transition: transform 0.16s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+}
+
+.lever-switch-frame.is-on .lever-arm-actor {
+  transform: rotate(35deg) !important;
+}
+
+.lever-metal-rod {
+  position: absolute;
+  bottom: 0;
+  left: 4px;
+  width: 8px;
+  height: 48px;
+  background: linear-gradient(90deg, #ced6e0, #ffffff, #747d8c);
+  border: 2px solid var(--text-dark);
+  border-radius: 4px;
+}
+
+.lever-handle-ball {
+  position: absolute;
+  top: 0;
+  left: -10px;
+  width: 36px;
+  height: 36px;
+  background: radial-gradient(circle at 35% 35%, #ff6b81, #eb4d4b 60%, #b33939);
+  border: 3px solid var(--text-dark);
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+}
+
+.lever-switch-frame.is-on .lever-handle-ball {
+  background: radial-gradient(circle at 35% 35%, #7bed9f, #2ed573 60%, #1e824c);
+  box-shadow: 0 0 16px #2ed573, 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* 3. 鍵ドラッグ (Keyhole & Key) - 枠なし・鍵単体 */
+.drag-key-item {
+  width: 64px;
+  height: 64px;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: grab;
+  position: absolute;
+  bottom: 12px;
+  touch-action: none;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.35));
+  transition: filter 0.15s ease;
+}
+
+.drag-key-item svg {
+  width: 56px !important;
+  height: 56px !important;
 }
 
 .drag-key-item:active {
   cursor: grabbing;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.45)) scale(1.08);
 }
 
 /* 4 & 20. タップ系 (ダブル / 3回タップ) - ボタンの外側に大きな光るドット */
@@ -931,67 +1033,73 @@ body {
   transform: scale(1.3);
 }
 
-/* 6 & 26. カクカクL字・クランクスライド */
+/* 6. カクカクL字・クランクスライド (Lv6: 四角い囲いなし・Lv5同様のレールデザイン) */
 .crank-slider-area {
   position: relative;
-  width: 180px;
+  width: 170px;
   height: 160px;
-  background: #f1f2f6;
-  border: 4px solid var(--text-dark);
-  border-radius: 28px;
-  box-shadow: inset 0 4px 8px rgba(0,0,0,0.1);
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .crank-slot-path {
   position: absolute;
-  top: 24px;
-  left: 24px;
-  width: 110px;
-  height: 20px;
-  background: #dfe4ea;
-  border-radius: 10px;
+  top: 14px;
+  left: 14px;
+  width: 120px;
+  height: 48px;
+  background: #f1f2f6;
+  border: 4px solid var(--text-dark);
+  border-radius: 24px;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.12);
 }
 
 .crank-slot-path-v {
   position: absolute;
-  top: 24px;
-  left: 114px;
-  width: 20px;
-  height: 96px;
-  background: #dfe4ea;
-  border-radius: 10px;
+  top: 14px;
+  left: 86px;
+  width: 48px;
+  height: 120px;
+  background: #f1f2f6;
+  border: 4px solid var(--text-dark);
+  border-radius: 24px;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.12);
 }
 
 .crank-goal {
   position: absolute;
-  bottom: 12px;
-  left: 104px;
-  width: 42px;
-  height: 42px;
+  bottom: 6px;
+  left: 86px;
+  width: 48px;
+  height: 48px;
   background: rgba(46, 213, 115, 0.25);
-  border: 2px dashed var(--secondary-accent);
+  border: 3px dashed var(--secondary-accent);
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 1.3rem;
+  z-index: 2;
 }
 
 .crank-knob {
   position: absolute;
-  top: 14px;
-  left: 14px;
+  top: 18px;
+  left: 18px;
   width: 40px;
   height: 40px;
-  background: var(--yellow-accent);
+  background: var(--primary-accent);
   border: 3px solid var(--text-dark);
   border-radius: 50%;
   cursor: grab;
-  box-shadow: 0 3px 0 var(--text-dark);
+  box-shadow: 0 4px 0 var(--text-dark);
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 1.2rem;
+  z-index: 5;
+  transition: transform 0.05s ease;
 }
 
 /* 15 & 30. 星形スライド */
@@ -1286,15 +1394,17 @@ body {
   align-items: center;
 }
 
+/* 8. ジェスチャー入力 (Lv8: 下書きチェックマークと判定エリアの1:1一致) */
 .gesture-target-watermark {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 6.5rem;
-  color: rgba(116, 125, 140, 0.22);
+  top: 0;
+  left: 0;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   pointer-events: none;
-  font-weight: 900;
   z-index: 1;
 }
 
@@ -1946,30 +2056,35 @@ body {
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  padding: 6px 16px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 2px solid var(--text-dark);
-  border-radius: 20px;
+  padding: 4px 6px;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
   font-weight: 800;
   font-size: 0.95rem;
   color: var(--text-dark);
-  box-shadow: 0 3px 0 var(--text-dark);
+  box-shadow: none !important;
   transition: all 0.15s ease;
   touch-action: manipulation;
 }
 
 .lite-mode-label:active {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 var(--text-dark);
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.lite-mode-label:active .lite-mode-checkbox {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 var(--text-dark) !important;
 }
 
 .lite-mode-checkbox {
   appearance: none;
   -webkit-appearance: none;
-  width: 19px;
-  height: 19px;
-  border: 2.5px solid var(--text-dark);
-  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  border: 2.8px solid var(--text-dark);
+  border-radius: 7px;
   background: #ffffff;
   cursor: pointer;
   position: relative;
@@ -1978,7 +2093,8 @@ body {
   align-items: center;
   justify-content: center;
   margin: 0;
-  transition: all 0.15s ease;
+  box-shadow: 0 3px 0 var(--text-dark);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
 }
 
 .lite-mode-checkbox:checked {
@@ -2596,7 +2712,7 @@ body.lite-mode #next-lock-card,
 
 .super-mash-track-wrapper {
   position: relative;
-  width: 80%;
+  width: 64% !important;
   height: 24px;
   background: #dfe4ea;
   border-radius: 14px;
@@ -2690,6 +2806,24 @@ body.lite-mode #next-lock-card,
 .color-choice-btn:active {
   transform: translateY(4px) !important;
   box-shadow: 0 2px 0 var(--text-dark) !important;
+}
+
+.choice-row-4 {
+  width: 96% !important;
+  max-width: 320px !important;
+  gap: 8px !important;
+}
+
+.choice-row-4 .color-choice-btn {
+  height: 60px !important;
+  border-radius: 14px !important;
+  border-width: 3px !important;
+  box-shadow: 0 4px 0 var(--text-dark) !important;
+}
+
+.choice-row-4 .color-choice-btn:active {
+  transform: translateY(3px) !important;
+  box-shadow: 0 1px 0 var(--text-dark) !important;
 }
 
 
@@ -3218,6 +3352,28 @@ body.lite-mode #next-lock-card,
 /* ==========================================================
    追加スタイル: Rank S 虹色、3,2,1緊迫演出、タイトル洗練
    ========================================================== */
+
+/* 0. Rank X 赤黒サイバー背景 (白文字・赤枠発光・重厚な黒赤グラデーション) */
+.rank-badge.rank-x {
+  background: linear-gradient(135deg, #0d0002 0%, #2b0006 45%, #4a000c 55%, #080001 100%) !important;
+  color: #ffffff !important;
+  border: 3.5px solid #ff1744 !important;
+  box-shadow: 0 0 20px rgba(255, 23, 68, 0.75), inset 0 0 12px rgba(255, 23, 68, 0.4) !important;
+  text-shadow: 0 0 6px #ffffff, 0 0 14px #ff1744 !important;
+  letter-spacing: 2px !important;
+}
+
+/* Rank X 達成時のリザルトカード赤黒発光枠 */
+.overlay-card.rank-x-card {
+  border: 4px solid #ff1744 !important;
+  box-shadow: 0 0 35px rgba(255, 23, 68, 0.65), 0 0 60px rgba(0, 0, 0, 0.9) !important;
+  animation: crimson-card-glow 1.5s ease-in-out infinite alternate !important;
+}
+
+@keyframes crimson-card-glow {
+  0% { box-shadow: 0 0 25px rgba(255, 23, 68, 0.5), 0 0 45px rgba(20, 0, 3, 0.8); }
+  100% { box-shadow: 0 0 40px rgba(255, 23, 68, 0.85), 0 0 70px rgba(255, 71, 87, 0.5); }
+}
 
 /* 1. Rank S 虹色グラデーション背景 (変化の速いビビッドな虹色) */
 .rank-badge.rank-s-rainbow {
