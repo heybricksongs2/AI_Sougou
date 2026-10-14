@@ -1876,7 +1876,9 @@ body {
 }
 
 .rank-badge {
-  display: inline-block;
+  display: block;
+  width: fit-content;
+  margin: 0 auto 10px;
   padding: 6px 20px;
   border-radius: 20px;
   font-weight: 900;
@@ -1884,7 +1886,6 @@ body {
   background: var(--yellow-accent);
   color: var(--text-dark);
   border: 3px solid var(--text-dark);
-  margin-bottom: 10px;
 }
 
 .result-title {
@@ -3470,8 +3471,13 @@ body.lite-mode #next-lock-card,
   background: rgba(47, 53, 66, 0.08);
   padding: 4px 12px;
   border-radius: 12px;
-  margin: 4px auto 8px;
-  display: inline-block;
+  margin: 0 auto 10px;
+  display: block;
+  width: fit-content;
+}
+
+.next-rank-info:empty {
+  display: none !important;
 }
 
 .next-rank-info.max-rank {

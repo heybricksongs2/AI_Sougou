@@ -3271,7 +3271,7 @@ document.addEventListener('DOMContentLoaded', () => {
       rank = 'X';
       if (nextRankEl) {
         nextRankEl.textContent = '';
-        nextRankEl.className = 'next-rank-info';
+        nextRankEl.style.display = 'none';
       }
       if (resultCardEl) resultCardEl.classList.add('rank-x-card');
     } else if (score >= 4000) {
@@ -3280,6 +3280,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (nextRankEl) {
         nextRankEl.textContent = `次のランク(X)まで あと ${diff.toLocaleString()} pt`;
         nextRankEl.className = 'next-rank-info';
+        nextRankEl.style.display = 'block';
       }
       if (resultCardEl) resultCardEl.classList.add('rank-s-card');
     } else if (score >= 2500) {
@@ -3288,6 +3289,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (nextRankEl) {
         nextRankEl.textContent = `次のランク(S)まで あと ${diff.toLocaleString()} pt`;
         nextRankEl.className = 'next-rank-info';
+        nextRankEl.style.display = 'block';
       }
     } else if (score >= 1200) {
       rank = 'B';
@@ -3295,6 +3297,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (nextRankEl) {
         nextRankEl.textContent = `次のランク(A)まで あと ${diff.toLocaleString()} pt`;
         nextRankEl.className = 'next-rank-info';
+        nextRankEl.style.display = 'block';
       }
     } else {
       rank = 'C';
@@ -3302,6 +3305,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (nextRankEl) {
         nextRankEl.textContent = `次のランク(B)まで あと ${diff.toLocaleString()} pt`;
         nextRankEl.className = 'next-rank-info';
+        nextRankEl.style.display = 'block';
       }
     }
 
