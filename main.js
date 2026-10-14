@@ -3112,8 +3112,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  let endGameTimeoutId = null;
+
   // Timer loop
   function startTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+
     const urgentOverlay = document.getElementById('urgent-countdown-overlay');
     const urgentNum = document.getElementById('urgent-count-num');
 
@@ -3161,6 +3168,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function startGame() {
     initAudio();
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    if (endGameTimeoutId) {
+      clearTimeout(endGameTimeoutId);
+      endGameTimeoutId = null;
+    }
+    const finishOverlay = document.getElementById('finish-banner-overlay');
+    if (finishOverlay) finishOverlay.classList.remove('active');
+
     cleanupCurrentGimmick();
     isPlaying = true;
     isPaused = false;
@@ -3204,9 +3222,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function endGame() {
+    if (!isPlaying) return;
     isPlaying = false;
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    if (endGameTimeoutId) {
+      clearTimeout(endGameTimeoutId);
+      endGameTimeoutId = null;
+    }
     cleanupCurrentGimmick();
-    clearInterval(timerInterval);
     if (dangerVignette) dangerVignette.classList.remove('active-danger');
     const urgentOverlay = document.getElementById('urgent-countdown-overlay');
     if (urgentOverlay) urgentOverlay.classList.remove('active');
@@ -3220,7 +3246,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. 画面中央に FINISH! バナーをドカンと表示
     const finishOverlay = document.getElementById('finish-banner-overlay');
-    if (finishOverlay) finishOverlay.classList.add('active');
+    if (finishOverlay) {
+      finishOverlay.classList.remove('active');
+      void finishOverlay.offsetWidth; // アニメーションをリセット
+      finishOverlay.classList.add('active');
+    }
 
     const isNewHigh = score > highScore;
     if (isNewHigh) {
@@ -3297,7 +3327,8 @@ document.addEventListener('DOMContentLoaded', () => {
     highScoreEl.textContent = highScore;
 
     // 3. FINISH! バナー表示後 (1.1秒後) にリザルト画面を表示
-    setTimeout(() => {
+    endGameTimeoutId = setTimeout(() => {
+      endGameTimeoutId = null;
       if (finishOverlay) finishOverlay.classList.remove('active');
       resultOverlay.classList.add('active');
       if (rank === 'S' || rank === 'X') {
@@ -3472,7 +3503,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 🛠️ DEBUG MODE CONTROLS
   const debugBtn = document.getElementById('debug-btn');
-  const startDebugBtn = document.getElementById('start-debug-btn');
+  const titleEmblem = document.getElementById('title-emblem-wrap');
   const debugPanel = document.getElementById('debug-panel');
   const debugCloseBtn = document.getElementById('debug-close-btn');
   const debugLevelSelect = document.getElementById('debug-level-select');
@@ -3500,8 +3531,50 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   setupActionButton(debugBtn, toggleDebug);
-  setupActionButton(startDebugBtn, toggleDebug);
   setupActionButton(debugCloseBtn, toggleDebug);
+
+  // タイトル文字上の鍵マーク長押しでデバッグモード起動
+  function setupTitleLockHold(el) {
+    if (!el) return;
+    let holdTimer = null;
+    const HOLD_TIME_MS = 1500;
+
+    function startHold(e) {
+      if (e && e.pointerType === 'mouse' && e.button !== 0) return;
+      clearTimeout(holdTimer);
+      el.classList.add('is-holding-debug');
+      holdTimer = setTimeout(() => {
+        el.classList.remove('is-holding-debug');
+        toggleDebug();
+        initAudio();
+        playSound('unlock');
+        if (navigator.vibrate) {
+          try { navigator.vibrate([40, 60, 40]); } catch (err) {}
+        }
+      }, HOLD_TIME_MS);
+    }
+
+    function cancelHold() {
+      if (holdTimer) {
+        clearTimeout(holdTimer);
+        holdTimer = null;
+      }
+      el.classList.remove('is-holding-debug');
+    }
+
+    el.addEventListener('pointerdown', startHold);
+    el.addEventListener('pointerup', cancelHold);
+    el.addEventListener('pointercancel', cancelHold);
+    el.addEventListener('pointerleave', cancelHold);
+
+    el.addEventListener('touchstart', (e) => { startHold(e); }, { passive: true });
+    el.addEventListener('touchend', cancelHold);
+    el.addEventListener('mousedown', startHold);
+    el.addEventListener('mouseup', cancelHold);
+    el.addEventListener('mouseleave', cancelHold);
+    el.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+  setupTitleLockHold(titleEmblem);
 
   window.addEventListener('keydown', (e) => {
     if (e.key === 'd' || e.key === 'D') {

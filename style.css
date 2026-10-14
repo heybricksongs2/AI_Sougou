@@ -3603,6 +3603,27 @@ body.lite-mode #next-lock-card,
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.title-emblem-wrap:active,
+.title-emblem-wrap.is-holding-debug {
+  transform: scale(0.92);
+  filter: brightness(1.2) drop-shadow(0 0 12px rgba(255, 211, 42, 0.85));
+}
+
+.title-emblem-wrap.is-holding-debug .title-lock-ring.ring-inner {
+  animation: ring-rotate 1.2s linear infinite;
+  border-color: #2ed573;
+}
+
+.title-emblem-wrap.is-holding-debug .title-lock-ring.ring-outer {
+  animation: ring-rotate-reverse 1.6s linear infinite;
+  border-color: #ffd32a;
 }
 
 .title-lock-ring {
