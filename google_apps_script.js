@@ -39,7 +39,10 @@ function doGet(e) {
   let result = {};
 
   try {
-    if (action === 'submit') {
+    if (action === 'migrate') {
+      ensureMigrationFromLegacySheet();
+      result = { status: 'ok', message: 'Migration completed successfully' };
+    } else if (action === 'submit') {
       result = handleSubmit(params, mode);
     } else {
       result = handleGetScores(mode);
@@ -78,77 +81,68 @@ function formatSafeDate(raw) {
   return Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
 }
 
-// 既存の「Leaderboard」または「シート1」から4つのモード別シートへ過去データを自動移行
+// 既存の「Leaderboard」または「シート1」から4つのモード別シートへ過去データを安全にマージ
 function ensureMigrationFromLegacySheet() {
   const ss = getSpreadsheet();
-  let legacySheet = ss.getSheetByName('Leaderboard') || ss.getSheetByName('シート1') || ss.getSheetByName('Sheet1');
-  if (!legacySheet) {
-    const allSheets = ss.getSheets();
-    for (let i = 0; i < allSheets.length; i++) {
-      const sName = allSheets[i].getName();
-      if (sName !== SHEET_NAMES.normal && sName !== SHEET_NAMES.fixed_1min && sName !== SHEET_NAMES.sudden_death && sName !== SHEET_NAMES.time_attack_5000) {
-        legacySheet = allSheets[i];
-        break;
-      }
-    }
-  }
+  const legacySheet = ss.getSheetByName('Leaderboard') || ss.getSheetByName('シート1');
   if (!legacySheet) return;
 
-  const normalSheet = getOrCreateSheetForMode('normal');
-  // 既に移行済み（ヘッダー行より多くデータがある）ならスキップ
-  if (normalSheet.getLastRow() > 1) {
-    return;
-  }
+  const legacyLastRow = legacySheet.getLastRow();
+  if (legacyLastRow <= 1) return;
 
-  const lastRow = legacySheet.getLastRow();
-  if (lastRow <= 1) return;
+  const legacyData = legacySheet.getRange(2, 1, legacyLastRow - 1, Math.min(5, legacySheet.getLastColumn())).getValues();
 
-  const lastCol = Math.max(4, legacySheet.getLastColumn());
-  const legacyData = legacySheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
-
-  // 各モードのシートを準備
-  const sheetsByMode = {};
   for (const m in SHEET_NAMES) {
-    sheetsByMode[m] = getOrCreateSheetForMode(m);
-  }
+    const sheet = getOrCreateSheetForMode(m);
+    const lastRow = sheet.getLastRow();
+    const existingMap = new Map();
 
-  const rowsByMode = {
-    normal: [],
-    fixed_1min: [],
-    sudden_death: [],
-    time_attack_5000: []
-  };
-
-  for (let i = 0; i < legacyData.length; i++) {
-    const id = String(legacyData[i][0] || '').trim();
-    const name = String(legacyData[i][1] || '').trim();
-    const scoreVal = Number(legacyData[i][2]);
-    const locks = Number(legacyData[i][3]) || 0;
-    const dateStr = formatSafeDate(legacyData[i][4]);
-
-    if (!id || !name || isNaN(scoreVal)) continue;
-
-    if (id.endsWith('__time_attack_5000')) {
-      rowsByMode.time_attack_5000.push([id, name, scoreVal, locks, dateStr]);
-    } else if (id.endsWith('__fixed_1min')) {
-      rowsByMode.fixed_1min.push([id, name, scoreVal, locks, dateStr]);
-    } else if (id.endsWith('__sudden_death')) {
-      rowsByMode.sudden_death.push([id, name, scoreVal, locks, dateStr]);
-    } else {
-      // 通常モード
-      rowsByMode.normal.push([id, name, scoreVal, locks, dateStr]);
+    if (lastRow > 1) {
+      const data = sheet.getRange(2, 1, lastRow - 1, Math.min(5, sheet.getLastColumn())).getValues();
+      for (let i = 0; i < data.length; i++) {
+        const id = String(data[i][0] || '').trim();
+        if (id) existingMap.set(id, { row: i + 2, score: Number(data[i][2]) });
+      }
     }
-  }
 
-  // 各シートへデータを一括流し込み＆ソート
-  for (const m in rowsByMode) {
-    const rows = rowsByMode[m];
-    const targetSheet = sheetsByMode[m];
     const isTA = (m === 'time_attack_5000');
+    const newRows = [];
 
-    if (rows.length > 0 && targetSheet.getLastRow() <= 1) {
-      targetSheet.getRange(2, 1, rows.length, 5).setValues(rows);
-      targetSheet.getRange(2, 1, rows.length, 5).sort({ column: 3, ascending: isTA });
+    for (let i = 0; i < legacyData.length; i++) {
+      const id = String(legacyData[i][0] || '').trim();
+      const name = String(legacyData[i][1] || '').trim();
+      const scoreVal = Number(legacyData[i][2]);
+      const locks = Number(legacyData[i][3]) || 0;
+      const dateStr = formatSafeDate(legacyData[i][4]);
+
+      if (!id || !name || isNaN(scoreVal)) continue;
+
+      let targetMode = 'normal';
+      if (id.endsWith('__time_attack_5000')) targetMode = 'time_attack_5000';
+      else if (id.endsWith('__fixed_1min')) targetMode = 'fixed_1min';
+      else if (id.endsWith('__sudden_death')) targetMode = 'sudden_death';
+
+      if (targetMode !== m) continue;
+
+      if (existingMap.has(id)) {
+        const exist = existingMap.get(id);
+        const isBetter = isTA ? (scoreVal < exist.score) : (scoreVal > exist.score);
+        if (isBetter) {
+          sheet.getRange(exist.row, 2, 1, 4).setValues([[name, scoreVal, locks, dateStr]]);
+        }
+      } else {
+        newRows.push([id, name, scoreVal, locks, dateStr]);
+        existingMap.set(id, { row: -1, score: scoreVal });
+      }
+    }
+
+    if (newRows.length > 0) {
+      sheet.getRange(sheet.getLastRow() + 1, 1, newRows.length, 5).setValues(newRows);
+    }
+
+    const updatedLastRow = sheet.getLastRow();
+    if (updatedLastRow > 1) {
+      sheet.getRange(2, 1, updatedLastRow - 1, 5).sort({ column: 3, ascending: isTA });
     }
   }
 }
