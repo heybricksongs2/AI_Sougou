@@ -848,7 +848,7 @@ document.addEventListener('DOMContentLoaded', () => {
       function onPointerMove(e) {
         if (isFlipped || !isDragging || isPaused || isResolvingLock) return;
         const pt = e.touches ? e.touches[0] : e;
-        if (pt.clientX - startX > 20) {
+        if (pt.clientX - startX >= 35) {
           flipOn();
         }
       }
@@ -857,9 +857,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isFlipped || !isDragging) return;
         isDragging = false;
         if (isPaused || isResolvingLock) return;
-        const rect = frame.getBoundingClientRect();
         const pt = e.changedTouches ? e.changedTouches[0] : e;
-        if (pt.clientX > rect.left + rect.width * 0.4) {
+        if (pt.clientX - startX >= 35) {
           flipOn();
         }
       }
@@ -889,6 +888,44 @@ document.addEventListener('DOMContentLoaded', () => {
       container.appendChild(targetHole);
       container.appendChild(keyItem);
       gimmickContainer.appendChild(container);
+
+      // 鍵の初期位置をランダム配置（鍵穴から近すぎない位置を保証）
+      const cRect = container.getBoundingClientRect();
+      const holeRect = targetHole.getBoundingClientRect();
+      const cWidth = cRect.width > 0 ? cRect.width : (container.offsetWidth || 280);
+      const cHeight = cRect.height > 0 ? cRect.height : (container.offsetHeight || 190);
+      const hCenterX = holeRect.width > 0 && cRect.width > 0
+        ? (holeRect.left + holeRect.width / 2 - cRect.left)
+        : (cWidth / 2);
+      const hCenterY = holeRect.height > 0 && cRect.height > 0
+        ? (holeRect.top + holeRect.height / 2 - cRect.top)
+        : 42;
+
+      let initX = Math.round((cWidth - 64) / 2);
+      let initY = Math.round(cHeight - 64 - 12);
+
+      const minX = 12;
+      const maxX = Math.max(minX, cWidth - 64 - 12);
+      const minY = 12;
+      const maxY = Math.max(minY, cHeight - 64 - 12);
+
+      for (let attempt = 0; attempt < 50; attempt++) {
+        const testX = Math.floor(minX + Math.random() * (maxX - minX));
+        const testY = Math.floor(minY + Math.random() * (maxY - minY));
+        const testCenterX = testX + 32;
+        const testCenterY = testY + 32;
+        const d = Math.hypot(testCenterX - hCenterX, testCenterY - hCenterY);
+        if (d >= 90) {
+          initX = testX;
+          initY = testY;
+          break;
+        }
+      }
+
+      keyItem.style.position = 'absolute';
+      keyItem.style.left = `${initX}px`;
+      keyItem.style.top = `${initY}px`;
+      keyItem.style.bottom = 'auto';
 
       let isDragging = false;
       let startMouseY = 0;
