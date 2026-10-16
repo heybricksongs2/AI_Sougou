@@ -2,7 +2,7 @@
  * POP LOCK / LOCK LOCKER LOCKEST リーダーボード サーバーサイドスクリプト
  * 
  * 4つのモード（通常 / 1分固定 / 1ミス終了 / 5000pt TA）を別々のシート（タブ）に自動仕分けして記録します。
- * 初回実行時に、既存の元シートから各モードのシートへ全過去データを自動移行します。
+ * 初回実行時に、既存の元シートから各モードのシートへ全過去データを安全に自動移行します。
  */
 
 const SHEET_NAMES = {
@@ -12,6 +12,16 @@ const SHEET_NAMES = {
   time_attack_5000: '5000ptTA'
 };
 
+const SPREADSHEET_ID = '1Omu3KOKGxkeTqJ2cbCS2C4ponLp0Fy72ctzzqANfyvY';
+
+function getSpreadsheet() {
+  try {
+    const active = SpreadsheetApp.getActiveSpreadsheet();
+    if (active) return active;
+  } catch (e) {}
+  return SpreadsheetApp.openById(SPREADSHEET_ID);
+}
+
 function doGet(e) {
   const params = e ? e.parameter : {};
   const action = params.action || 'get_scores';
@@ -19,8 +29,12 @@ function doGet(e) {
   const rawMode = params.mode || 'normal';
   const mode = SHEET_NAMES[rawMode] ? rawMode : 'normal';
 
-  // 初回アクセス時に既存データを自動移行
-  ensureMigrationFromLegacySheet();
+  // 初回アクセス時に既存データを安全に自動移行
+  try {
+    ensureMigrationFromLegacySheet();
+  } catch (migErr) {
+    console.error('Migration error in doGet:', migErr);
+  }
 
   let result = {};
 
@@ -49,17 +63,22 @@ function doPost(e) {
   return doGet(e);
 }
 
-const SPREADSHEET_ID = '1Omu3KOKGxkeTqJ2cbCS2C4ponLp0Fy72ctzzqANfyvY';
-
-function getSpreadsheet() {
-  try {
-    const active = SpreadsheetApp.getActiveSpreadsheet();
-    if (active) return active;
-  } catch (e) {}
-  return SpreadsheetApp.openById(SPREADSHEET_ID);
+// 安全な日付文字列化（例外を絶対に投げない）
+function formatSafeDate(raw) {
+  if (!raw) {
+    return Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
+  }
+  if (raw instanceof Date) {
+    try {
+      return Utilities.formatDate(raw, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
+    } catch (e) {}
+  }
+  const str = String(raw).trim();
+  if (str.length >= 8) return str;
+  return Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
 }
 
-// 既存の「Leaderboard」または「シート1」から4つのモード別シートへ過去データを自動移行（1回のみ実行）
+// 既存の「Leaderboard」または「シート1」から4つのモード別シートへ過去データを自動移行
 function ensureMigrationFromLegacySheet() {
   const ss = getSpreadsheet();
   let legacySheet = ss.getSheetByName('Leaderboard') || ss.getSheetByName('シート1') || ss.getSheetByName('Sheet1');
@@ -75,16 +94,17 @@ function ensureMigrationFromLegacySheet() {
   }
   if (!legacySheet) return;
 
-  // 既に移行完了フラグがあるか確認
-  const normalSheet = ss.getSheetByName(SHEET_NAMES.normal);
-  if (normalSheet && normalSheet.getLastRow() > 1) {
-    return; // 既に移行済み
+  const normalSheet = getOrCreateSheetForMode('normal');
+  // 既に移行済み（ヘッダー行より多くデータがある）ならスキップ
+  if (normalSheet.getLastRow() > 1) {
+    return;
   }
 
   const lastRow = legacySheet.getLastRow();
   if (lastRow <= 1) return;
 
-  const legacyData = legacySheet.getRange(2, 1, lastRow - 1, Math.max(4, legacySheet.getLastColumn())).getValues();
+  const lastCol = Math.max(4, legacySheet.getLastColumn());
+  const legacyData = legacySheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
 
   // 各モードのシートを準備
   const sheetsByMode = {};
@@ -104,7 +124,7 @@ function ensureMigrationFromLegacySheet() {
     const name = String(legacyData[i][1] || '').trim();
     const scoreVal = Number(legacyData[i][2]);
     const locks = Number(legacyData[i][3]) || 0;
-    const dateStr = legacyData[i][4] ? Utilities.formatDate(new Date(legacyData[i][4]), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss') : Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
+    const dateStr = formatSafeDate(legacyData[i][4]);
 
     if (!id || !name || isNaN(scoreVal)) continue;
 
@@ -156,14 +176,34 @@ function getOrCreateSheetForMode(mode) {
 
 // スコア・タイムの取得
 function handleGetScores(mode) {
-  const sheet = getOrCreateSheetForMode(mode);
-  const lastRow = sheet.getLastRow();
+  let sheet = getOrCreateSheetForMode(mode);
+  let lastRow = sheet.getLastRow();
+
+  // 通常モードで専用シートがまだ空の場合、旧シート（Leaderboard/シート1）から自動復旧・取得
+  if (mode === 'normal' && lastRow <= 1) {
+    const ss = getSpreadsheet();
+    const fallbackSheet = ss.getSheetByName('Leaderboard') || ss.getSheetByName('シート1');
+    if (fallbackSheet && fallbackSheet.getLastRow() > 1) {
+      // 一度移行を試みる
+      try {
+        ensureMigrationFromLegacySheet();
+        sheet = getOrCreateSheetForMode(mode);
+        lastRow = sheet.getLastRow();
+      } catch (e) {}
+
+      // それでも空ならフォールバックシートから直接読む
+      if (lastRow <= 1) {
+        sheet = fallbackSheet;
+        lastRow = sheet.getLastRow();
+      }
+    }
+  }
 
   if (lastRow <= 1) {
     return { status: 'ok', mode: mode, records: [] };
   }
 
-  const data = sheet.getRange(2, 1, lastRow - 1, 5).getValues();
+  const data = sheet.getRange(2, 1, lastRow - 1, Math.min(5, sheet.getLastColumn())).getValues();
   const records = [];
 
   for (let i = 0; i < data.length; i++) {
@@ -187,7 +227,10 @@ function handleGetScores(mode) {
   if (mode === 'time_attack_5000') {
     records.sort((a, b) => a.score - b.score);
   } else {
-    records.sort((a, b) => b.score - a.score);
+    records.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return b.locks - a.locks;
+    });
   }
 
   return { status: 'ok', mode: mode, records: records.slice(0, 100) };
@@ -200,12 +243,12 @@ function handleSubmit(params, mode) {
   const scoreVal = Number(params.score);
   const locks = Number(params.locks) || 0;
 
-  if (!id || !name || isNaN(scoreVal) || scoreVal <= 0) {
-    return { status: 'error', message: 'Invalid parameters' };
+  if (!id || !name || isNaN(scoreVal)) {
+    return { status: 'error', message: 'Missing parameters (id, name, score required)' };
   }
 
   const lock = LockService.getScriptLock();
-  lock.waitLock(10000);
+  lock.tryLock(10000);
 
   try {
     const sheet = getOrCreateSheetForMode(mode);
@@ -223,7 +266,7 @@ function handleSubmit(params, mode) {
       }
     }
 
-    const nowStr = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
+    const nowStr = formatSafeDate(new Date());
 
     if (foundRow > 0) {
       const existingScore = Number(sheet.getRange(foundRow, 3).getValue());
