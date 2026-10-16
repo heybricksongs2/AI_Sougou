@@ -185,20 +185,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 65);
   }
 
-  // 安全な非同期・スロットル付き触覚振動 (Android Binder IPC同期停止・キュー溢れを完全防止)
-  let lastVibrateTime = 0;
-  function safeVibrate(duration = 16) {
-    if (isLiteMode || !navigator.vibrate) return;
-    const now = Date.now();
-    if (now - lastVibrateTime < 90) return;
-    lastVibrateTime = now;
-    const ms = Array.isArray(duration) ? duration[0] : duration;
-    setTimeout(() => {
-      try {
-        navigator.vibrate(Math.min(22, ms));
-      } catch (e) {}
-    }, 0);
-  }
+  // 触覚振動を完全無効化（Android環境でのBinder IPC/ハプティクス呼び出しによる処理落ち・カクつきを解消）
+  function safeVibrate() {}
 
   // 強制同期レイアウト (void el.offsetWidth) を起こさずにGPUでアニメーションを高速再起動
   function restartCssAnimation(el, animClassName, keyframes, options) {
