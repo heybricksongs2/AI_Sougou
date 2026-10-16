@@ -2084,7 +2084,6 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!isPressing || isPaused || isResolvingLock) return;
           hasHandledLongPress = true;
           safeVibrate(20);
-          playSound('unlock');
           handleMorseInput('dash');
         }, 260);
       }
