@@ -608,13 +608,78 @@ document.addEventListener('DOMContentLoaded', () => {
     return initLockGimmickState(lock);
   }
 
+  // Game Modes Definition
+  const GAME_MODES = {
+    normal: {
+      id: 'normal',
+      label: '通常モード',
+      shortLabel: '通常',
+      initialTime: 18.0,
+      addTimeOnUnlock: 1.0,
+      isCountUp: false,
+      oneMistakeGameOver: false,
+      targetScore: null,
+      tutoRewardText: '+1.0s',
+      storageHighKey: 'pop_lock_high',
+      boardStorageKey: 'lock_mock_leaderboard'
+    },
+    fixed_1min: {
+      id: 'fixed_1min',
+      label: '1分固定時間モード',
+      shortLabel: '1分固定',
+      initialTime: 60.0,
+      addTimeOnUnlock: 0.0,
+      isCountUp: false,
+      oneMistakeGameOver: false,
+      targetScore: null,
+      tutoRewardText: '60s固定',
+      storageHighKey: 'pop_lock_high_fixed_1min',
+      boardStorageKey: 'lock_mock_leaderboard_fixed_1min'
+    },
+    sudden_death: {
+      id: 'sudden_death',
+      label: '1ミス即終了モード',
+      shortLabel: '1ミス終了',
+      initialTime: 18.0,
+      addTimeOnUnlock: 1.0,
+      isCountUp: false,
+      oneMistakeGameOver: true,
+      targetScore: null,
+      tutoRewardText: '1ミス終了',
+      storageHighKey: 'pop_lock_high_sudden_death',
+      boardStorageKey: 'lock_mock_leaderboard_sudden_death'
+    },
+    time_attack_5000: {
+      id: 'time_attack_5000',
+      label: '5000pt タイムアタック',
+      shortLabel: '5000pt TA',
+      initialTime: 0.0,
+      addTimeOnUnlock: 0.0,
+      isCountUp: true,
+      oneMistakeGameOver: false,
+      targetScore: 5000,
+      tutoRewardText: '5000pt到達',
+      storageHighKey: 'pop_lock_best_time_5000',
+      boardStorageKey: 'lock_mock_leaderboard_time_attack_5000'
+    }
+  };
+
+  const STORAGE_KEY_SECRET_UNLOCKED = 'pop_lock_secret_unlocked';
+
   // Game State
+  let currentMode = 'normal';
+  let hasPlayedOnceInSession = false;
+  let hasUnlockedSecret = localStorage.getItem(STORAGE_KEY_SECRET_UNLOCKED) === '1';
   let isPlaying = false;
   let remainingTime = 18.0;
+  let elapsedTime = 0.0;
   let score = 0;
   let unlockedCountNum = 0;
+  let lastPlayedMode = 'normal';
   let lastPlayedScore = 0;
   let lastPlayedLocks = 0;
+  let lastPlayedTimeMs = 0;
+  let lastPlayedCleared = false;
   let highScore = parseInt(localStorage.getItem('pop_lock_high') || '0', 10);
   let timerInterval = null;
   let currentLock = null;
@@ -623,6 +688,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeAnimationId = null;
   let activeWindowListeners = [];
   let activeGimmickTimeouts = [];
+
+  function getModeBestRecord(modeId) {
+    const cfg = GAME_MODES[modeId] || GAME_MODES.normal;
+    return parseInt(localStorage.getItem(cfg.storageHighKey) || '0', 10);
+  }
+
+  function setModeBestRecord(modeId, val) {
+    const cfg = GAME_MODES[modeId] || GAME_MODES.normal;
+    localStorage.setItem(cfg.storageHighKey, String(val));
+    if (modeId === 'normal') {
+      highScore = val;
+    }
+  }
 
   function addTrackedListener(target, type, handler, options) {
     target.addEventListener(type, handler, options);
@@ -3104,6 +3182,12 @@ document.addEventListener('DOMContentLoaded', () => {
       currentCard.classList.remove('shake');
       cardShakeTimer = null;
     }, 400);
+
+    // 1ミス即終了モード (sudden_death) の場合は即座にゲーム終了
+    const modeCfg = GAME_MODES[currentMode] || GAME_MODES.normal;
+    if (modeCfg.oneMistakeGameOver) {
+      endGame('mistake');
+    }
   }
 
   let isResolvingLock = false;
@@ -3140,11 +3224,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // シャックルスプリングオープン
     currentShackle.classList.add('open');
 
-    // 時間追加アニメ
-    remainingTime += 1.0;
-    timeAddedAnim.classList.remove('animate');
-    void timeAddedAnim.offsetWidth;
-    timeAddedAnim.classList.add('animate');
+    // モードに応じた時間追加アニメ (通常モード・1ミス即終了モードのみ +1.0s)
+    const modeCfg = GAME_MODES[currentMode] || GAME_MODES.normal;
+    if (modeCfg.addTimeOnUnlock > 0 && !modeCfg.isCountUp) {
+      remainingTime += modeCfg.addTimeOnUnlock;
+      timeDisplay.textContent = remainingTime.toFixed(1);
+      timeAddedAnim.textContent = `+${modeCfg.addTimeOnUnlock.toFixed(1)}s`;
+      timeAddedAnim.classList.remove('animate');
+      void timeAddedAnim.offsetWidth;
+      timeAddedAnim.classList.add('animate');
+    }
 
     // スコア加算 (新ルール: 基本100pt固定 + 10個ごとに300pt + コンボ数×10)
     unlockedCountNum++;
@@ -3226,6 +3315,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // 5000ポイントタイムアタック等で目標スコアに到達した場合は即座にクリア終了
+    if (modeCfg.targetScore && score >= modeCfg.targetScore) {
+      endGame('clear');
+      return;
+    }
+
     // 解錠の小気味よい瞬間的なポップ演出（透明化は行わず、手前カードの半透明ベールを常時維持）
     currentCard.style.transform = 'scale(1.04)';
 
@@ -3262,13 +3357,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const pauseResumeBtn = document.getElementById('pause-resume-btn');
   const pauseRetryBtn = document.getElementById('pause-retry-btn');
   const pauseTitleBtn = document.getElementById('pause-title-btn');
+  const pauseTimeLabel = document.getElementById('pause-time-label');
   const pauseTimeVal = document.getElementById('pause-time-val');
   const pauseScoreVal = document.getElementById('pause-score-val');
   const pauseLocksVal = document.getElementById('pause-locks-val');
+  const pauseModalModeDesc = document.getElementById('pause-modal-mode-desc');
 
   function updatePauseModalStats() {
-    if (pauseTimeVal) pauseTimeVal.textContent = `${Math.max(0, remainingTime).toFixed(1)}s`;
-    if (pauseScoreVal) pauseScoreVal.textContent = score.toLocaleString();
+    const modeCfg = GAME_MODES[currentMode] || GAME_MODES.normal;
+    if (pauseModalModeDesc) {
+      pauseModalModeDesc.textContent = `${modeCfg.label} - 一時停止中`;
+    }
+    if (modeCfg.isCountUp) {
+      if (pauseTimeLabel) pauseTimeLabel.textContent = '経過時間:';
+      if (pauseTimeVal) pauseTimeVal.textContent = `${Math.max(0, elapsedTime).toFixed(1)}s`;
+      if (pauseScoreVal) pauseScoreVal.textContent = `${score.toLocaleString()} / ${modeCfg.targetScore.toLocaleString()}`;
+    } else {
+      if (pauseTimeLabel) pauseTimeLabel.textContent = '残り時間:';
+      if (pauseTimeVal) pauseTimeVal.textContent = `${Math.max(0, remainingTime).toFixed(1)}s`;
+      if (pauseScoreVal) pauseScoreVal.textContent = score.toLocaleString();
+    }
     if (pauseLocksVal) pauseLocksVal.textContent = String(unlockedCountNum);
   }
 
@@ -3296,6 +3404,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (pauseOverlay) pauseOverlay.classList.remove('active');
   }
 
+  // 一度プレイしてホーム（タイトル画面）へ戻った際に裏メニュー鍵マークを出現させる
+  function unlockSecretMenuOnReturnHome() {
+    if (hasPlayedOnceInSession && !hasUnlockedSecret) {
+      hasUnlockedSecret = true;
+      localStorage.setItem(STORAGE_KEY_SECRET_UNLOCKED, '1');
+    }
+    updateSecretKeyVisibility();
+    updateTitleModeUI();
+  }
+
   setupActionButton(pauseBtn, pauseGame);
   setupActionButton(pauseResumeBtn, resumeGame);
   setupActionButton(pauseRetryBtn, () => {
@@ -3313,6 +3431,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const urgentOverlay = document.getElementById('urgent-countdown-overlay');
     if (urgentOverlay) urgentOverlay.classList.remove('active');
     if (dangerVignette) dangerVignette.classList.remove('active-danger');
+    unlockSecretMenuOnReturnHome();
     startOverlay.classList.add('active');
     resultOverlay.classList.remove('active');
   });
@@ -3332,12 +3451,26 @@ document.addEventListener('DOMContentLoaded', () => {
     timerInterval = setInterval(() => {
       if (isTimeFrozen || isPaused) return;
 
-      remainingTime -= 0.1;
+      const modeCfg = GAME_MODES[currentMode] || GAME_MODES.normal;
+
+      // カウントアップ方式 (5000pt タイムアタック)
+      if (modeCfg.isCountUp) {
+        elapsedTime = Math.round((elapsedTime + 0.1) * 10) / 10;
+        remainingTime = elapsedTime;
+        timeDisplay.textContent = elapsedTime.toFixed(1);
+        if (urgentOverlay) urgentOverlay.classList.remove('active');
+        timeDisplay.parentElement.classList.remove('timer-danger');
+        if (dangerVignette) dangerVignette.classList.remove('active-danger');
+        return;
+      }
+
+      // カウントダウン方式 (通常 / 1分固定 / 1ミス即終了)
+      remainingTime = Math.round((remainingTime - 0.1) * 10) / 10;
       if (remainingTime <= 0) {
         remainingTime = 0;
         timeDisplay.textContent = '0.0';
         if (urgentOverlay) urgentOverlay.classList.remove('active');
-        endGame();
+        endGame('timeout');
         return;
       }
 
@@ -3391,8 +3524,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const finishOverlay = document.getElementById('finish-banner-overlay');
     if (finishOverlay) finishOverlay.classList.remove('active');
+    const secretMenuOverlay = document.getElementById('secret-menu-overlay');
+    if (secretMenuOverlay) secretMenuOverlay.classList.remove('active');
 
     cleanupCurrentGimmick();
+    hasPlayedOnceInSession = true;
     isPlaying = true;
     isPaused = false;
     isResolvingLock = false;
@@ -3405,7 +3541,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (gimmickContainer) {
       gimmickContainer.style.pointerEvents = 'auto';
     }
-    remainingTime = 18.0;
+
+    const modeCfg = GAME_MODES[currentMode] || GAME_MODES.normal;
+    remainingTime = modeCfg.initialTime;
+    elapsedTime = 0.0;
     score = 0;
     unlockedCountNum = 0;
     warningBeepTimer = 0;
@@ -3418,9 +3557,14 @@ document.addEventListener('DOMContentLoaded', () => {
       confettiRainInterval = null;
     }
 
+    const hudTimeLabel = document.getElementById('hud-time-label');
+    const hudScoreLabel = document.getElementById('hud-score-label');
+    if (hudTimeLabel) hudTimeLabel.textContent = modeCfg.isCountUp ? 'TIME (UP)' : 'TIME';
+    if (hudScoreLabel) hudScoreLabel.textContent = modeCfg.targetScore ? `SCORE / ${modeCfg.targetScore}` : 'SCORE';
+
     scoreDisplay.textContent = '0';
     unlockedCount.textContent = '0';
-    timeDisplay.textContent = '18.0';
+    timeDisplay.textContent = modeCfg.isCountUp ? '0.0' : remainingTime.toFixed(1);
     timeDisplay.parentElement.classList.remove('timer-danger');
 
     startOverlay.classList.remove('active');
@@ -3436,7 +3580,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startTimer();
   }
 
-  function endGame() {
+  function endGame(reason = 'timeout') {
     if (!isPlaying) return;
     isPlaying = false;
     isPaused = false;
@@ -3463,28 +3607,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const urgentOverlay = document.getElementById('urgent-countdown-overlay');
     if (urgentOverlay) urgentOverlay.classList.remove('active');
 
-    // 実際に取ったスコアと解錠数を直前プレイ記録として保存
+    const modeCfg = GAME_MODES[currentMode] || GAME_MODES.normal;
+
+    // 実際に取った記録を直前プレイ記録として保存
+    lastPlayedMode = currentMode;
     lastPlayedScore = score;
     lastPlayedLocks = unlockedCountNum;
+    lastPlayedTimeMs = Math.max(100, Math.round(elapsedTime * 1000));
+    lastPlayedCleared = (reason === 'clear');
 
-    // 1. 時間切れのピッピー！ホイッスル
+    // 1. 終了ホイッスル音
     playSound('whistle_finish');
 
-    // 2. 画面中央に FINISH! バナーをドカンと表示
+    // 2. 画面中央にバナーを表示 (CLEAR! / MISS! / FINISH!)
     const finishOverlay = document.getElementById('finish-banner-overlay');
+    const finishBannerText = document.getElementById('finish-banner-text');
+    if (finishBannerText) {
+      if (reason === 'clear') finishBannerText.textContent = 'CLEAR!';
+      else if (reason === 'mistake') finishBannerText.textContent = '1 MISS!';
+      else finishBannerText.textContent = 'FINISH!';
+    }
     if (finishOverlay) {
       finishOverlay.classList.remove('active');
       void finishOverlay.offsetWidth; // アニメーションをリセット
       finishOverlay.classList.add('active');
     }
 
-    const isNewHigh = score > highScore;
-    if (isNewHigh) {
-      highScore = score;
-      localStorage.setItem('pop_lock_high', highScore);
-      autoSubmitScoreIfRegistered(score, unlockedCountNum);
+    const resultModeBadge = document.getElementById('result-mode-badge');
+    if (resultModeBadge) {
+      resultModeBadge.textContent = modeCfg.label;
     }
 
+    const resultTitleEl = document.getElementById('result-title');
+    if (resultTitleEl) {
+      if (reason === 'clear') resultTitleEl.textContent = '5000pt CLEAR!';
+      else if (reason === 'mistake') resultTitleEl.textContent = '1 MISS OUT!';
+      else resultTitleEl.textContent = "TIME'S UP!";
+    }
+
+    const finalScoreLabelEl = document.getElementById('final-score-label');
+    const highScoreLabelEl = document.getElementById('high-score-label');
     const nextRankEl = document.getElementById('next-rank-info');
     const resultCardEl = document.getElementById('result-card');
     if (resultCardEl) {
@@ -3493,46 +3655,126 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let rank = 'C';
-    if (score >= 5500) {
-      rank = 'X';
-      if (nextRankEl) {
-        nextRankEl.textContent = '';
-        nextRankEl.style.display = 'none';
+
+    if (modeCfg.isCountUp) {
+      // 5000pt タイムアタックモードのリザルト・ベスト更新
+      if (finalScoreLabelEl) finalScoreLabelEl.textContent = 'クリアタイム:';
+      if (highScoreLabelEl) highScoreLabelEl.textContent = 'ベストタイム:';
+
+      let bestTimeMs = getModeBestRecord('time_attack_5000');
+      if (reason === 'clear') {
+        const isNewBestTime = (bestTimeMs === 0 || lastPlayedTimeMs < bestTimeMs);
+        if (isNewBestTime) {
+          bestTimeMs = lastPlayedTimeMs;
+          setModeBestRecord('time_attack_5000', bestTimeMs);
+          autoSubmitScoreIfRegistered(bestTimeMs, unlockedCountNum, 'time_attack_5000');
+        }
+        finalScoreEl.textContent = `${(lastPlayedTimeMs / 1000).toFixed(1)}s`;
+
+        const sec = lastPlayedTimeMs / 1000;
+        if (sec <= 35.0) {
+          rank = 'X';
+          if (nextRankEl) { nextRankEl.textContent = ''; nextRankEl.style.display = 'none'; }
+          if (resultCardEl) resultCardEl.classList.add('rank-x-card');
+        } else if (sec <= 45.0) {
+          rank = 'S';
+          if (nextRankEl) {
+            nextRankEl.textContent = `次のランク(X)まで あと ${(sec - 35.0).toFixed(1)}s 短縮`;
+            nextRankEl.className = 'next-rank-info';
+            nextRankEl.style.display = 'block';
+          }
+          if (resultCardEl) resultCardEl.classList.add('rank-s-card');
+        } else if (sec <= 60.0) {
+          rank = 'A';
+          if (nextRankEl) {
+            nextRankEl.textContent = `次のランク(S)まで あと ${(sec - 45.0).toFixed(1)}s 短縮`;
+            nextRankEl.className = 'next-rank-info';
+            nextRankEl.style.display = 'block';
+          }
+        } else if (sec <= 80.0) {
+          rank = 'B';
+          if (nextRankEl) {
+            nextRankEl.textContent = `次のランク(A)まで あと ${(sec - 60.0).toFixed(1)}s 短縮`;
+            nextRankEl.className = 'next-rank-info';
+            nextRankEl.style.display = 'block';
+          }
+        } else {
+          rank = 'C';
+          if (nextRankEl) {
+            nextRankEl.textContent = `次のランク(B)まで あと ${(sec - 80.0).toFixed(1)}s 短縮`;
+            nextRankEl.className = 'next-rank-info';
+            nextRankEl.style.display = 'block';
+          }
+        }
+      } else {
+        finalScoreEl.textContent = `未達成 (${score}pt)`;
+        rank = 'C';
+        if (nextRankEl) {
+          nextRankEl.textContent = `クリアまで あと ${Math.max(0, 5000 - score).toLocaleString()} pt`;
+          nextRankEl.className = 'next-rank-info';
+          nextRankEl.style.display = 'block';
+        }
       }
-      if (resultCardEl) resultCardEl.classList.add('rank-x-card');
-    } else if (score >= 4000) {
-      rank = 'S';
-      const diff = 5500 - score;
-      if (nextRankEl) {
-        nextRankEl.textContent = `次のランク(X)まで あと ${diff.toLocaleString()} pt`;
-        nextRankEl.className = 'next-rank-info';
-        nextRankEl.style.display = 'block';
-      }
-      if (resultCardEl) resultCardEl.classList.add('rank-s-card');
-    } else if (score >= 2500) {
-      rank = 'A';
-      const diff = 4000 - score;
-      if (nextRankEl) {
-        nextRankEl.textContent = `次のランク(S)まで あと ${diff.toLocaleString()} pt`;
-        nextRankEl.className = 'next-rank-info';
-        nextRankEl.style.display = 'block';
-      }
-    } else if (score >= 1200) {
-      rank = 'B';
-      const diff = 2500 - score;
-      if (nextRankEl) {
-        nextRankEl.textContent = `次のランク(A)まで あと ${diff.toLocaleString()} pt`;
-        nextRankEl.className = 'next-rank-info';
-        nextRankEl.style.display = 'block';
-      }
+
+      finalLocksEl.textContent = unlockedCountNum;
+      highScoreEl.textContent = bestTimeMs > 0 ? `${(bestTimeMs / 1000).toFixed(1)}s` : '--.-s';
     } else {
-      rank = 'C';
-      const diff = 1200 - score;
-      if (nextRankEl) {
-        nextRankEl.textContent = `次のランク(B)まで あと ${diff.toLocaleString()} pt`;
-        nextRankEl.className = 'next-rank-info';
-        nextRankEl.style.display = 'block';
+      // スコアアタック系モード (normal / fixed_1min / sudden_death)
+      if (finalScoreLabelEl) finalScoreLabelEl.textContent = 'スコア:';
+      if (highScoreLabelEl) highScoreLabelEl.textContent = 'ハイスコア:';
+
+      let modeHigh = getModeBestRecord(currentMode);
+      if (score > modeHigh) {
+        modeHigh = score;
+        setModeBestRecord(currentMode, modeHigh);
+        autoSubmitScoreIfRegistered(score, unlockedCountNum, currentMode);
       }
+
+      if (score >= 5500) {
+        rank = 'X';
+        if (nextRankEl) {
+          nextRankEl.textContent = '';
+          nextRankEl.style.display = 'none';
+        }
+        if (resultCardEl) resultCardEl.classList.add('rank-x-card');
+      } else if (score >= 4000) {
+        rank = 'S';
+        const diff = 5500 - score;
+        if (nextRankEl) {
+          nextRankEl.textContent = `次のランク(X)まで あと ${diff.toLocaleString()} pt`;
+          nextRankEl.className = 'next-rank-info';
+          nextRankEl.style.display = 'block';
+        }
+        if (resultCardEl) resultCardEl.classList.add('rank-s-card');
+      } else if (score >= 2500) {
+        rank = 'A';
+        const diff = 4000 - score;
+        if (nextRankEl) {
+          nextRankEl.textContent = `次のランク(S)まで あと ${diff.toLocaleString()} pt`;
+          nextRankEl.className = 'next-rank-info';
+          nextRankEl.style.display = 'block';
+        }
+      } else if (score >= 1200) {
+        rank = 'B';
+        const diff = 2500 - score;
+        if (nextRankEl) {
+          nextRankEl.textContent = `次のランク(A)まで あと ${diff.toLocaleString()} pt`;
+          nextRankEl.className = 'next-rank-info';
+          nextRankEl.style.display = 'block';
+        }
+      } else {
+        rank = 'C';
+        const diff = 1200 - score;
+        if (nextRankEl) {
+          nextRankEl.textContent = `次のランク(B)まで あと ${diff.toLocaleString()} pt`;
+          nextRankEl.className = 'next-rank-info';
+          nextRankEl.style.display = 'block';
+        }
+      }
+
+      finalScoreEl.textContent = score;
+      finalLocksEl.textContent = unlockedCountNum;
+      highScoreEl.textContent = modeHigh;
     }
 
     rankBadgeEl.textContent = `RANK ${rank}`;
@@ -3550,11 +3792,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const resultComment = document.getElementById('result-title-comment');
-    if (resultComment) resultComment.textContent = ''; // 絵文字削除
-
-    finalScoreEl.textContent = score;
-    finalLocksEl.textContent = unlockedCountNum;
-    highScoreEl.textContent = highScore;
+    if (resultComment) resultComment.textContent = '';
 
     // 3. FINISH! バナー表示後 (1.1秒後) にリザルト画面を表示
     endGameTimeoutId = setTimeout(() => {
@@ -3728,10 +3966,131 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupHoldToStart(startBtn);
   setupActionButton(retryBtn, () => {
+    unlockSecretMenuOnReturnHome();
     resultOverlay.classList.remove('active');
     startOverlay.classList.add('active');
     cleanupCurrentGimmick();
   });
+
+  // =========================================================================
+  // SECRET MENU (裏メニュー：ホーム帰還後に出現する鍵マーク ＆ 3つの特別モード)
+  // =========================================================================
+  const secretMenuBtn = document.getElementById('secret-menu-btn');
+  const secretMenuOverlay = document.getElementById('secret-menu-overlay');
+  const secretMenuCloseBtn = document.getElementById('secret-menu-close-btn');
+  const secretModeNormalBtn = document.getElementById('secret-mode-normal-btn');
+  const currentModeBadge = document.getElementById('current-mode-badge');
+  const tutoRewardText = document.getElementById('tuto-reward-text');
+
+  function updateSecretKeyVisibility() {
+    if (!secretMenuBtn) return;
+    if (hasUnlockedSecret) {
+      secretMenuBtn.classList.add('unlocked');
+    } else {
+      secretMenuBtn.classList.remove('unlocked');
+    }
+  }
+
+  function updateTitleModeUI() {
+    const modeCfg = GAME_MODES[currentMode] || GAME_MODES.normal;
+    if (currentModeBadge) {
+      currentModeBadge.textContent = modeCfg.label;
+      currentModeBadge.className = `current-mode-badge mode-${modeCfg.id}`;
+    }
+    if (tutoRewardText) {
+      tutoRewardText.textContent = modeCfg.tutoRewardText;
+    }
+    if ( !isPlaying ) {
+      timeDisplay.textContent = modeCfg.isCountUp ? '0.0' : modeCfg.initialTime.toFixed(1);
+      const hudTimeLabel = document.getElementById('hud-time-label');
+      const hudScoreLabel = document.getElementById('hud-score-label');
+      if (hudTimeLabel) hudTimeLabel.textContent = modeCfg.isCountUp ? 'TIME (UP)' : 'TIME';
+      if (hudScoreLabel) hudScoreLabel.textContent = modeCfg.targetScore ? `SCORE / ${modeCfg.targetScore}` : 'SCORE';
+    }
+  }
+
+  function updateSecretMenuBestRecords() {
+    const best1MinEl = document.getElementById('secret-best-fixed_1min');
+    const bestSuddenEl = document.getElementById('secret-best-sudden_death');
+    const bestTa5000El = document.getElementById('secret-best-time_attack_5000');
+
+    if (best1MinEl) {
+      best1MinEl.textContent = `${getModeBestRecord('fixed_1min').toLocaleString()} pt`;
+    }
+    if (bestSuddenEl) {
+      bestSuddenEl.textContent = `${getModeBestRecord('sudden_death').toLocaleString()} pt`;
+    }
+    if (bestTa5000El) {
+      const bestMs = getModeBestRecord('time_attack_5000');
+      bestTa5000El.textContent = bestMs > 0 ? `${(bestMs / 1000).toFixed(1)}s` : '--.-s';
+    }
+
+    const items = document.querySelectorAll('.secret-mode-item');
+    items.forEach((item) => {
+      if (item.dataset.mode === currentMode) {
+        item.classList.add('is-selected');
+      } else {
+        item.classList.remove('is-selected');
+      }
+    });
+  }
+
+  function selectGameMode(modeId) {
+    if (!GAME_MODES[modeId]) return;
+    currentMode = modeId;
+    updateTitleModeUI();
+    updateSecretMenuBestRecords();
+  }
+
+  function openSecretMenu() {
+    if (!secretMenuOverlay) return;
+    playSound('tap');
+    updateSecretMenuBestRecords();
+    secretMenuOverlay.classList.add('active');
+  }
+
+  function closeSecretMenu() {
+    if (!secretMenuOverlay) return;
+    playSound('tap');
+    secretMenuOverlay.classList.remove('active');
+  }
+
+  if (secretMenuBtn) {
+    setupActionButton(secretMenuBtn, openSecretMenu);
+  }
+  if (secretMenuCloseBtn) {
+    setupActionButton(secretMenuCloseBtn, closeSecretMenu);
+  }
+  if (secretModeNormalBtn) {
+    setupActionButton(secretModeNormalBtn, () => {
+      selectGameMode('normal');
+      closeSecretMenu();
+    });
+  }
+
+  document.querySelectorAll('.secret-mode-select-btn').forEach((btn) => {
+    setupActionButton(btn, () => {
+      const targetMode = btn.dataset.mode;
+      if (targetMode && GAME_MODES[targetMode]) {
+        selectGameMode(targetMode);
+        closeSecretMenu();
+      }
+    });
+  });
+
+  document.querySelectorAll('.secret-mode-lb-btn').forEach((btn) => {
+    setupActionButton(btn, () => {
+      const targetMode = btn.dataset.mode;
+      if (targetMode && GAME_MODES[targetMode]) {
+        if (secretMenuOverlay) secretMenuOverlay.classList.remove('active');
+        openLeaderboard(false, targetMode);
+      }
+    });
+  });
+
+  // 初期表示時の鍵マーク＆モードUI同期
+  updateSecretKeyVisibility();
+  updateTitleModeUI();
 
   // 🛠️ DEBUG MODE CONTROLS
   const debugBtn = document.getElementById('debug-btn');
@@ -3872,14 +4231,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // ONLINE LEADERBOARD (Google Sheets / Apps Script Integration + Local Mock)
+  // ONLINE LEADERBOARD (4モード完全分離: 通常 / 1分固定 / 1ミス終了 / 5000pt TA)
   // =========================================================================
   // Google Apps Script (Web App) URL
   const LEADERBOARD_API_URL = 'https://script.google.com/macros/s/AKfycbxhoxqITRMyoPzAhT6NxsrfO-TRgbWsIXQg8hffLBrOIN9yQYzBl4rY-m3RXZC3oAmtCg/exec';
 
   const STORAGE_KEY_PLAYER_ID = 'lock_player_id';
   const STORAGE_KEY_PLAYER_NAME = 'lock_player_name';
-  const STORAGE_KEY_MOCK_BOARD = 'lock_mock_leaderboard';
+
+  let activeLeaderboardMode = 'normal';
+  let isLeaderboardOpenedFromResult = false;
 
   // プレイヤーIDの取得または新規発行
   function getOrCreatePlayerId() {
@@ -3889,6 +4250,11 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem(STORAGE_KEY_PLAYER_ID, pid);
     }
     return pid;
+  }
+
+  function getModeScopedPlayerId(modeId) {
+    const baseId = getOrCreatePlayerId();
+    return (!modeId || modeId === 'normal') ? baseId : `${baseId}__${modeId}`;
   }
 
   // プレイヤー名の取得
@@ -3903,28 +4269,91 @@ document.addEventListener('DOMContentLoaded', () => {
     return trimmed;
   }
 
-  // 初期モックデータ
-  const DEFAULT_MOCK_LEADERBOARD = [
-    { id: 'bot_1', name: 'MasterKey', score: 4520, locks: 28 },
-    { id: 'bot_2', name: 'SpeedyLock', score: 3860, locks: 24 },
-    { id: 'bot_3', name: 'CipherZero', score: 3120, locks: 19 },
-    { id: 'bot_4', name: 'LockSmith', score: 2480, locks: 16 },
-    { id: 'bot_5', name: 'QuickFinger', score: 1850, locks: 12 },
-    { id: 'bot_6', name: 'NoviceThief', score: 1200, locks: 8 }
-  ];
+  // モード別初期モックデータ
+  const DEFAULT_MOCK_BOARDS_BY_MODE = {
+    normal: [
+      { id: 'bot_1', name: 'MasterKey', score: 4520, locks: 28 },
+      { id: 'bot_2', name: 'SpeedyLock', score: 3860, locks: 24 },
+      { id: 'bot_3', name: 'CipherZero', score: 3120, locks: 19 },
+      { id: 'bot_4', name: 'LockSmith', score: 2480, locks: 16 },
+      { id: 'bot_5', name: 'QuickFinger', score: 1850, locks: 12 },
+      { id: 'bot_6', name: 'NoviceThief', score: 1200, locks: 8 }
+    ],
+    fixed_1min: [
+      { id: 'bot_1m_1__fixed_1min', name: 'ChronoKing', score: 6240, locks: 38 },
+      { id: 'bot_1m_2__fixed_1min', name: 'MinuteRush', score: 5180, locks: 32 },
+      { id: 'bot_1m_3__fixed_1min', name: 'SixtySec', score: 4320, locks: 27 },
+      { id: 'bot_1m_4__fixed_1min', name: 'BlitzOpener', score: 3450, locks: 22 },
+      { id: 'bot_1m_5__fixed_1min', name: 'SteadyHand', score: 2610, locks: 17 }
+    ],
+    sudden_death: [
+      { id: 'bot_sd_1__sudden_death', name: 'NoMissPro', score: 4120, locks: 26 },
+      { id: 'bot_sd_2__sudden_death', name: 'SniperLock', score: 3380, locks: 21 },
+      { id: 'bot_sd_3__sudden_death', name: 'ZeroFault', score: 2640, locks: 17 },
+      { id: 'bot_sd_4__sudden_death', name: 'CalmTouch', score: 1920, locks: 13 },
+      { id: 'bot_sd_5__sudden_death', name: 'CarefulOne', score: 1180, locks: 8 }
+    ],
+    time_attack_5000: [
+      { id: 'bot_ta_1__time_attack_5000', name: 'SonicKey', score: 32400, locks: 31 },
+      { id: 'bot_ta_2__time_attack_5000', name: 'FlashUnlocker', score: 38800, locks: 32 },
+      { id: 'bot_ta_3__time_attack_5000', name: 'TurboDial', score: 44500, locks: 33 },
+      { id: 'bot_ta_4__time_attack_5000', name: 'Sprint5000', score: 52100, locks: 34 },
+      { id: 'bot_ta_5__time_attack_5000', name: 'RapidRunner', score: 61800, locks: 35 }
+    ]
+  };
 
-  function getLocalMockLeaderboard() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_MOCK_BOARD);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return [...DEFAULT_MOCK_LEADERBOARD];
+  function sortRecordsForMode(list, modeId) {
+    const cfg = GAME_MODES[modeId] || GAME_MODES.normal;
+    const copied = [...list];
+    if (cfg.isCountUp) {
+      // 5000pt タイムアタックはタイム(ms)が小さい順
+      copied.sort((a, b) => Number(a.score) - Number(b.score));
+    } else {
+      // スコアモードはスコアが大きい順
+      copied.sort((a, b) => Number(b.score) - Number(a.score));
+    }
+    return copied;
   }
 
-  function saveLocalMockLeaderboard(list) {
+  function getLocalMockLeaderboard(modeId = activeLeaderboardMode) {
+    const cfg = GAME_MODES[modeId] || GAME_MODES.normal;
     try {
-      localStorage.setItem(STORAGE_KEY_MOCK_BOARD, JSON.stringify(list));
+      const saved = localStorage.getItem(cfg.boardStorageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return sortRecordsForMode(parsed, modeId);
+      }
     } catch (e) {}
+    const defaults = DEFAULT_MOCK_BOARDS_BY_MODE[modeId] || DEFAULT_MOCK_BOARDS_BY_MODE.normal;
+    return sortRecordsForMode(defaults, modeId);
+  }
+
+  function saveLocalMockLeaderboard(list, modeId = activeLeaderboardMode) {
+    const cfg = GAME_MODES[modeId] || GAME_MODES.normal;
+    try {
+      localStorage.setItem(cfg.boardStorageKey, JSON.stringify(sortRecordsForMode(list, modeId)));
+    } catch (e) {}
+  }
+
+  function upsertLocalRecord(modeId, record) {
+    const list = getLocalMockLeaderboard(modeId);
+    const cfg = GAME_MODES[modeId] || GAME_MODES.normal;
+    const existingIdx = list.findIndex(item => item.id === record.id);
+    if (existingIdx >= 0) {
+      const prevScore = Number(list[existingIdx].score);
+      const nextScore = Number(record.score);
+      const isBetter = cfg.isCountUp ? (nextScore > 0 && nextScore <= prevScore) : (nextScore >= prevScore);
+      if (isBetter) {
+        list[existingIdx].score = nextScore;
+        list[existingIdx].locks = record.locks;
+      }
+      list[existingIdx].name = record.name;
+    } else {
+      list.push({ ...record });
+    }
+    const sorted = sortRecordsForMode(list, modeId);
+    saveLocalMockLeaderboard(sorted, modeId);
+    return sorted;
   }
 
   // DOM要素
@@ -3935,9 +4364,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const lbChangeNameBtn = document.getElementById('lb-change-name-btn');
   const lbSubmitActionRow = document.getElementById('lb-submit-action-row');
   const lbSubmitScoreBtn = document.getElementById('lb-submit-score-btn');
-  const lbSubmitScoreVal = document.getElementById('lb-submit-score-val');
+  const lbSubmitBtnLabel = document.getElementById('lb-submit-btn-label');
   const lbSubmitMsg = document.getElementById('lb-submit-msg');
   const lbRankingList = document.getElementById('lb-ranking-list');
+  const lbColScoreHeader = document.getElementById('lb-col-score-header');
+  const lbModeTabs = document.querySelectorAll('#lb-mode-tabs .lb-mode-tab');
 
   const nameInputOverlay = document.getElementById('name-input-overlay');
   const playerNameInput = document.getElementById('player-name-input');
@@ -3990,34 +4421,80 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // GAS返却データから該当モードのレコードのみを厳密抽出＋ローカル保存分とマージ
+  function filterAndMergeModeRecords(remoteRecords, modeId) {
+    const localList = getLocalMockLeaderboard(modeId);
+    if (!Array.isArray(remoteRecords)) return localList;
+
+    const suffix = `__${modeId}`;
+    const filteredRemote = remoteRecords.filter((row) => {
+      if (!row) return false;
+      const rid = String(row.id || '');
+      const rmode = row.mode ? String(row.mode) : '';
+      if (modeId === 'normal') {
+        return !rid.includes('__') && (!rmode || rmode === 'normal');
+      }
+      return rid.endsWith(suffix) || rmode === modeId;
+    });
+
+    if (filteredRemote.length === 0) {
+      return localList;
+    }
+
+    const mergedMap = new Map();
+    for (const item of filteredRemote) {
+      mergedMap.set(String(item.id), { ...item });
+    }
+    // ローカルで送信済みの自分の記録なども欠落しないようマージ
+    const myScopedId = getModeScopedPlayerId(modeId);
+    const localMe = localList.find(item => item.id === myScopedId);
+    if (localMe) {
+      const existing = mergedMap.get(myScopedId);
+      const cfg = GAME_MODES[modeId] || GAME_MODES.normal;
+      if (!existing) {
+        mergedMap.set(myScopedId, localMe);
+      } else {
+        const isLocalBetter = cfg.isCountUp
+          ? (Number(localMe.score) < Number(existing.score))
+          : (Number(localMe.score) > Number(existing.score));
+        if (isLocalBetter) {
+          mergedMap.set(myScopedId, localMe);
+        }
+      }
+    }
+
+    return sortRecordsForMode(Array.from(mergedMap.values()), modeId);
+  }
+
   // リーダーボードの取得
-  async function fetchLeaderboardData() {
+  async function fetchLeaderboardData(modeId = activeLeaderboardMode) {
     if (!LEADERBOARD_API_URL) {
-      return getLocalMockLeaderboard();
+      return getLocalMockLeaderboard(modeId);
     }
 
     try {
-      const res = await fetch(`${LEADERBOARD_API_URL}?action=get_scores&t=${Date.now()}`);
+      const res = await fetch(`${LEADERBOARD_API_URL}?action=get_scores&mode=${encodeURIComponent(modeId)}&t=${Date.now()}`);
       if (!res.ok) throw new Error('Network error: ' + res.status);
       const data = await res.json();
-      if (Array.isArray(data)) return data;
-      if (data && Array.isArray(data.records)) return data.records;
+      const raw = Array.isArray(data) ? data : (data && Array.isArray(data.records) ? data.records : null);
+      if (raw) return filterAndMergeModeRecords(raw, modeId);
     } catch (err) {
       console.warn('Direct fetch failed, falling back to JSONP:', err);
       try {
-        const jsonpData = await fetchJsonp(`${LEADERBOARD_API_URL}?action=get_scores`);
-        if (jsonpData && Array.isArray(jsonpData.records)) return jsonpData.records;
-        if (Array.isArray(jsonpData)) return jsonpData;
+        const jsonpData = await fetchJsonp(`${LEADERBOARD_API_URL}?action=get_scores&mode=${encodeURIComponent(modeId)}`);
+        const raw = (jsonpData && Array.isArray(jsonpData.records)) ? jsonpData.records : (Array.isArray(jsonpData) ? jsonpData : null);
+        if (raw) return filterAndMergeModeRecords(raw, modeId);
       } catch (jsonpErr) {
         console.warn('JSONP fetch also failed, using local cache:', jsonpErr);
       }
     }
-    return getLocalMockLeaderboard();
+    return getLocalMockLeaderboard(modeId);
   }
 
-  // スコアの送信（CORS・リダイレクトに強いハイブリッド送信）
-  async function submitLeaderboardScore(scoreToSend, locksToSend, isSilent = false) {
-    const myId = getOrCreatePlayerId();
+  // スコア・タイムの送信（モード別ID＆ローカル同期で完全分離）
+  async function submitLeaderboardScore(scoreToSend, locksToSend, isSilent = false, modeId = lastPlayedMode) {
+    const targetMode = GAME_MODES[modeId] ? modeId : 'normal';
+    const scopedId = getModeScopedPlayerId(targetMode);
     const myName = getPlayerName();
 
     if (!myName) {
@@ -4030,36 +4507,32 @@ document.addEventListener('DOMContentLoaded', () => {
       showLeaderboardMessage('送信中...', 'loading');
     }
 
-    if (!LEADERBOARD_API_URL) {
-      // ローカルモック更新
-      const list = getLocalMockLeaderboard();
-      const existingIdx = list.findIndex(item => item.id === myId);
-      if (existingIdx >= 0) {
-        if (scoreToSend >= list[existingIdx].score) {
-          list[existingIdx].score = scoreToSend;
-          list[existingIdx].locks = locksToSend;
-        }
-        list[existingIdx].name = myName;
-      } else {
-        list.push({ id: myId, name: myName, score: scoreToSend, locks: locksToSend });
-      }
-      list.sort((a, b) => b.score - a.score);
-      saveLocalMockLeaderboard(list);
+    // まずモード別ローカルリーダーボードへ確実に反映し、画面へ即時描画
+    const updatedLocalList = upsertLocalRecord(targetMode, {
+      id: scopedId,
+      name: myName,
+      score: scoreToSend,
+      locks: locksToSend,
+      mode: targetMode
+    });
 
+    if (!isSilent && activeLeaderboardMode === targetMode) {
+      renderLeaderboardTable(updatedLocalList, targetMode);
+    }
+
+    if (!LEADERBOARD_API_URL) {
       if (!isSilent) {
         showLeaderboardMessage('送信完了！');
         playSound('unlock');
-        await loadAndRenderLeaderboard();
+        await loadAndRenderLeaderboard(activeLeaderboardMode);
         if (lbSubmitScoreBtn) lbSubmitScoreBtn.disabled = false;
       }
       return;
     }
 
-    const postUrl = `${LEADERBOARD_API_URL}?action=submit&id=${encodeURIComponent(myId)}&name=${encodeURIComponent(myName)}&score=${encodeURIComponent(scoreToSend)}&locks=${encodeURIComponent(locksToSend)}`;
+    const postUrl = `${LEADERBOARD_API_URL}?action=submit&mode=${encodeURIComponent(targetMode)}&id=${encodeURIComponent(scopedId)}&name=${encodeURIComponent(myName)}&score=${encodeURIComponent(scoreToSend)}&locks=${encodeURIComponent(locksToSend)}`;
 
     try {
-      // 1. fetch(mode: 'no-cors') で確実にサーバーへ送信（CORSエラーを完全回避して100%届く）
-      // 2. さらにJSONPも同時に送信
       await Promise.race([
         fetch(postUrl, { method: 'GET', mode: 'no-cors' }),
         fetchJsonp(postUrl, 3500).catch(() => {})
@@ -4068,9 +4541,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!isSilent) {
         showLeaderboardMessage('送信完了！');
         playSound('unlock');
-        // GAS側スプレッドシート書き込み完了後に自動再読み込み
         setTimeout(async () => {
-          await loadAndRenderLeaderboard();
+          await loadAndRenderLeaderboard(activeLeaderboardMode);
           if (lbSubmitScoreBtn) lbSubmitScoreBtn.disabled = false;
         }, 1000);
       }
@@ -4080,30 +4552,36 @@ document.addEventListener('DOMContentLoaded', () => {
         showLeaderboardMessage('送信完了！');
         playSound('unlock');
         setTimeout(async () => {
-          await loadAndRenderLeaderboard();
+          await loadAndRenderLeaderboard(activeLeaderboardMode);
           if (lbSubmitScoreBtn) lbSubmitScoreBtn.disabled = false;
         }, 1000);
       }
     }
   }
 
-  // ハイスコア更新時の自動送信（名前登録済みの場合のみ）
-  function autoSubmitScoreIfRegistered(newScore, newLocks) {
+  // ハイスコア・ベストタイム更新時の自動送信（名前登録済みの場合のみ）
+  function autoSubmitScoreIfRegistered(newRecordVal, newLocks, modeId = currentMode) {
     const myName = getPlayerName();
-    if (myName && newScore > 0) {
-      submitLeaderboardScore(newScore, newLocks, true);
+    if (myName && newRecordVal > 0) {
+      submitLeaderboardScore(newRecordVal, newLocks, true, modeId);
     }
   }
 
-  // ランキングテーブル描画（1〜3位はSVGメダル）
-  function renderLeaderboardTable(records) {
+  // ランキングテーブル描画（1〜3位はSVGメダル、タイムアタック時は秒数表記）
+  function renderLeaderboardTable(records, modeId = activeLeaderboardMode) {
     if (!lbRankingList) return;
+    const cfg = GAME_MODES[modeId] || GAME_MODES.normal;
+    if (lbColScoreHeader) {
+      lbColScoreHeader.textContent = cfg.isCountUp ? 'タイム' : 'スコア';
+    }
+
     if (!records || records.length === 0) {
       lbRankingList.innerHTML = '<div class="lb-empty-msg">まだ記録がありません</div>';
       return;
     }
 
-    const myId = getOrCreatePlayerId();
+    const myBaseId = getOrCreatePlayerId();
+    const myScopedId = getModeScopedPlayerId(modeId);
     let html = '';
 
     records.forEach((row, idx) => {
@@ -4119,14 +4597,17 @@ document.addEventListener('DOMContentLoaded', () => {
         rankBadgeHtml = `<span class="lb-rank-badge-svg lb-badge-3"><svg viewBox="0 0 24 24" width="16" height="16" fill="#e67e22"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> 3</span>`;
       }
 
-      const isMe = row.id === myId;
+      const isMe = (row.id === myScopedId || row.id === myBaseId);
       const meClass = isMe ? 'is-me' : '';
+      const formattedVal = cfg.isCountUp
+        ? `${(Number(row.score) / 1000).toFixed(1)}s`
+        : Number(row.score).toLocaleString();
 
       html += `
         <div class="lb-row ${rankClass} ${meClass}">
           <span class="col-rank">${rankBadgeHtml}</span>
           <span class="col-name" title="${escapeHtml(row.name)}">${escapeHtml(row.name)}${isMe ? ' (あなた)' : ''}</span>
-          <span class="col-score">${Number(row.score).toLocaleString()}</span>
+          <span class="col-score">${formattedVal}</span>
           <span class="col-locks">${Number(row.locks)}</span>
         </div>
       `;
@@ -4144,19 +4625,71 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/'/g, '&#39;');
   }
 
+  function updateLeaderboardSubmitRow() {
+    if (!lbSubmitActionRow) return;
+    if (!isLeaderboardOpenedFromResult || activeLeaderboardMode !== lastPlayedMode) {
+      lbSubmitActionRow.style.display = 'none';
+      return;
+    }
+
+    const cfg = GAME_MODES[lastPlayedMode] || GAME_MODES.normal;
+    if (cfg.isCountUp) {
+      if (lastPlayedCleared && lastPlayedTimeMs > 0) {
+        lbSubmitActionRow.style.display = 'flex';
+        if (lbSubmitBtnLabel) {
+          lbSubmitBtnLabel.innerHTML = `タイム送信 (<span id="lb-submit-score-val">${(lastPlayedTimeMs / 1000).toFixed(1)}s</span>)`;
+        }
+      } else {
+        lbSubmitActionRow.style.display = 'none';
+      }
+    } else {
+      const currentPlayScore = lastPlayedScore > 0 ? lastPlayedScore : (score > 0 ? score : 0);
+      if (currentPlayScore > 0) {
+        lbSubmitActionRow.style.display = 'flex';
+        if (lbSubmitBtnLabel) {
+          lbSubmitBtnLabel.innerHTML = `スコア送信 (<span id="lb-submit-score-val">${currentPlayScore.toLocaleString()}</span> pt)`;
+        }
+      } else {
+        lbSubmitActionRow.style.display = 'none';
+      }
+    }
+  }
+
+  function syncLeaderboardModeTabs() {
+    lbModeTabs.forEach((tab) => {
+      if (tab.dataset.mode === activeLeaderboardMode) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
+  }
+
   // リーダーボードの読み込み＆描画
-  async function loadAndRenderLeaderboard() {
+  async function loadAndRenderLeaderboard(modeId = activeLeaderboardMode) {
     if (!lbRankingList) return;
+    const requestedMode = GAME_MODES[modeId] ? modeId : 'normal';
+    activeLeaderboardMode = requestedMode;
+    const cfg = GAME_MODES[requestedMode] || GAME_MODES.normal;
+    if (lbColScoreHeader) {
+      lbColScoreHeader.textContent = cfg.isCountUp ? 'タイム' : 'スコア';
+    }
+    syncLeaderboardModeTabs();
+    updateLeaderboardSubmitRow();
     lbRankingList.innerHTML = '<div class="lb-loading-spinner">ランキング読込中...</div>';
-    const records = await fetchLeaderboardData();
-    renderLeaderboardTable(records);
+    const records = await fetchLeaderboardData(requestedMode);
+    if (activeLeaderboardMode !== requestedMode) return;
+    renderLeaderboardTable(records, requestedMode);
   }
 
   // リーダーボードモーダルを開く
   // isFromResult: リザルト画面から開かれた場合のみ true
-  function openLeaderboard(isFromResult = false) {
+  function openLeaderboard(isFromResult = false, targetMode = null) {
     if (!leaderboardOverlay) return;
     playSound('tap');
+
+    isLeaderboardOpenedFromResult = Boolean(isFromResult);
+    activeLeaderboardMode = targetMode || (isFromResult ? lastPlayedMode : currentMode) || 'normal';
 
     const myName = getPlayerName();
     if (lbCurrentPlayerName) {
@@ -4168,19 +4701,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // 未プレイ時、またはタイトル画面から開いたときは送信ボタンを表示しない
-    // リザルト画面から開いて、実際に取ったスコアが0より大きい場合のみ送信ボタンを表示
-    const currentPlayScore = lastPlayedScore > 0 ? lastPlayedScore : (score > 0 ? score : 0);
-    if (isFromResult && currentPlayScore > 0) {
-      if (lbSubmitActionRow) lbSubmitActionRow.style.display = 'flex';
-      if (lbSubmitScoreVal) lbSubmitScoreVal.textContent = currentPlayScore.toLocaleString();
-    } else {
-      if (lbSubmitActionRow) lbSubmitActionRow.style.display = 'none';
-    }
-
     if (lbSubmitMsg) lbSubmitMsg.textContent = '';
     leaderboardOverlay.classList.add('active');
-    loadAndRenderLeaderboard();
+    loadAndRenderLeaderboard(activeLeaderboardMode);
   }
 
   function closeLeaderboard() {
@@ -4188,6 +4711,17 @@ document.addEventListener('DOMContentLoaded', () => {
     playSound('tap');
     leaderboardOverlay.classList.remove('active');
   }
+
+  // モード切替タブのクリック処理
+  lbModeTabs.forEach((tab) => {
+    setupActionButton(tab, () => {
+      const modeId = tab.dataset.mode;
+      if (!modeId || !GAME_MODES[modeId]) return;
+      playSound('tap');
+      if (lbSubmitMsg) lbSubmitMsg.textContent = '';
+      loadAndRenderLeaderboard(modeId);
+    });
+  });
 
   // 名前入力モーダル
   function openNameModal() {
@@ -4208,6 +4742,23 @@ document.addEventListener('DOMContentLoaded', () => {
     nameInputOverlay.classList.remove('active');
   }
 
+  function getRecordToSendForLastPlay() {
+    const cfg = GAME_MODES[lastPlayedMode] || GAME_MODES.normal;
+    const targetLocks = lastPlayedLocks > 0 ? lastPlayedLocks : (unlockedCountNum > 0 ? unlockedCountNum : 0);
+    if (cfg.isCountUp) {
+      return {
+        value: lastPlayedCleared ? lastPlayedTimeMs : 0,
+        locks: targetLocks,
+        mode: lastPlayedMode
+      };
+    }
+    return {
+      value: lastPlayedScore > 0 ? lastPlayedScore : (score > 0 ? score : 0),
+      locks: targetLocks,
+      mode: lastPlayedMode
+    };
+  }
+
   function handleSavePlayerName() {
     if (!playerNameInput) return;
     const inputVal = playerNameInput.value.trim();
@@ -4224,17 +4775,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     closeNameModal();
 
-    // 名前登録直後にスコア送信を実行（直前のプレイで実際に獲得したスコア）
-    const targetScore = lastPlayedScore > 0 ? lastPlayedScore : (score > 0 ? score : 0);
-    const targetLocks = lastPlayedLocks > 0 ? lastPlayedLocks : (unlockedCountNum > 0 ? unlockedCountNum : 0);
-    if (targetScore > 0) {
-      submitLeaderboardScore(targetScore, targetLocks, false);
+    // 名前登録直後に直前プレイ記録の送信を実行
+    const rec = getRecordToSendForLastPlay();
+    if (rec.value > 0) {
+      submitLeaderboardScore(rec.value, rec.locks, false, rec.mode);
     }
   }
 
   // イベントリスナーの結線
-  if (resultLbBtn) setupActionButton(resultLbBtn, () => openLeaderboard(true));
-  if (startLbBtn) setupActionButton(startLbBtn, () => openLeaderboard(false));
+  if (resultLbBtn) setupActionButton(resultLbBtn, () => openLeaderboard(true, lastPlayedMode));
+  if (startLbBtn) setupActionButton(startLbBtn, () => openLeaderboard(false, currentMode));
   if (lbCloseBtn) setupActionButton(lbCloseBtn, closeLeaderboard);
 
   // 再読み込みボタン
@@ -4242,7 +4792,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupActionButton(lbRefreshBtn, async () => {
       playSound('tap');
       lbRefreshBtn.classList.add('rotating');
-      await loadAndRenderLeaderboard();
+      await loadAndRenderLeaderboard(activeLeaderboardMode);
       setTimeout(() => {
         lbRefreshBtn.classList.remove('rotating');
       }, 500);
@@ -4259,10 +4809,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!myName) {
         openNameModal();
       } else {
-        const targetScore = lastPlayedScore > 0 ? lastPlayedScore : (score > 0 ? score : 0);
-        const targetLocks = lastPlayedLocks > 0 ? lastPlayedLocks : (unlockedCountNum > 0 ? unlockedCountNum : 0);
-        if (targetScore > 0) {
-          submitLeaderboardScore(targetScore, targetLocks, false);
+        const rec = getRecordToSendForLastPlay();
+        if (rec.value > 0) {
+          submitLeaderboardScore(rec.value, rec.locks, false, rec.mode);
         }
       }
     });

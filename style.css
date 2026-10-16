@@ -3734,3 +3734,332 @@ body.game-paused .timer-danger,
 body.game-paused #danger-vignette {
   animation-play-state: paused !important;
 }
+
+/* ==========================================================
+   裏メニュー（シークレットモード）＆ モード別リーダーボード UI
+   ========================================================== */
+
+.title-card-premium {
+  position: relative;
+}
+
+/* ホーム画面右上に出現する追加鍵マークボタン */
+.secret-key-trigger-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: none;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  background: linear-gradient(135deg, #2f3542 0%, #1e272e 100%);
+  color: #ffd32a;
+  border: 2.5px solid #ffd32a;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #1e272e, 0 0 14px rgba(255, 211, 42, 0.45);
+  z-index: 15;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  animation: secret-key-pulse 2s infinite ease-in-out;
+}
+
+.secret-key-trigger-btn.unlocked {
+  display: inline-flex;
+}
+
+.secret-key-trigger-btn:active {
+  transform: translateY(2px) scale(0.96);
+  box-shadow: 0 2px 0 #1e272e, 0 0 8px rgba(255, 211, 42, 0.35);
+}
+
+.secret-key-svg {
+  display: block;
+  filter: drop-shadow(0 0 4px rgba(255, 211, 42, 0.5));
+}
+
+@keyframes secret-key-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 0 #1e272e, 0 0 10px rgba(255, 211, 42, 0.35);
+  }
+  50% {
+    box-shadow: 0 4px 0 #1e272e, 0 0 22px rgba(255, 211, 42, 0.9);
+  }
+}
+
+/* タイトル画面のモード表示バッジ */
+.title-badges-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.title-badges-row .title-subtitle-badge {
+  margin-top: 0;
+}
+
+.current-mode-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  border-radius: 10px;
+  border: 2px solid #2f3542;
+  color: #ffffff;
+  background: #57606f;
+}
+
+.current-mode-badge.mode-normal {
+  display: none;
+}
+
+.current-mode-badge.mode-fixed_1min {
+  display: inline-block;
+  background: #1e90ff;
+}
+
+.current-mode-badge.mode-sudden_death {
+  display: inline-block;
+  background: #ff4757;
+}
+
+.current-mode-badge.mode-time_attack_5000 {
+  display: inline-block;
+  background: #8e44ad;
+}
+
+/* 裏メニューモーダル本体 */
+.secret-menu-card {
+  max-width: 380px;
+  width: 92%;
+  padding: 18px 16px 16px;
+  text-align: left;
+  background: #ffffff;
+  border: 4px solid #2f3542;
+}
+
+.secret-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 2px dashed #dfe4ea;
+}
+
+.secret-menu-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.secret-header-key-svg {
+  background: #2f3542;
+  padding: 6px;
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.secret-menu-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #2f3542;
+  letter-spacing: 1.5px;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.secret-menu-subtitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #747d8c;
+  margin: 2px 0 0 0;
+}
+
+.secret-modes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.secret-mode-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  background: #f8f9fa;
+  border: 2.5px solid #ced6e0;
+  border-radius: 14px;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.secret-mode-item.is-selected {
+  border-color: #2f3542;
+  background: #fff9db;
+  box-shadow: 0 3px 0 #2f3542;
+}
+
+.secret-mode-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.secret-mode-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.secret-mode-tag {
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  color: #ffffff;
+}
+
+.secret-mode-tag.tag-1min {
+  background: #1e90ff;
+}
+
+.secret-mode-tag.tag-sudden {
+  background: #ff4757;
+}
+
+.secret-mode-tag.tag-ta5000 {
+  background: #8e44ad;
+}
+
+.secret-mode-name {
+  font-size: 1.02rem;
+  font-weight: 900;
+  color: #2f3542;
+  margin: 2px 0 6px 0;
+  line-height: 1.2;
+}
+
+.secret-mode-best-box {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  background: rgba(47, 53, 66, 0.06);
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(47, 53, 66, 0.12);
+}
+
+.secret-mode-item.is-selected .secret-mode-best-box {
+  background: #ffffff;
+  border-color: rgba(47, 53, 66, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.secret-mode-best-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #747d8c;
+  letter-spacing: 0.5px;
+}
+
+.secret-mode-best-val {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #2f3542;
+  letter-spacing: 0.5px;
+}
+
+.secret-mode-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.secret-mode-select-btn {
+  padding: 7px 13px !important;
+  font-size: 0.78rem !important;
+  min-width: 64px;
+  border-radius: 10px !important;
+}
+
+.secret-mode-lb-btn {
+  padding: 6px 10px !important;
+  font-size: 0.75rem !important;
+  border-radius: 10px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.secret-menu-footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+}
+
+.secret-normal-reset-btn {
+  width: 100%;
+  text-align: center;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+}
+
+/* リザルト画面のモード表示バッジ */
+.result-mode-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  padding: 3px 12px;
+  border-radius: 10px;
+  background: #2f3542;
+  color: #ffd32a;
+  margin-bottom: 6px;
+}
+
+/* リーダーボードのモード切替タブ */
+.lb-mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+  background: #f1f2f6;
+  padding: 4px;
+  border-radius: 12px;
+  border: 2px solid #dfe4ea;
+}
+
+.lb-mode-tab {
+  appearance: none;
+  border: 2px solid transparent;
+  background: transparent;
+  color: #57606f;
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 6px 2px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.lb-mode-tab.active {
+  background: #2f3542;
+  color: #ffd32a;
+  border-color: #2f3542;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
