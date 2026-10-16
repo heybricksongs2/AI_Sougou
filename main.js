@@ -4431,10 +4431,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!row) return false;
       const rid = String(row.id || '');
       const rmode = row.mode ? String(row.mode) : '';
-      if (modeId === 'normal') {
-        return !rid.includes('__') && (!rmode || rmode === 'normal');
+      if (rmode) {
+        return rmode === modeId;
       }
-      return rid.endsWith(suffix) || rmode === modeId;
+      if (modeId === 'normal') {
+        return !rid.includes('__');
+      }
+      return rid.endsWith(suffix);
     });
 
     if (filteredRemote.length === 0) {

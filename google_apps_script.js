@@ -1,156 +1,179 @@
 /**
- * =========================================================================
- * LOCK LOCKER LOCKEST - オンラインリーダーボード バックエンド (Google Apps Script)
- * =========================================================================
+ * POP LOCK / LOCK LOCKER LOCKEST リーダーボード サーバーサイドスクリプト
  * 
- * 【設定手順】
- * 1. Google スプレッドシートを新規作成します（シート名は任意）。
- * 2. メニューの「拡張機能」>「Apps Script」を開きます。
- * 3. 既存のコード（myFunctionなど）を全て消去し、このスクリプトを貼り付けて保存します。
- * 4. 画面右上の「デプロイ」>「新しいデプロイ」をクリックします。
- * 5. 歯車アイコンをクリックし「ウェブアプリ」を選択します。
- *    - 次のユーザーとして実行: 「自分」
- *    - アクセスできるユーザー: 「全員」（Anyone）※必ず「全員」を選択してください
- * 6. 「デプロイ」ボタンを押し、承認を完了すると「ウェブアプリの URL」が発行されます。
- * 7. 発行された URL を main.js の LEADERBOARD_API_URL に貼り付ければ完了です！
+ * 4つのモード（通常 / 1分固定 / 1ミス終了 / 5000pt TA）を別々のシート（タブ）に自動仕分けして記録します。
+ * - normal: スコア降順（大きい順）
+ * - fixed_1min: スコア降順（大きい順）
+ * - sudden_death: スコア降順（大きい順）
+ * - time_attack_5000: タイム昇順（小さい＝速い順）
  */
 
+const SHEET_NAMES = {
+  normal: '通常モード',
+  fixed_1min: '1分固定',
+  sudden_death: '1ミス終了',
+  time_attack_5000: '5000ptTA'
+};
+
 function doGet(e) {
-  return handleRequest(e);
+  const params = e ? e.parameter : {};
+  const action = params.action || 'get_scores';
+  const callback = params.callback;
+  const rawMode = params.mode || 'normal';
+  const mode = SHEET_NAMES[rawMode] ? rawMode : 'normal';
+
+  let result = {};
+
+  try {
+    if (action === 'submit') {
+      result = handleSubmit(params, mode);
+    } else {
+      result = handleGetScores(mode);
+    }
+  } catch (err) {
+    result = { status: 'error', message: err.toString() };
+  }
+
+  const jsonString = JSON.stringify(result);
+
+  if (callback) {
+    return ContentService.createTextOutput(callback + '(' + jsonString + ');')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  } else {
+    return ContentService.createTextOutput(jsonString)
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
 function doPost(e) {
-  return handleRequest(e);
+  return doGet(e);
 }
 
-function handleRequest(e) {
-  var lock = LockService.getScriptLock();
-  // 同時アクセス時の競合を防ぐためロック（最大10秒待機）
-  lock.tryLock(10000);
+// モードごとの専用シートを取得（なければ自動作成＆ヘッダー付与）
+function getOrCreateSheetForMode(mode) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const targetSheetName = SHEET_NAMES[mode] || SHEET_NAMES.normal;
+  let sheet = ss.getSheetByName(targetSheetName);
 
-  try {
-    var params = (e && e.parameter) ? e.parameter : {};
-    
-    // POSTでJSON本文が送られた場合のパース
-    if (e && e.postData && e.postData.contents) {
-      try {
-        var postJson = JSON.parse(e.postData.contents);
-        for (var key in postJson) {
-          if (!params[key]) params[key] = postJson[key];
-        }
-      } catch (err) {}
-    }
-
-    var action = params.action || 'get_scores';
-    var sheet = getOrCreateSheet();
-
-    if (action === 'submit') {
-      var playerId = String(params.id || '').trim();
-      var playerName = String(params.name || 'Anonymous').trim().substring(0, 10);
-      var score = parseInt(params.score || '0', 10);
-      var locks = parseInt(params.locks || '0', 10);
-
-      if (playerId && playerName) {
-        saveOrUpdateRecord(sheet, playerId, playerName, score, locks);
-      }
-    }
-
-    // 最新ランキング（上位100件）を取得して返却
-    var records = getLeaderboardRecords(sheet, 100);
-    var callback = params.callback || '';
-    return createJsonResponse({ status: 'ok', records: records }, callback);
-
-  } catch (err) {
-    var callback = (e && e.parameter && e.parameter.callback) || '';
-    return createJsonResponse({ status: 'error', message: err.toString() }, callback);
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-function getOrCreateSheet() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName('Leaderboard');
   if (!sheet) {
-    sheet = ss.getActiveSheet();
-    sheet.setName('Leaderboard');
+    // 既存の「シート1」等の1枚目をリネームまたは新規作成
+    const sheets = ss.getSheets();
+    if (mode === 'normal' && sheets.length > 0 && sheets[0].getName().match(/^(シート1|Sheet1)$/)) {
+      sheet = sheets[0];
+      sheet.setName(targetSheetName);
+    } else {
+      sheet = ss.insertSheet(targetSheetName);
+    }
   }
 
-  // 1行目が未設定の場合はヘッダーを作成
+  // 1行目にヘッダーがない場合はセット
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['PlayerID', 'Name', 'Score', 'Unlocked', 'Updated_At']);
-    sheet.getRange(1, 1, 1, 5).setFontWeight('bold');
+    const scoreHeader = (mode === 'time_attack_5000') ? 'クリアタイム(ms)' : 'スコア';
+    sheet.appendRow(['ID', 'プレイヤー名', scoreHeader, '解錠数', '更新日時']);
+    sheet.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#dfe4ea');
     sheet.setFrozenRows(1);
   }
+
   return sheet;
 }
 
-function saveOrUpdateRecord(sheet, playerId, playerName, score, locks) {
-  var lastRow = sheet.getLastRow();
-  var nowStr = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
+// スコア・タイムの取得
+function handleGetScores(mode) {
+  const sheet = getOrCreateSheetForMode(mode);
+  const lastRow = sheet.getLastRow();
 
   if (lastRow <= 1) {
-    sheet.appendRow([playerId, playerName, score, locks, nowStr]);
-    return;
+    return { status: 'ok', mode: mode, records: [] };
   }
 
-  var range = sheet.getRange(2, 1, lastRow - 1, 5);
-  var values = range.getValues();
-  var foundIndex = -1;
+  const data = sheet.getRange(2, 1, lastRow - 1, 5).getValues();
+  const records = [];
 
-  for (var i = 0; i < values.length; i++) {
-    if (String(values[i][0]) === playerId) {
-      foundIndex = i;
-      break;
+  for (let i = 0; i < data.length; i++) {
+    const id = String(data[i][0] || '').trim();
+    const name = String(data[i][1] || '').trim();
+    const scoreVal = Number(data[i][2]);
+    const locks = Number(data[i][3]) || 0;
+
+    if (id && name && !isNaN(scoreVal)) {
+      records.push({
+        id: id,
+        name: name,
+        score: scoreVal,
+        locks: locks,
+        mode: mode
+      });
     }
   }
 
-  if (foundIndex >= 0) {
-    var rowNumber = foundIndex + 2;
-    // 送信された最新のスコア・解錠数・名前で確実に更新
-    sheet.getRange(rowNumber, 2).setValue(playerName);
-    sheet.getRange(rowNumber, 3).setValue(score);
-    sheet.getRange(rowNumber, 4).setValue(locks);
-    sheet.getRange(rowNumber, 5).setValue(nowStr);
+  // ソート: タイムアタックは小さい順（昇順）、それ以外は大きい順（降順）
+  if (mode === 'time_attack_5000') {
+    records.sort((a, b) => a.score - b.score);
   } else {
-    sheet.appendRow([playerId, playerName, score, locks, nowStr]);
+    records.sort((a, b) => b.score - a.score);
   }
+
+  return { status: 'ok', mode: mode, records: records.slice(0, 100) };
 }
 
-function getLeaderboardRecords(sheet, limit) {
-  var lastRow = sheet.getLastRow();
-  if (lastRow <= 1) return [];
+// スコア・タイムの登録または更新
+function handleSubmit(params, mode) {
+  const id = (params.id || '').trim();
+  const name = (params.name || '').trim().substring(0, 10);
+  const scoreVal = Number(params.score);
+  const locks = Number(params.locks) || 0;
 
-  var data = sheet.getRange(2, 1, lastRow - 1, 4).getValues();
-  var records = [];
+  if (!id || !name || isNaN(scoreVal) || scoreVal <= 0) {
+    return { status: 'error', message: 'Invalid parameters' };
+  }
 
-  for (var i = 0; i < data.length; i++) {
-    var id = String(data[i][0]);
-    var name = String(data[i][1]);
-    var score = parseInt(data[i][2] || '0', 10);
-    var locks = parseInt(data[i][3] || '0', 10);
-    if (id && name) {
-      records.push({ id: id, name: name, score: score, locks: locks });
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+
+  try {
+    const sheet = getOrCreateSheetForMode(mode);
+    const lastRow = sheet.getLastRow();
+    const isTimeAttack = (mode === 'time_attack_5000');
+    let foundRow = -1;
+
+    if (lastRow > 1) {
+      const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+      for (let i = 0; i < ids.length; i++) {
+        if (String(ids[i][0]).trim() === id) {
+          foundRow = i + 2;
+          break;
+        }
+      }
     }
+
+    const nowStr = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
+
+    if (foundRow > 0) {
+      const existingScore = Number(sheet.getRange(foundRow, 3).getValue());
+      // タイムアタックは数値が小さいほうが速い（より良い記録）
+      // スコアモードは数値が大きいほうが良い記録
+      const isBetter = isTimeAttack 
+        ? (scoreVal < existingScore || isNaN(existingScore) || existingScore <= 0)
+        : (scoreVal > existingScore || isNaN(existingScore));
+
+      if (isBetter) {
+        sheet.getRange(foundRow, 2, 1, 4).setValues([[name, scoreVal, locks, nowStr]]);
+      } else {
+        // 名前だけ更新
+        sheet.getRange(foundRow, 2).setValue(name);
+      }
+    } else {
+      sheet.appendRow([id, name, scoreVal, locks, nowStr]);
+    }
+
+    // 更新後にシート全体をソート
+    const newLastRow = sheet.getLastRow();
+    if (newLastRow > 1) {
+      sheet.getRange(2, 1, newLastRow - 1, 5).sort({ column: 3, ascending: isTimeAttack });
+    }
+
+    return { status: 'ok', mode: mode, message: 'Saved successfully' };
+  } finally {
+    lock.releaseLock();
   }
-
-  // スコア降順（同スコア時は解錠数降順）
-  records.sort(function(a, b) {
-    if (b.score !== a.score) return b.score - a.score;
-    return b.locks - a.locks;
-  });
-
-  return records.slice(0, limit || 100);
-}
-
-function createJsonResponse(data, callback) {
-  var jsonStr = JSON.stringify(data);
-  if (callback) {
-    var output = ContentService.createTextOutput(callback + '(' + jsonStr + ')');
-    output.setMimeType(ContentService.MimeType.JAVASCRIPT);
-    return output;
-  }
-  var output = ContentService.createTextOutput(jsonStr);
-  output.setMimeType(ContentService.MimeType.JSON);
-  return output;
 }
