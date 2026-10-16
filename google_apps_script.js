@@ -2,10 +2,7 @@
  * POP LOCK / LOCK LOCKER LOCKEST リーダーボード サーバーサイドスクリプト
  * 
  * 4つのモード（通常 / 1分固定 / 1ミス終了 / 5000pt TA）を別々のシート（タブ）に自動仕分けして記録します。
- * - normal: スコア降順（大きい順）
- * - fixed_1min: スコア降順（大きい順）
- * - sudden_death: スコア降順（大きい順）
- * - time_attack_5000: タイム昇順（小さい＝速い順）
+ * 初回実行時に、既存の元シートから各モードのシートへ全過去データを自動移行します。
  */
 
 const SHEET_NAMES = {
@@ -21,6 +18,9 @@ function doGet(e) {
   const callback = params.callback;
   const rawMode = params.mode || 'normal';
   const mode = SHEET_NAMES[rawMode] ? rawMode : 'normal';
+
+  // 初回アクセス時に既存データを自動移行
+  ensureMigrationFromLegacySheet();
 
   let result = {};
 
@@ -49,6 +49,70 @@ function doPost(e) {
   return doGet(e);
 }
 
+// 既存の「シート1」から4つのモード別シートへ過去データを自動移行（1回のみ実行）
+function ensureMigrationFromLegacySheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const legacySheet = ss.getSheetByName('シート1') || ss.getSheetByName('Sheet1');
+  if (!legacySheet) return;
+
+  // 既に移行完了フラグがあるか確認
+  const normalSheet = ss.getSheetByName(SHEET_NAMES.normal);
+  if (normalSheet && normalSheet.getLastRow() > 1) {
+    return; // 既に移行済み
+  }
+
+  const lastRow = legacySheet.getLastRow();
+  if (lastRow <= 1) return;
+
+  const legacyData = legacySheet.getRange(2, 1, lastRow - 1, Math.max(4, legacySheet.getLastColumn())).getValues();
+
+  // 各モードのシートを準備
+  const sheetsByMode = {};
+  for (const m in SHEET_NAMES) {
+    sheetsByMode[m] = getOrCreateSheetForMode(m);
+  }
+
+  const rowsByMode = {
+    normal: [],
+    fixed_1min: [],
+    sudden_death: [],
+    time_attack_5000: []
+  };
+
+  for (let i = 0; i < legacyData.length; i++) {
+    const id = String(legacyData[i][0] || '').trim();
+    const name = String(legacyData[i][1] || '').trim();
+    const scoreVal = Number(legacyData[i][2]);
+    const locks = Number(legacyData[i][3]) || 0;
+    const dateStr = legacyData[i][4] ? Utilities.formatDate(new Date(legacyData[i][4]), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss') : Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
+
+    if (!id || !name || isNaN(scoreVal)) continue;
+
+    if (id.endsWith('__time_attack_5000')) {
+      rowsByMode.time_attack_5000.push([id, name, scoreVal, locks, dateStr]);
+    } else if (id.endsWith('__fixed_1min')) {
+      rowsByMode.fixed_1min.push([id, name, scoreVal, locks, dateStr]);
+    } else if (id.endsWith('__sudden_death')) {
+      rowsByMode.sudden_death.push([id, name, scoreVal, locks, dateStr]);
+    } else {
+      // 通常モード
+      rowsByMode.normal.push([id, name, scoreVal, locks, dateStr]);
+    }
+  }
+
+  // 各シートへデータを一括流し込み＆ソート
+  for (const m in rowsByMode) {
+    const rows = rowsByMode[m];
+    const targetSheet = sheetsByMode[m];
+    const isTA = (m === 'time_attack_5000');
+
+    if (rows.length > 0 && targetSheet.getLastRow() <= 1) {
+      targetSheet.getRange(2, 1, rows.length, 5).setValues(rows);
+      targetSheet.getRange(2, 1, rows.length, 5).sort({ column: 3, ascending: isTA });
+    }
+  }
+}
+
 // モードごとの専用シートを取得（なければ自動作成＆ヘッダー付与）
 function getOrCreateSheetForMode(mode) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -56,14 +120,7 @@ function getOrCreateSheetForMode(mode) {
   let sheet = ss.getSheetByName(targetSheetName);
 
   if (!sheet) {
-    // 既存の「シート1」等の1枚目をリネームまたは新規作成
-    const sheets = ss.getSheets();
-    if (mode === 'normal' && sheets.length > 0 && sheets[0].getName().match(/^(シート1|Sheet1)$/)) {
-      sheet = sheets[0];
-      sheet.setName(targetSheetName);
-    } else {
-      sheet = ss.insertSheet(targetSheetName);
-    }
+    sheet = ss.insertSheet(targetSheetName);
   }
 
   // 1行目にヘッダーがない場合はセット

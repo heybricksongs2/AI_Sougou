@@ -4234,7 +4234,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ONLINE LEADERBOARD (4モード完全分離: 通常 / 1分固定 / 1ミス終了 / 5000pt TA)
   // =========================================================================
   // Google Apps Script (Web App) URL
-  const LEADERBOARD_API_URL = 'https://script.google.com/macros/s/AKfycbxhoxqITRMyoPzAhT6NxsrfO-TRgbWsIXQg8hffLBrOIN9yQYzBl4rY-m3RXZC3oAmtCg/exec';
+  const LEADERBOARD_API_URL = 'https://script.google.com/macros/s/AKfycbwHiOziagRplu8_Jo38BoTjSriEXkPKlx0R_1_zwMFPw6jCenrcMwnV8OeDxkns_OZZBg/exec';
 
   const STORAGE_KEY_PLAYER_ID = 'lock_player_id';
   const STORAGE_KEY_PLAYER_NAME = 'lock_player_name';
@@ -4402,7 +4402,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       function cleanup() {
         if (script.parentNode) script.parentNode.removeChild(script);
-        delete window[cbName];
+        window[cbName] = () => {};
+        setTimeout(() => { try { delete window[cbName]; } catch (e) {} }, 10000);
         clearTimeout(timer);
       }
 
