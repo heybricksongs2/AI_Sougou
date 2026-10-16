@@ -66,7 +66,16 @@ document.addEventListener('DOMContentLoaded', () => {
   resizeCanvas();
 
   let particles = [];
+  let particleAnimId = null;
+
+  function ensureParticleLoop() {
+    if (!particleAnimId && particles.length > 0) {
+      particleAnimId = requestAnimationFrame(updateParticles);
+    }
+  }
+
   function createBurst(x, y, count = 38) {
+    if (isLiteMode) return;
     const colors = ['#ff4757', '#2ed573', '#ffa502', '#1e90ff', '#ffffff', '#ffd32a', '#9b59b6'];
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
@@ -87,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isConfetti
       });
     }
+    ensureParticleLoop();
   }
 
   function updateParticles() {
@@ -101,7 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
       p.alpha -= p.decay;
 
       if (p.alpha <= 0) {
-        particles.splice(i, 1);
+        particles[i] = particles[particles.length - 1];
+        particles.pop();
         continue;
       }
 
@@ -122,19 +133,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       ctx.restore();
     }
-    requestAnimationFrame(updateParticles);
+    if (particles.length > 0) {
+      particleAnimId = requestAnimationFrame(updateParticles);
+    } else {
+      particleAnimId = null;
+    }
   }
-  updateParticles();
 
   // Rank S 達成時の紙吹雪シャワー
   let confettiRainInterval = null;
   function startConfettiRain(durationMs = 4500) {
     if (confettiRainInterval) clearInterval(confettiRainInterval);
+    if (isLiteMode) return;
     const colors = ['#ff4757', '#2ed573', '#ffa502', '#1e90ff', '#ffd32a', '#9b59b6', '#ff007f', '#00d2d3'];
     const startTime = Date.now();
 
     confettiRainInterval = setInterval(() => {
-      if (Date.now() - startTime > durationMs) {
+      if (isLiteMode || Date.now() - startTime > durationMs) {
         clearInterval(confettiRainInterval);
         confettiRainInterval = null;
         return;
@@ -159,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
           isConfetti: true
         });
       }
+      ensureParticleLoop();
     }, 65);
   }
 
@@ -170,18 +186,34 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+  }
+
+  function connectAndAutoClean(osc, gain) {
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.onended = () => {
+      try {
+        osc.disconnect();
+        gain.disconnect();
+      } catch (e) {}
+    };
   }
 
   function playSound(type, combo = 1) {
     if (!soundEnabled || !audioCtx) return;
     try {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
       const now = audioCtx.currentTime;
 
       if (type === 'tap') {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        connectAndAutoClean(osc, gain);
 
         const freqShift = (Math.random() - 0.5) * 40;
         osc.frequency.setValueAtTime(620 + freqShift, now);
@@ -203,8 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clickOsc.frequency.exponentialRampToValueAtTime(140, now + 0.04);
         clickGain.gain.setValueAtTime(0.25, now);
         clickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
-        clickOsc.connect(clickGain);
-        clickGain.connect(audioCtx.destination);
+        connectAndAutoClean(clickOsc, clickGain);
         clickOsc.start(now);
         clickOsc.stop(now + 0.04);
 
@@ -217,8 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
           osc.frequency.setValueAtTime(freq * pitchMultiplier, now + idx * 0.04);
           gain.gain.setValueAtTime(0.2, now + idx * 0.04);
           gain.gain.exponentialRampToValueAtTime(0.005, now + idx * 0.04 + 0.3);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
+          connectAndAutoClean(osc, gain);
           osc.start(now + idx * 0.04);
           osc.stop(now + idx * 0.04 + 0.3);
         });
@@ -231,8 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
         osc.frequency.linearRampToValueAtTime(90, now + 0.2);
         gain.gain.setValueAtTime(0.25, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        connectAndAutoClean(osc, gain);
         osc.start(now);
         osc.stop(now + 0.2);
 
@@ -243,8 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
         osc.frequency.setValueAtTime(880, now);
         gain.gain.setValueAtTime(0.12, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        connectAndAutoClean(osc, gain);
         osc.start(now);
         osc.stop(now + 0.06);
 
@@ -258,8 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
         osc1.frequency.linearRampToValueAtTime(940, now + 0.08);
         gain1.gain.setValueAtTime(0.3, now);
         gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.09);
-        osc1.connect(gain1);
-        gain1.connect(audioCtx.destination);
+        connectAndAutoClean(osc1, gain1);
         osc1.start(now);
         osc1.stop(now + 0.09);
 
@@ -272,8 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gain2.gain.setValueAtTime(0.35, now + 0.13);
         gain2.gain.setValueAtTime(0.32, now + 0.4);
         gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.55);
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
+        connectAndAutoClean(osc2, gain2);
         osc2.start(now + 0.13);
         osc2.stop(now + 0.55);
       }
@@ -596,6 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let warningBeepTimer = 0;
   let activeAnimationId = null;
   let activeWindowListeners = [];
+  let activeGimmickTimeouts = [];
 
   function addTrackedListener(target, type, handler, options) {
     target.addEventListener(type, handler, options);
@@ -611,6 +638,22 @@ document.addEventListener('DOMContentLoaded', () => {
     activeWindowListeners = [];
   }
 
+  function addTrackedTimeout(fn, delay) {
+    const id = setTimeout(() => {
+      activeGimmickTimeouts = activeGimmickTimeouts.filter(t => t !== id);
+      fn();
+    }, delay);
+    activeGimmickTimeouts.push(id);
+    return id;
+  }
+
+  function cleanActiveTimeouts() {
+    for (const id of activeGimmickTimeouts) {
+      clearTimeout(id);
+    }
+    activeGimmickTimeouts = [];
+  }
+
   function cleanActiveAnimations() {
     if (activeAnimationId) {
       cancelAnimationFrame(activeAnimationId);
@@ -621,6 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function cleanupCurrentGimmick() {
     cleanActiveAnimations();
     cleanActiveListeners();
+    cleanActiveTimeouts();
     currentShackle.style.transform = '';
     gimmickContainer.innerHTML = '';
   }
@@ -639,6 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.textContent = '';
       btn.style.letterSpacing = '2px';
       btn.addEventListener('click', () => {
+        if (isPaused || isResolvingLock) return;
         playSound('tap');
         resolveLockSuccess();
       });
@@ -673,24 +718,27 @@ document.addEventListener('DOMContentLoaded', () => {
       gimmickContainer.appendChild(frame);
 
       let isFlipped = false;
+      let isDragging = false;
       let startX = 0;
 
       function flipOn() {
-        if (isFlipped) return;
+        if (isFlipped || isPaused || isResolvingLock) return;
         isFlipped = true;
+        isDragging = false;
         frame.classList.add('is-on');
         playSound('unlock');
-        setTimeout(() => resolveLockSuccess(), 120);
+        addTrackedTimeout(() => resolveLockSuccess(), 120);
       }
 
       function onPointerDown(e) {
-        if (isFlipped) return;
+        if (isFlipped || isPaused || isResolvingLock) return;
+        isDragging = true;
         const pt = e.touches ? e.touches[0] : e;
         startX = pt.clientX;
       }
 
       function onPointerMove(e) {
-        if (isFlipped) return;
+        if (isFlipped || !isDragging || isPaused || isResolvingLock) return;
         const pt = e.touches ? e.touches[0] : e;
         if (pt.clientX - startX > 20) {
           flipOn();
@@ -698,7 +746,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       function onPointerUp(e) {
-        if (isFlipped) return;
+        if (isFlipped || !isDragging) return;
+        isDragging = false;
+        if (isPaused || isResolvingLock) return;
         const rect = frame.getBoundingClientRect();
         const pt = e.changedTouches ? e.changedTouches[0] : e;
         if (pt.clientX > rect.left + rect.width * 0.4) {
@@ -707,8 +757,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       frame.addEventListener('pointerdown', onPointerDown);
-      frame.addEventListener('pointermove', onPointerMove);
-      frame.addEventListener('pointerup', onPointerUp);
+      addTrackedListener(window, 'pointermove', onPointerMove);
+      addTrackedListener(window, 'pointerup', onPointerUp);
 
     // 3. 鍵ドラッグ差し込み (安定ベクターキー ＆ リアル鍵穴)
     } else if (lock.type === 'key_drag') {
@@ -737,6 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let startMouseX = 0;
 
       function onStart(e) {
+        if (isPaused || isResolvingLock) return;
         isDragging = true;
         playSound('tap');
         const point = e.touches ? e.touches[0] : e;
@@ -744,7 +795,7 @@ document.addEventListener('DOMContentLoaded', () => {
         startMouseY = point.clientY;
       }
       function onMove(e) {
-        if (!isDragging) return;
+        if (!isDragging || isPaused || isResolvingLock) return;
         const point = e.touches ? e.touches[0] : e;
         const dy = point.clientY - startMouseY;
         const dx = point.clientX - startMouseX;
@@ -762,6 +813,7 @@ document.addEventListener('DOMContentLoaded', () => {
       function onEnd() {
         if (!isDragging) return;
         isDragging = false;
+        if (isPaused || isResolvingLock) return;
         if (targetHole.classList.contains('hovered')) {
           keyItem.style.display = 'none';
           targetHole.innerHTML = `
@@ -814,7 +866,7 @@ document.addEventListener('DOMContentLoaded', () => {
           e.preventDefault();
           e.stopPropagation();
         }
-        if (isResolvingLock) return;
+        if (isPaused || isResolvingLock) return;
         playSound('tap');
 
         if (currentTaps === 0) {
@@ -822,7 +874,7 @@ document.addEventListener('DOMContentLoaded', () => {
           dots[0].classList.add('active');
           if (tapResetTimer) clearTimeout(tapResetTimer);
           // 1回押し後、判定が途切れた場合は0点灯に戻す (480ms)
-          tapResetTimer = setTimeout(() => {
+          tapResetTimer = addTrackedTimeout(() => {
             currentTaps = 0;
             dots[0].classList.remove('active');
             dots[1].classList.remove('active');
@@ -831,7 +883,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (tapResetTimer) clearTimeout(tapResetTimer);
           currentTaps = 2;
           dots[1].classList.add('active');
-          setTimeout(() => resolveLockSuccess(), 80);
+          addTrackedTimeout(() => resolveLockSuccess(), 80);
         }
       }
 
@@ -883,9 +935,13 @@ document.addEventListener('DOMContentLoaded', () => {
       gimmickContainer.appendChild(track);
 
       let isDragging = false;
-      function onStart() { isDragging = true; playSound('tap'); }
+      function onStart() {
+        if (isPaused || isResolvingLock) return;
+        isDragging = true;
+        playSound('tap');
+      }
       function onMove(e) {
-        if (!isDragging) return;
+        if (!isDragging || isPaused || isResolvingLock) return;
         const cur = e.touches ? e.touches[0] : e;
         const rect = track.getBoundingClientRect();
 
@@ -916,6 +972,7 @@ document.addEventListener('DOMContentLoaded', () => {
       function onEnd() {
         if (isDragging) {
           isDragging = false;
+          if (isPaused || isResolvingLock) return;
           if (dir === 'right') knob.style.left = '6px';
           else if (dir === 'left') knob.style.left = '165px';
           else if (dir === 'down') knob.style.top = '6px';
@@ -1011,9 +1068,13 @@ document.addEventListener('DOMContentLoaded', () => {
       let step = 0;
       let isDragging = false;
 
-      function onStart() { isDragging = true; playSound('tap'); }
+      function onStart() {
+        if (isPaused || isResolvingLock) return;
+        isDragging = true;
+        playSound('tap');
+      }
       function onMove(e) {
-        if (!isDragging) return;
+        if (!isDragging || isPaused || isResolvingLock) return;
         const cur = e.touches ? e.touches[0] : e;
         const rect = area.getBoundingClientRect();
         const relX = cur.clientX - rect.left - 20;
@@ -1058,6 +1119,7 @@ document.addEventListener('DOMContentLoaded', () => {
       function onEnd() {
         if (isDragging) {
           isDragging = false;
+          if (isPaused || isResolvingLock) return;
           step = 0;
           knob.style.left = v.start.x + 'px';
           knob.style.top = v.start.y + 'px';
@@ -1120,12 +1182,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       function onStart(e) {
         e.preventDefault();
+        if (isPaused || isResolvingLock) return;
         isDragging = true;
         playSound('tap');
       }
 
       function onMove(e) {
-        if (!isDragging) return;
+        if (!isDragging || isPaused || isResolvingLock) return;
         const cur = e.touches ? e.touches[0] : e;
         const rect = stage.getBoundingClientRect();
         const cx = rect.left + 95;
@@ -1159,6 +1222,7 @@ document.addEventListener('DOMContentLoaded', () => {
       function onEnd() {
         if (isDragging) {
           isDragging = false;
+          if (isPaused || isResolvingLock) return;
           phase = 0;
           knob.style.background = 'var(--primary-accent)';
           turnIndicator.innerHTML = ARROW_CURVE_RIGHT_SVG;
@@ -1203,6 +1267,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let strokePoints = [];
 
       function startDraw(e) {
+        if (isPaused || isResolvingLock) return;
         isDrawing = true;
         strokePoints = [];
         const pt = e.touches ? e.touches[0] : e;
@@ -1211,7 +1276,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gCtx.clearRect(0, 0, 180, 180);
       }
       function moveDraw(e) {
-        if (!isDrawing) return;
+        if (!isDrawing || isPaused || isResolvingLock) return;
         const pt = e.touches ? e.touches[0] : e;
         const rect = gCanvas.getBoundingClientRect();
         const p = { x: pt.clientX - rect.left, y: pt.clientY - rect.top };
@@ -1225,6 +1290,7 @@ document.addEventListener('DOMContentLoaded', () => {
       function endDraw() {
         if (!isDrawing) return;
         isDrawing = false;
+        if (isPaused || isResolvingLock) return;
         if (strokePoints.length > 5) {
           const first = strokePoints[0];
           const last = strokePoints[strokePoints.length - 1];
@@ -1277,6 +1343,7 @@ document.addEventListener('DOMContentLoaded', () => {
         item.className = 'key-choice-gold-btn';
         item.textContent = sym;
         setupActionButton(item, () => {
+          if (isPaused || isResolvingLock) return;
           const matchTarget = targetEls.find(t => t.sym === sym && !t.cleared);
           if (matchTarget) {
             matchTarget.cleared = true;
@@ -1356,7 +1423,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.className = 'color-mix-pill-btn';
         btn.style.background = def.hex;
         btn.addEventListener('click', () => {
-          if (isEvaluating) return;
+          if (isEvaluating || isPaused || isResolvingLock) return;
           playSound('tap');
 
           if (selectedColors.length === 0) {
@@ -1376,7 +1443,7 @@ document.addEventListener('DOMContentLoaded', () => {
               resolveLockSuccess();
             } else {
               // 不正解の場合は0.5秒間混色を表示してからミス判定とリセット
-              setTimeout(() => {
+              addTrackedTimeout(() => {
                 triggerMistake();
                 barFill.style.background = 'transparent';
                 selectedColors = [];
@@ -1422,7 +1489,7 @@ document.addEventListener('DOMContentLoaded', () => {
           e.preventDefault();
           e.stopPropagation();
         }
-        if (isResolvingLock) return;
+        if (isPaused || isResolvingLock) return;
         count++;
         playSound('tap');
         gaugeFill.style.width = Math.min(100, (count / targetClicks) * 100) + '%';
@@ -1474,8 +1541,16 @@ document.addEventListener('DOMContentLoaded', () => {
       let insideTime = 0;
       const targetDuration = 500;
 
-      function onStart(e) { e.preventDefault(); isThrusting = true; playSound('tap'); }
-      function onEnd(e) { e.preventDefault(); isThrusting = false; }
+      function onStart(e) {
+        if (isPaused || isResolvingLock) return;
+        e.preventDefault();
+        isThrusting = true;
+        playSound('tap');
+      }
+      function onEnd() {
+        if (!isThrusting) return;
+        isThrusting = false;
+      }
 
       thrustBtn.addEventListener('mousedown', onStart);
       thrustBtn.addEventListener('touchstart', onStart, { passive: false });
@@ -1483,7 +1558,12 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'touchend', onEnd);
 
       function hoverPhysics() {
-        if (!isPlaying || currentLock.type !== lock.type) return;
+        if (!isPlaying || currentLock !== lock) return;
+        if (isPaused) {
+          isThrusting = false;
+          activeAnimationId = requestAnimationFrame(hoverPhysics);
+          return;
+        }
         if (isThrusting) velocity += 0.55;
         else velocity -= 0.35;
 
@@ -1610,12 +1690,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       function onStart(e) {
         e.preventDefault();
+        if (isPaused || isResolvingLock) return;
         isDragging = true;
         playSound('tap');
       }
 
       function onMove(e) {
-        if (!isDragging) return;
+        if (!isDragging || isPaused || isResolvingLock) return;
         const cur = e.touches ? e.touches[0] : e;
         const rect = area.getBoundingClientRect();
         const rx = cur.clientX - rect.left;
@@ -1643,7 +1724,7 @@ document.addEventListener('DOMContentLoaded', () => {
             isDragging = false;
             knob.style.left = target.x + 'px';
             knob.style.top = target.y + 'px';
-            setTimeout(() => resolveLockSuccess(), 120);
+            addTrackedTimeout(() => resolveLockSuccess(), 120);
           } else {
             const nextMarkerIdx = (targetPtIdx < 5) ? targetPtIdx : 0;
             markerEls[nextMarkerIdx].classList.add('active-target');
@@ -1654,6 +1735,7 @@ document.addEventListener('DOMContentLoaded', () => {
       function onEnd() {
         if (isDragging) {
           isDragging = false;
+          if (isPaused || isResolvingLock) return;
           targetPtIdx = 1;
           markerEls.forEach((m, i) => {
             m.className = 'star-point-marker';
@@ -1710,18 +1792,22 @@ document.addEventListener('DOMContentLoaded', () => {
         lock.dialCurrentDigits = [...currentDigits];
       }
 
+      let isCleared = false;
+
       currentDigits.forEach((val, idx) => {
         const wheel = document.createElement('div');
         wheel.className = 'dial-wheel';
         wheel.textContent = val;
 
         wheel.addEventListener('click', () => {
+          if (isCleared || isPaused || isResolvingLock) return;
           playSound('tap');
           currentDigits[idx] = (currentDigits[idx] + 1) % 10;
           wheel.textContent = currentDigits[idx];
 
           if (currentDigits.every((d, i) => d === targetDigits[i])) {
-            setTimeout(() => resolveLockSuccess(), 120);
+            isCleared = true;
+            addTrackedTimeout(() => resolveLockSuccess(), 120);
           }
         });
         row.appendChild(wheel);
@@ -1748,10 +1834,29 @@ document.addEventListener('DOMContentLoaded', () => {
       let vx = 3.5, vy = 2.8;
 
       function bounceAnim() {
-        if (!isPlaying || currentLock.type !== lock.type) return;
-        x += vx; y += vy;
-        if (x <= 8 || x >= 210) vx = -vx;
-        if (y <= 8 || y >= 115) vy = -vy;
+        if (!isPlaying || currentLock !== lock) return;
+        if (isPaused) {
+          activeAnimationId = requestAnimationFrame(bounceAnim);
+          return;
+        }
+        const maxX = Math.max(40, (box.clientWidth || 268) - 58);
+        const maxY = Math.max(40, (box.clientHeight || 175) - 58);
+        x += vx;
+        y += vy;
+        if (x <= 8) {
+          x = 8;
+          vx = Math.abs(vx);
+        } else if (x >= maxX) {
+          x = maxX;
+          vx = -Math.abs(vx);
+        }
+        if (y <= 8) {
+          y = 8;
+          vy = Math.abs(vy);
+        } else if (y >= maxY) {
+          y = maxY;
+          vy = -Math.abs(vy);
+        }
         btn.style.left = x + 'px';
         btn.style.top = y + 'px';
         activeAnimationId = requestAnimationFrame(bounceAnim);
@@ -1759,6 +1864,7 @@ document.addEventListener('DOMContentLoaded', () => {
       activeAnimationId = requestAnimationFrame(bounceAnim);
 
       btn.addEventListener('click', () => {
+        if (isPaused || isResolvingLock) return;
         playSound('tap');
         resolveLockSuccess();
       });
@@ -1788,15 +1894,21 @@ document.addEventListener('DOMContentLoaded', () => {
       tapBtn.addEventListener('contextmenu', (e) => { e.preventDefault(); e.stopPropagation(); });
 
       let pressStart = 0;
+      let isPressing = false;
       function onPressStart(e) {
+        if (isPaused || isResolvingLock) return;
         if (e) {
           e.preventDefault();
           e.stopPropagation();
         }
+        isPressing = true;
         pressStart = Date.now();
         playSound('tap');
       }
       function onPressEnd(e) {
+        if (!isPressing) return;
+        isPressing = false;
+        if (isPaused || isResolvingLock) return;
         if (e) {
           e.preventDefault();
           e.stopPropagation();
@@ -1871,13 +1983,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       function onStart(e) {
         e.preventDefault();
+        if (isPaused || isResolvingLock) return;
         isDragging = true;
         lastAngle = getAngle(e);
         playSound('tap');
       }
 
       function onMove(e) {
-        if (!isDragging) return;
+        if (!isDragging || isPaused || isResolvingLock) return;
         const angle = getAngle(e);
         let delta = angle - lastAngle;
         if (delta > Math.PI) delta -= 2 * Math.PI;
@@ -1908,13 +2021,14 @@ document.addEventListener('DOMContentLoaded', () => {
           isDragging = false;
           center.textContent = 'OPEN';
           center.style.background = '#2ed573';
-          setTimeout(() => resolveLockSuccess(), 120);
+          addTrackedTimeout(() => resolveLockSuccess(), 120);
         }
       }
 
       function onEnd() {
         if (isDragging) {
           isDragging = false;
+          if (isPaused || isResolvingLock) return;
           totalRotated = 0;
           currentDeg = 0;
           lastStepSound = 0;
@@ -1956,6 +2070,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const targetWait = 1500;
 
       function onAccidentalTap(e) {
+        if (isPaused || isResolvingLock) return;
         if (e) {
           e.preventDefault();
           e.stopPropagation();
@@ -1969,7 +2084,11 @@ document.addEventListener('DOMContentLoaded', () => {
       stage.addEventListener('touchstart', onAccidentalTap, { passive: false });
 
       function waitLoop() {
-        if (!isPlaying || currentLock.type !== lock.type) return;
+        if (!isPlaying || currentLock !== lock) return;
+        if (isPaused) {
+          activeAnimationId = requestAnimationFrame(waitLoop);
+          return;
+        }
         waitTime += 16.6;
         const pct = Math.min(100, (waitTime / targetWait) * 100);
         fill.style.width = pct + '%';
@@ -2010,6 +2129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.className = 'color-choice-btn';
         btn.style.background = c.hex;
         btn.addEventListener('click', () => {
+          if (isPaused || isResolvingLock) return;
           if (idx === targetIndex) {
             playSound('tap');
             resolveLockSuccess();
@@ -2031,16 +2151,19 @@ document.addEventListener('DOMContentLoaded', () => {
       lock.iriraTrackIndex = trackIdx;
       const track = IRIRA_MAZE_TRACKS[trackIdx] || IRIRA_MAZE_TRACKS[0];
 
-      container.innerHTML = `
-        <svg class="irira-maze-svg" viewBox="0 0 250 140">
+      const filterDef = isLiteMode ? '' : `
           <defs>
             <filter id="glow-shock" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur stdDeviation="3" result="glow" />
               <feComposite in="SourceGraphic" in2="glow" operator="over" />
             </filter>
-          </defs>
+          </defs>`;
+      const filterAttr = isLiteMode ? '' : 'filter="url(#glow-shock)"';
+
+      container.innerHTML = `
+        <svg class="irira-maze-svg" viewBox="0 0 250 140">${filterDef}
           <path class="electric-zap-path electric-zap-glow" d="${track.path}" 
-                fill="none" stroke="#ffa502" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-shock)" />
+                fill="none" stroke="#ffa502" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" ${filterAttr} />
           <path d="${track.path}" 
                 fill="none" stroke="#2f3542" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" />
           <path d="${track.path}" 
@@ -2097,12 +2220,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       function onStart(e) {
         e.preventDefault();
+        if (isPaused || isResolvingLock) return;
         isDragging = true;
         playSound('tap');
       }
 
       function onMove(e) {
-        if (!isDragging) return;
+        if (!isDragging || isPaused || isResolvingLock) return;
         const cur = e.touches ? e.touches[0] : e;
         const rect = container.getBoundingClientRect();
         const px = cur.clientX - rect.left;
@@ -2116,7 +2240,7 @@ document.addEventListener('DOMContentLoaded', () => {
           isDragging = false;
           container.classList.add('shocked');
           triggerMistake();
-          setTimeout(() => {
+          addTrackedTimeout(() => {
             container.classList.remove('shocked');
           }, 350);
           keyDragger.style.left = track.start.x + 'px';
@@ -2128,13 +2252,14 @@ document.addEventListener('DOMContentLoaded', () => {
           isDragging = false;
           keyDragger.style.left = track.goal.x + 'px';
           keyDragger.style.top = track.goal.y + 'px';
-          setTimeout(() => resolveLockSuccess(), 100);
+          addTrackedTimeout(() => resolveLockSuccess(), 100);
         }
       }
 
       function onEnd() {
         if (isDragging) {
           isDragging = false;
+          if (isPaused || isResolvingLock) return;
           keyDragger.style.left = track.start.x + 'px';
           keyDragger.style.top = track.start.y + 'px';
           triggerMistake();
@@ -2189,8 +2314,16 @@ document.addEventListener('DOMContentLoaded', () => {
       let zoneT = 0;
       const targetDuration = 550;
 
-      function onStart(e) { e.preventDefault(); isThrusting = true; playSound('tap'); }
-      function onEnd(e) { e.preventDefault(); isThrusting = false; }
+      function onStart(e) {
+        if (isPaused || isResolvingLock) return;
+        e.preventDefault();
+        isThrusting = true;
+        playSound('tap');
+      }
+      function onEnd() {
+        if (!isThrusting) return;
+        isThrusting = false;
+      }
 
       thrustBtn.addEventListener('mousedown', onStart);
       thrustBtn.addEventListener('touchstart', onStart, { passive: false });
@@ -2198,7 +2331,12 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'touchend', onEnd);
 
       function hoverPhysics() {
-        if (!isPlaying || currentLock.type !== lock.type) return;
+        if (!isPlaying || currentLock !== lock) return;
+        if (isPaused) {
+          isThrusting = false;
+          activeAnimationId = requestAnimationFrame(hoverPhysics);
+          return;
+        }
 
         // 緑のエリアがゆっくり上下に動く
         zoneT += 0.025;
@@ -2259,7 +2397,11 @@ document.addEventListener('DOMContentLoaded', () => {
       let vy = (Math.random() > 0.5 ? 1 : -1) * (3.8 + Math.random() * 1.6);
 
       function tinyBounce() {
-        if (!isPlaying || currentLock.type !== lock.type) return;
+        if (!isPlaying || currentLock !== lock) return;
+        if (isPaused) {
+          activeAnimationId = requestAnimationFrame(tinyBounce);
+          return;
+        }
 
         // 時間経過で徐々に減速（最低速度は確保）
         vx *= 0.997;
@@ -2267,9 +2409,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Math.abs(vx) < 1.1) vx = Math.sign(vx || 1) * 1.1;
         if (Math.abs(vy) < 0.9) vy = Math.sign(vy || 1) * 0.9;
 
-        x += vx; y += vy;
-        if (x <= 6 || x >= 235) vx = -vx;
-        if (y <= 6 || y >= 135) vy = -vy;
+        const maxX = Math.max(40, (box.clientWidth || 268) - 38);
+        const maxY = Math.max(40, (box.clientHeight || 175) - 38);
+
+        x += vx;
+        y += vy;
+        if (x <= 6) {
+          x = 6;
+          vx = Math.abs(vx);
+        } else if (x >= maxX) {
+          x = maxX;
+          vx = -Math.abs(vx);
+        }
+        if (y <= 6) {
+          y = 6;
+          vy = Math.abs(vy);
+        } else if (y >= maxY) {
+          y = maxY;
+          vy = -Math.abs(vy);
+        }
         btn.style.left = x + 'px';
         btn.style.top = y + 'px';
         activeAnimationId = requestAnimationFrame(tinyBounce);
@@ -2278,7 +2436,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let isHit = false;
       function onBtnHit(e) {
-        if (isHit) return;
+        if (isHit || isPaused || isResolvingLock) return;
         if (e) {
           e.preventDefault();
           e.stopPropagation();
@@ -2317,7 +2475,7 @@ document.addEventListener('DOMContentLoaded', () => {
           e.preventDefault();
           e.stopPropagation();
         }
-        if (isResolvingLock) return;
+        if (isPaused || isResolvingLock) return;
         playSound('tap');
         progress = Math.min(100, progress + 13);
         updateBar();
@@ -2346,7 +2504,11 @@ document.addEventListener('DOMContentLoaded', () => {
       gimmickContainer.appendChild(wrap);
 
       function decayLoop() {
-        if (!isPlaying || currentLock.type !== lock.type) return;
+        if (!isPlaying || currentLock !== lock) return;
+        if (isPaused) {
+          activeAnimationId = requestAnimationFrame(decayLoop);
+          return;
+        }
         progress = Math.max(-40, progress - 0.525);
         updateBar();
         activeAnimationId = requestAnimationFrame(decayLoop);
@@ -2391,11 +2553,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (nextLockBadge) nextLockBadge.textContent = `NEXT: Lv.${lock.level}`;
 
     const t = lock.type;
-    // 1. 特大ボタン (TAP!)
+    // 1. 特大ボタン
     if (t === 'giant_button') {
       const btn = document.createElement('button');
       btn.className = 'giant-action-btn';
-      btn.innerHTML = `<span>TAP!</span>`;
+      btn.textContent = '';
       nextGimmickContainer.appendChild(btn);
 
     // 2. レバースイッチ (Lv2)
@@ -2823,21 +2985,15 @@ document.addEventListener('DOMContentLoaded', () => {
       wrap.appendChild(row);
       nextGimmickContainer.appendChild(wrap);
 
-    // 20. イライラ棒！鍵迷路 (エレクトリックパス & 鍵ドラッガー)
+    // 20. イライラ棒！鍵迷路 (エレクトリックパス & 鍵ドラッガー: プレビューはブラー・アニメーション無しで軽量描画)
     } else if (t === 'irira_key_maze') {
       const container = document.createElement('div');
       container.className = 'irira-maze-container';
       const track = IRIRA_MAZE_TRACKS[lock.iriraTrackIndex || 0];
       container.innerHTML = `
         <svg class="irira-maze-svg" viewBox="0 0 250 140">
-          <defs>
-            <filter id="glow-shock-prev" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3" result="glow" />
-              <feComposite in="SourceGraphic" in2="glow" operator="over" />
-            </filter>
-          </defs>
-          <path class="electric-zap-path electric-zap-glow" d="${track.path}" 
-                fill="none" stroke="#ffa502" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-shock-prev)" />
+          <path class="electric-zap-path" d="${track.path}" 
+                fill="none" stroke="#ffa502" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" />
           <path d="${track.path}" 
                 fill="none" stroke="#2f3542" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" />
           <path d="${track.path}" 
@@ -2895,7 +3051,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 22. 小さく動くボタン
     } else if (t === 'tiny_moving_btn') {
       const box = document.createElement('div');
-      box.className = 'tiny-moving-container';
+      box.className = 'moving-btn-container';
       const btn = document.createElement('button');
       btn.className = 'tiny-moving-btn';
       btn.textContent = '⌖';
@@ -2926,8 +3082,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  let cardShakeTimer = null;
+  let flashTimer = null;
+  let impactShakeTimer = null;
+  let mechBgTimer = null;
+  let swapTimer1 = null;
+  let swapTimer2 = null;
+
   // Mistake Trigger
   function triggerMistake() {
+    if (isPaused || !isPlaying) return;
     comboCount = 0; // コンボ途切れ
     playSound('mistake');
     if (navigator.vibrate) {
@@ -2935,8 +3099,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     currentCard.classList.add('shake');
-    setTimeout(() => {
+    if (cardShakeTimer) clearTimeout(cardShakeTimer);
+    cardShakeTimer = setTimeout(() => {
       currentCard.classList.remove('shake');
+      cardShakeTimer = null;
     }, 400);
   }
 
@@ -2952,6 +3118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cleanActiveAnimations();
     cleanActiveListeners();
+    cleanActiveTimeouts();
 
     // コンボ判定 (3.0秒以内の連続解錠でコンボ継続)
     const now = Date.now();
@@ -3018,13 +3185,21 @@ document.addEventListener('DOMContentLoaded', () => {
       triggerShockwave(centerX, centerY);
       if (screenFlashOverlay) {
         screenFlashOverlay.classList.add('flash');
-        setTimeout(() => screenFlashOverlay.classList.remove('flash'), 50);
+        if (flashTimer) clearTimeout(flashTimer);
+        flashTimer = setTimeout(() => {
+          screenFlashOverlay.classList.remove('flash');
+          flashTimer = null;
+        }, 50);
       }
-      if (gameApp) {
+      if (gameApp && !isPaused) {
         gameApp.classList.remove('impact-shake');
         void gameApp.offsetWidth;
         gameApp.classList.add('impact-shake');
-        setTimeout(() => gameApp.classList.remove('impact-shake'), 280);
+        if (impactShakeTimer) clearTimeout(impactShakeTimer);
+        impactShakeTimer = setTimeout(() => {
+          gameApp.classList.remove('impact-shake');
+          impactShakeTimer = null;
+        }, 280);
       }
     }
 
@@ -3043,14 +3218,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const mechBg = document.getElementById('lock-mechanism-bg');
       if (mechBg) {
         mechBg.classList.add('unlocked');
-        setTimeout(() => mechBg.classList.remove('unlocked'), 450);
+        if (mechBgTimer) clearTimeout(mechBgTimer);
+        mechBgTimer = setTimeout(() => {
+          mechBg.classList.remove('unlocked');
+          mechBgTimer = null;
+        }, 450);
       }
     }
 
     // 解錠の小気味よい瞬間的なポップ演出（透明化は行わず、手前カードの半透明ベールを常時維持）
     currentCard.style.transform = 'scale(1.04)';
 
-    setTimeout(() => {
+    if (swapTimer1) clearTimeout(swapTimer1);
+    if (swapTimer2) clearTimeout(swapTimer2);
+    swapTimer1 = setTimeout(() => {
+      swapTimer1 = null;
+      if (!isPlaying) return;
       currentLock = nextLock;
       nextLock = getNextLockFromQueue();
 
@@ -3060,7 +3243,8 @@ document.addEventListener('DOMContentLoaded', () => {
       currentShackle.classList.remove('open');
       currentCard.style.transform = 'scale(0.98)';
 
-      setTimeout(() => {
+      swapTimer2 = setTimeout(() => {
+        swapTimer2 = null;
         currentCard.style.transform = 'scale(1)';
         isResolvingLock = false;
         if (gimmickContainer) {
@@ -3078,10 +3262,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const pauseResumeBtn = document.getElementById('pause-resume-btn');
   const pauseRetryBtn = document.getElementById('pause-retry-btn');
   const pauseTitleBtn = document.getElementById('pause-title-btn');
+  const pauseTimeVal = document.getElementById('pause-time-val');
+  const pauseScoreVal = document.getElementById('pause-score-val');
+  const pauseLocksVal = document.getElementById('pause-locks-val');
+
+  function updatePauseModalStats() {
+    if (pauseTimeVal) pauseTimeVal.textContent = `${Math.max(0, remainingTime).toFixed(1)}s`;
+    if (pauseScoreVal) pauseScoreVal.textContent = score.toLocaleString();
+    if (pauseLocksVal) pauseLocksVal.textContent = String(unlockedCountNum);
+  }
 
   function pauseGame() {
     if (!isPlaying || isPaused) return;
     isPaused = true;
+    document.body.classList.add('game-paused');
+    if (gameApp) {
+      gameApp.classList.remove('impact-shake');
+    }
+    if (impactShakeTimer) {
+      clearTimeout(impactShakeTimer);
+      impactShakeTimer = null;
+    }
+    updatePauseModalStats();
     playSound('tap');
     if (pauseOverlay) pauseOverlay.classList.add('active');
   }
@@ -3089,28 +3291,31 @@ document.addEventListener('DOMContentLoaded', () => {
   function resumeGame() {
     if (!isPaused) return;
     isPaused = false;
+    document.body.classList.remove('game-paused');
     playSound('tap');
     if (pauseOverlay) pauseOverlay.classList.remove('active');
   }
 
-  if (pauseBtn) pauseBtn.addEventListener('click', pauseGame);
-  if (pauseResumeBtn) pauseResumeBtn.addEventListener('click', resumeGame);
-  if (pauseRetryBtn) {
-    pauseRetryBtn.addEventListener('click', () => {
-      resumeGame();
-      startGame();
-    });
-  }
-  if (pauseTitleBtn) {
-    pauseTitleBtn.addEventListener('click', () => {
-      resumeGame();
-      isPlaying = false;
-      cleanupCurrentGimmick();
-      if (timerInterval) clearInterval(timerInterval);
-      startOverlay.classList.add('active');
-      resultOverlay.classList.remove('active');
-    });
-  }
+  setupActionButton(pauseBtn, pauseGame);
+  setupActionButton(pauseResumeBtn, resumeGame);
+  setupActionButton(pauseRetryBtn, () => {
+    resumeGame();
+    startGame();
+  });
+  setupActionButton(pauseTitleBtn, () => {
+    resumeGame();
+    isPlaying = false;
+    cleanupCurrentGimmick();
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    const urgentOverlay = document.getElementById('urgent-countdown-overlay');
+    if (urgentOverlay) urgentOverlay.classList.remove('active');
+    if (dangerVignette) dangerVignette.classList.remove('active-danger');
+    startOverlay.classList.add('active');
+    resultOverlay.classList.remove('active');
+  });
 
   let endGameTimeoutId = null;
 
@@ -3176,6 +3381,14 @@ document.addEventListener('DOMContentLoaded', () => {
       clearTimeout(endGameTimeoutId);
       endGameTimeoutId = null;
     }
+    if (swapTimer1) {
+      clearTimeout(swapTimer1);
+      swapTimer1 = null;
+    }
+    if (swapTimer2) {
+      clearTimeout(swapTimer2);
+      swapTimer2 = null;
+    }
     const finishOverlay = document.getElementById('finish-banner-overlay');
     if (finishOverlay) finishOverlay.classList.remove('active');
 
@@ -3183,6 +3396,8 @@ document.addEventListener('DOMContentLoaded', () => {
     isPlaying = true;
     isPaused = false;
     isResolvingLock = false;
+    document.body.classList.remove('game-paused');
+    currentCard.style.transform = 'scale(1)';
     const urgentOverlay = document.getElementById('urgent-countdown-overlay');
     if (urgentOverlay) urgentOverlay.classList.remove('active');
     if (pauseOverlay) pauseOverlay.classList.remove('active');
@@ -3224,6 +3439,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function endGame() {
     if (!isPlaying) return;
     isPlaying = false;
+    isPaused = false;
+    document.body.classList.remove('game-paused');
+    if (pauseOverlay) pauseOverlay.classList.remove('active');
     if (timerInterval) {
       clearInterval(timerInterval);
       timerInterval = null;
@@ -3231,6 +3449,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (endGameTimeoutId) {
       clearTimeout(endGameTimeoutId);
       endGameTimeoutId = null;
+    }
+    if (swapTimer1) {
+      clearTimeout(swapTimer1);
+      swapTimer1 = null;
+    }
+    if (swapTimer2) {
+      clearTimeout(swapTimer2);
+      swapTimer2 = null;
     }
     cleanupCurrentGimmick();
     if (dangerVignette) dangerVignette.classList.remove('active-danger');
@@ -3385,11 +3611,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function playBeep(step) {
       if (!soundEnabled || !audioCtx) return;
       try {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(() => {});
+        }
         const now = audioCtx.currentTime;
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        connectAndAutoClean(osc, gain);
         // step 3: 440Hz, step 2: 587Hz, step 1: 784Hz
         const freqs = { 3: 440, 2: 587, 1: 784 };
         osc.frequency.setValueAtTime(freqs[step] || 500, now);

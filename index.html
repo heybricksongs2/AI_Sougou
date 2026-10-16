@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>LOCK LOCKER LOCKEST</title>
-  <link rel="stylesheet" href="style.css?v=lockest_29">
+  <link rel="stylesheet" href="style.css?v=lockest_34">
 </head>
 <body>
   <!-- 背景パーティクル & メカニカル鍵背景 -->
@@ -346,6 +346,22 @@
       <div class="overlay-card pop-up pause-modal-card">
         <h2 class="pause-modal-title">PAUSE</h2>
         <p class="pause-modal-desc">ゲームを一時停止中</p>
+
+        <div class="result-stats pause-stats">
+          <div class="stat-row">
+            <span>残り時間:</span>
+            <strong id="pause-time-val" class="highlight-val">18.0s</strong>
+          </div>
+          <div class="stat-row">
+            <span>スコア:</span>
+            <strong id="pause-score-val">0</strong>
+          </div>
+          <div class="stat-row">
+            <span>解錠数:</span>
+            <strong id="pause-locks-val">0</strong>
+          </div>
+        </div>
+
         <div class="pause-modal-btns">
           <button id="pause-resume-btn" class="pop-btn primary-btn" type="button">再開する</button>
           <button id="pause-retry-btn" class="pop-btn secondary-btn" type="button">最初からやり直す</button>
@@ -375,6 +391,6 @@
     </div>
   </div>
 
-  <script src="main.js?v=lockest_33"></script>
+  <script src="main.js?v=lockest_34"></script>
 </body>
 </html>

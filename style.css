@@ -3692,13 +3692,13 @@ body.lite-mode #next-lock-card,
 /* 一時停止モーダル */
 .pause-modal-card {
   text-align: center;
-  max-width: 310px;
-  width: 88%;
-  padding: 28px 22px;
+  max-width: 320px;
+  width: 90%;
+  padding: 24px 20px;
 }
 
 .pause-modal-title {
-  font-size: 2.4rem;
+  font-size: 2.2rem;
   font-weight: 900;
   color: var(--text-dark);
   letter-spacing: 3px;
@@ -3706,17 +3706,31 @@ body.lite-mode #next-lock-card,
 }
 
 .pause-modal-desc {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: #747d8c;
   font-weight: 700;
-  margin: 0 0 22px 0;
+  margin: 0 0 14px 0;
+}
+
+.pause-stats {
+  margin-bottom: 16px;
+  padding: 10px 14px;
 }
 
 .pause-modal-btns {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
 }
 
+.pause-modal-btns button {
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+}
 
+body.game-paused .gimmick-area *,
+body.game-paused .timer-danger,
+body.game-paused #danger-vignette {
+  animation-play-state: paused !important;
+}
