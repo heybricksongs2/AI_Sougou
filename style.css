@@ -4070,3 +4070,18 @@ body.game-paused #danger-vignette {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
+/* タイトル画面右下バージョンバッジ */
+.title-version-tag {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  opacity: 0.65;
+  letter-spacing: 0.6px;
+  pointer-events: none;
+  user-select: none;
+  font-family: monospace, sans-serif;
+}
+

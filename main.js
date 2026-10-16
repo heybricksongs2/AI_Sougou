@@ -1665,18 +1665,27 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 
-      function hoverPhysics() {
+      let lastHoverTime = performance.now();
+
+      function hoverPhysics(nowTimestamp) {
         if (!isPlaying || currentLock !== lock) return;
+        const now = nowTimestamp || performance.now();
         if (isPaused) {
           isThrusting = false;
+          lastHoverTime = now;
           activeAnimationId = requestAnimationFrame(hoverPhysics);
           return;
         }
-        if (isThrusting) velocity += 0.55;
-        else velocity -= 0.35;
 
-        velocity *= 0.95;
-        altitude += velocity;
+        const dt = Math.min(33.3, Math.max(2, now - lastHoverTime));
+        lastHoverTime = now;
+        const timeScale = dt / 16.667; // 60fps基準正規化
+
+        if (isThrusting) velocity += 0.55 * timeScale;
+        else velocity -= 0.35 * timeScale;
+
+        velocity *= Math.pow(0.95, timeScale);
+        altitude += velocity * timeScale;
         if (altitude < 8) { altitude = 8; velocity = 0; }
         if (altitude > 140) { altitude = 140; velocity = 0; }
         rocket.style.bottom = altitude + 'px';
@@ -1688,7 +1697,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isInside) {
           zone.classList.add('active-in');
-          insideTime += 16.6;
+          insideTime += dt;
           const pct = Math.min(100, (insideTime / targetDuration) * 100);
           progressFill.style.width = pct + '%';
 
@@ -1698,7 +1707,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         } else {
           zone.classList.remove('active-in');
-          insideTime = Math.max(0, insideTime - 12);
+          insideTime = Math.max(0, insideTime - 12 * timeScale);
           const pct = Math.min(100, (insideTime / targetDuration) * 100);
           progressFill.style.width = pct + '%';
         }
@@ -2003,27 +2012,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let pressStart = 0;
       let isPressing = false;
-      function onPressStart(e) {
-        if (isPaused || isResolvingLock) return;
-        if (e) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        isPressing = true;
-        pressStart = Date.now();
-        playSound('tap');
-      }
-      function onPressEnd(e) {
-        if (!isPressing) return;
-        isPressing = false;
-        if (isPaused || isResolvingLock) return;
-        if (e) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        const duration = Date.now() - pressStart;
-        const inputType = duration > 280 ? 'dash' : 'dot';
+      let longPressTimer = null;
+      let hasHandledLongPress = false;
 
+      function handleMorseInput(inputType) {
+        if (isPaused || isResolvingLock) return;
         if (inputType === targetPattern[currentIdx]) {
           display.children[currentIdx].classList.add('matched');
           currentIdx++;
@@ -2035,6 +2028,48 @@ document.addEventListener('DOMContentLoaded', () => {
           currentIdx = 0;
           Array.from(display.children).forEach(c => c.classList.remove('matched'));
         }
+      }
+
+      function onPressStart(e) {
+        if (isPaused || isResolvingLock) return;
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        isPressing = true;
+        hasHandledLongPress = false;
+        pressStart = Date.now();
+        playSound('tap');
+
+        if (longPressTimer) clearTimeout(longPressTimer);
+        // 260ms押し続けた瞬間に、指を離していなくても長押し（dash）として即座に入力！
+        longPressTimer = setTimeout(() => {
+          if (!isPressing || isPaused || isResolvingLock) return;
+          hasHandledLongPress = true;
+          safeVibrate(20);
+          playSound('unlock');
+          handleMorseInput('dash');
+        }, 260);
+      }
+
+      function onPressEnd(e) {
+        if (!isPressing) return;
+        isPressing = false;
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        if (isPaused || isResolvingLock) return;
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+
+        // 既に長押しとして確定入力済みなら何もしない
+        if (hasHandledLongPress) return;
+
+        // 短押し (dot) として判定
+        handleMorseInput('dot');
       }
 
       tapBtn.addEventListener('mousedown', onPressStart);
@@ -2344,7 +2379,7 @@ document.addEventListener('DOMContentLoaded', () => {
         keyDragger.style.top = py + 'px';
 
         const dist = minDistanceToPath(px, py);
-        if (dist > 19) {
+        if (dist > 21) {
           isDragging = false;
           container.classList.add('shocked');
           triggerMistake();
@@ -2438,24 +2473,32 @@ document.addEventListener('DOMContentLoaded', () => {
       addTrackedListener(window, 'mouseup', onEnd);
       addTrackedListener(window, 'touchend', onEnd);
 
-      function hoverPhysics() {
+      let lastHoverTime = performance.now();
+
+      function hoverPhysics(nowTimestamp) {
         if (!isPlaying || currentLock !== lock) return;
+        const now = nowTimestamp || performance.now();
         if (isPaused) {
           isThrusting = false;
+          lastHoverTime = now;
           activeAnimationId = requestAnimationFrame(hoverPhysics);
           return;
         }
 
-        // 緑のエリアがゆっくり上下に動く
-        zoneT += 0.025;
+        const dt = Math.min(33.3, Math.max(2, now - lastHoverTime));
+        lastHoverTime = now;
+        const timeScale = dt / 16.667; // 60fps基準正規化
+
+        // 緑のエリアがゆっくり上下に動く (フレームレートに依存しない角速度)
+        zoneT += 0.025 * timeScale;
         const zoneTop = 55 + Math.sin(zoneT) * 28;
         zone.style.top = zoneTop + 'px';
 
-        if (isThrusting) velocity += 0.55;
-        else velocity -= 0.35;
+        if (isThrusting) velocity += 0.55 * timeScale;
+        else velocity -= 0.35 * timeScale;
 
-        velocity *= 0.95;
-        altitude += velocity;
+        velocity *= Math.pow(0.95, timeScale);
+        altitude += velocity * timeScale;
         if (altitude < 8) { altitude = 8; velocity = 0; }
         if (altitude > 140) { altitude = 140; velocity = 0; }
         rocket.style.bottom = altitude + 'px';
@@ -2467,7 +2510,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isInside) {
           zone.classList.add('active-in');
-          insideTime += 16.6;
+          insideTime += dt;
           const pct = Math.min(100, (insideTime / targetDuration) * 100);
           progressFill.style.width = pct + '%';
 
@@ -2477,7 +2520,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         } else {
           zone.classList.remove('active-in');
-          insideTime = Math.max(0, insideTime - 12);
+          insideTime = Math.max(0, insideTime - 12 * timeScale);
           const pct = Math.min(100, (insideTime / targetDuration) * 100);
           progressFill.style.width = pct + '%';
         }
