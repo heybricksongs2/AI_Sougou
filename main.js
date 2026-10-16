@@ -67,9 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let particles = [];
   let particleAnimId = null;
+  let lastParticleTime = 0;
 
   function ensureParticleLoop() {
     if (!particleAnimId && particles.length > 0) {
+      lastParticleTime = performance.now();
       particleAnimId = requestAnimationFrame(updateParticles);
     }
   }
@@ -99,16 +101,21 @@ document.addEventListener('DOMContentLoaded', () => {
     ensureParticleLoop();
   }
 
-  function updateParticles() {
+  function updateParticles(currentTime) {
+    const now = currentTime || performance.now();
+    const dt = Math.min(33.3, Math.max(2, now - (lastParticleTime || now)));
+    lastParticleTime = now;
+    const timeScale = dt / 16.667;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.16; // 重力
-      p.vx *= 0.98; // 空気抵抗
-      p.rot += p.rotSpeed;
-      p.alpha -= p.decay;
+      p.x += p.vx * timeScale;
+      p.y += p.vy * timeScale;
+      p.vy += 0.16 * timeScale; // 重力
+      p.vx *= Math.pow(0.98, timeScale); // 空気抵抗
+      p.rot += p.rotSpeed * timeScale;
+      p.alpha -= p.decay * timeScale;
 
       if (p.alpha <= 0) {
         particles[i] = particles[particles.length - 1];
@@ -1986,17 +1993,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let x = 60, y = 60;
       let vx = 3.5, vy = 2.8;
+      let lastBounceTime = performance.now();
 
-      function bounceAnim() {
+      function bounceAnim(nowTimestamp) {
         if (!isPlaying || currentLock !== lock) return;
+        const now = nowTimestamp || performance.now();
         if (isPaused) {
+          lastBounceTime = now;
           activeAnimationId = requestAnimationFrame(bounceAnim);
           return;
         }
+        const dt = Math.min(33.3, Math.max(2, now - lastBounceTime));
+        lastBounceTime = now;
+        const timeScale = dt / 16.667;
+
         const maxX = Math.max(40, (box.clientWidth || 268) - 58);
         const maxY = Math.max(40, (box.clientHeight || 175) - 58);
-        x += vx;
-        y += vy;
+        x += vx * timeScale;
+        y += vy * timeScale;
         if (x <= 8) {
           x = 8;
           vx = Math.abs(vx);
@@ -2262,13 +2276,19 @@ document.addEventListener('DOMContentLoaded', () => {
       stage.addEventListener('mousedown', onAccidentalTap);
       stage.addEventListener('touchstart', onAccidentalTap, { passive: false });
 
-      function waitLoop() {
+      let lastWaitTime = performance.now();
+
+      function waitLoop(nowTimestamp) {
         if (!isPlaying || currentLock !== lock) return;
+        const now = nowTimestamp || performance.now();
         if (isPaused) {
+          lastWaitTime = now;
           activeAnimationId = requestAnimationFrame(waitLoop);
           return;
         }
-        waitTime += 16.6;
+        const dt = Math.min(50, Math.max(1, now - lastWaitTime));
+        lastWaitTime = now;
+        waitTime += dt;
         const pct = Math.min(100, (waitTime / targetWait) * 100);
         fill.style.width = pct + '%';
 
@@ -2582,25 +2602,32 @@ document.addEventListener('DOMContentLoaded', () => {
       let y = 20 + Math.random() * 95;
       let vx = (Math.random() > 0.5 ? 1 : -1) * (4.6 + Math.random() * 1.6);
       let vy = (Math.random() > 0.5 ? 1 : -1) * (3.8 + Math.random() * 1.6);
+      let lastTinyTime = performance.now();
 
-      function tinyBounce() {
+      function tinyBounce(nowTimestamp) {
         if (!isPlaying || currentLock !== lock) return;
+        const now = nowTimestamp || performance.now();
         if (isPaused) {
+          lastTinyTime = now;
           activeAnimationId = requestAnimationFrame(tinyBounce);
           return;
         }
 
-        // 時間経過で徐々に減速（最低速度は確保）
-        vx *= 0.997;
-        vy *= 0.997;
+        const dt = Math.min(33.3, Math.max(2, now - lastTinyTime));
+        lastTinyTime = now;
+        const timeScale = dt / 16.667;
+
+        // 時間経過で徐々に減速（最低速度は確保、フレームレート正規化）
+        vx *= Math.pow(0.997, timeScale);
+        vy *= Math.pow(0.997, timeScale);
         if (Math.abs(vx) < 1.1) vx = Math.sign(vx || 1) * 1.1;
         if (Math.abs(vy) < 0.9) vy = Math.sign(vy || 1) * 0.9;
 
         const maxX = Math.max(40, (box.clientWidth || 268) - 38);
         const maxY = Math.max(40, (box.clientHeight || 175) - 38);
 
-        x += vx;
-        y += vy;
+        x += vx * timeScale;
+        y += vy * timeScale;
         if (x <= 6) {
           x = 6;
           vx = Math.abs(vx);
@@ -2690,13 +2717,21 @@ document.addEventListener('DOMContentLoaded', () => {
       wrap.appendChild(btn);
       gimmickContainer.appendChild(wrap);
 
-      function decayLoop() {
+      let lastDecayTime = performance.now();
+
+      function decayLoop(nowTimestamp) {
         if (!isPlaying || currentLock !== lock) return;
+        const now = nowTimestamp || performance.now();
         if (isPaused) {
+          lastDecayTime = now;
           activeAnimationId = requestAnimationFrame(decayLoop);
           return;
         }
-        progress = Math.max(-40, progress - 0.525);
+        const dt = Math.min(33.3, Math.max(2, now - lastDecayTime));
+        lastDecayTime = now;
+        const timeScale = dt / 16.667;
+
+        progress = Math.max(-40, progress - 0.525 * timeScale);
         updateBar();
         activeAnimationId = requestAnimationFrame(decayLoop);
       }
