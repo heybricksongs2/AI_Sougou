@@ -49,10 +49,30 @@ function doPost(e) {
   return doGet(e);
 }
 
-// 既存の「シート1」から4つのモード別シートへ過去データを自動移行（1回のみ実行）
+const SPREADSHEET_ID = '1Omu3KOKGxkeTqJ2cbCS2C4ponLp0Fy72ctzzqANfyvY';
+
+function getSpreadsheet() {
+  try {
+    const active = SpreadsheetApp.getActiveSpreadsheet();
+    if (active) return active;
+  } catch (e) {}
+  return SpreadsheetApp.openById(SPREADSHEET_ID);
+}
+
+// 既存の「Leaderboard」または「シート1」から4つのモード別シートへ過去データを自動移行（1回のみ実行）
 function ensureMigrationFromLegacySheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const legacySheet = ss.getSheetByName('シート1') || ss.getSheetByName('Sheet1');
+  const ss = getSpreadsheet();
+  let legacySheet = ss.getSheetByName('Leaderboard') || ss.getSheetByName('シート1') || ss.getSheetByName('Sheet1');
+  if (!legacySheet) {
+    const allSheets = ss.getSheets();
+    for (let i = 0; i < allSheets.length; i++) {
+      const sName = allSheets[i].getName();
+      if (sName !== SHEET_NAMES.normal && sName !== SHEET_NAMES.fixed_1min && sName !== SHEET_NAMES.sudden_death && sName !== SHEET_NAMES.time_attack_5000) {
+        legacySheet = allSheets[i];
+        break;
+      }
+    }
+  }
   if (!legacySheet) return;
 
   // 既に移行完了フラグがあるか確認
@@ -115,7 +135,7 @@ function ensureMigrationFromLegacySheet() {
 
 // モードごとの専用シートを取得（なければ自動作成＆ヘッダー付与）
 function getOrCreateSheetForMode(mode) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const targetSheetName = SHEET_NAMES[mode] || SHEET_NAMES.normal;
   let sheet = ss.getSheetByName(targetSheetName);
 

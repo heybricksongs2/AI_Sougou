@@ -4234,7 +4234,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ONLINE LEADERBOARD (4モード完全分離: 通常 / 1分固定 / 1ミス終了 / 5000pt TA)
   // =========================================================================
   // Google Apps Script (Web App) URL
-  const LEADERBOARD_API_URL = 'https://script.google.com/macros/s/AKfycbwHiOziagRplu8_Jo38BoTjSriEXkPKlx0R_1_zwMFPw6jCenrcMwnV8OeDxkns_OZZBg/exec';
+  const LEADERBOARD_API_URL = 'https://script.google.com/macros/s/AKfycbyr_DQT0yCz7xrz1mARFhZ6015VwRdwG0K9uHi5WAF7BC1uIcNmBiiAP3jS6_dUL-IQMQ/exec';
 
   const STORAGE_KEY_PLAYER_ID = 'lock_player_id';
   const STORAGE_KEY_PLAYER_NAME = 'lock_player_name';
