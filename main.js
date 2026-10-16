@@ -178,6 +178,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 65);
   }
 
+  // 安全な非同期・スロットル付き触覚振動 (Android Binder IPC同期停止・キュー溢れを完全防止)
+  let lastVibrateTime = 0;
+  function safeVibrate(duration = 16) {
+    if (isLiteMode || !navigator.vibrate) return;
+    const now = Date.now();
+    if (now - lastVibrateTime < 90) return;
+    lastVibrateTime = now;
+    const ms = Array.isArray(duration) ? duration[0] : duration;
+    setTimeout(() => {
+      try {
+        navigator.vibrate(Math.min(22, ms));
+      } catch (e) {}
+    }, 0);
+  }
+
+  // 強制同期レイアウト (void el.offsetWidth) を起こさずにGPUでアニメーションを高速再起動
+  function restartCssAnimation(el, animClassName, keyframes, options) {
+    if (!el) return;
+    if (typeof el.animate === 'function' && keyframes) {
+      try {
+        el.animate(keyframes, options);
+        return;
+      } catch (err) {}
+    }
+    el.classList.remove(animClassName);
+    requestAnimationFrame(() => {
+      el.classList.add(animClassName);
+    });
+  }
+
   // Web Audio Synth (多層サウンド ＆ コンボピッチ上昇)
   let audioCtx = null;
   let soundEnabled = true;
@@ -3172,9 +3202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isPaused || !isPlaying) return;
     comboCount = 0; // コンボ途切れ
     playSound('mistake');
-    if (navigator.vibrate) {
-      try { navigator.vibrate([40, 30, 40]); } catch (e) {}
-    }
+    safeVibrate(30);
 
     currentCard.classList.add('shake');
     if (cardShakeTimer) clearTimeout(cardShakeTimer);
@@ -3216,10 +3244,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 音響 (コンボピッチ上昇)
     playSound('unlock', comboCount);
 
-    // 触覚振動
-    if (navigator.vibrate) {
-      try { navigator.vibrate(comboCount > 2 ? [25, 20, 25] : [22]); } catch (e) {}
-    }
+    // 触覚振動 (非同期・スロットル制御)
+    safeVibrate(comboCount > 2 ? 22 : 16);
 
     // シャックルスプリングオープン
     currentShackle.classList.add('open');
@@ -3230,9 +3256,10 @@ document.addEventListener('DOMContentLoaded', () => {
       remainingTime += modeCfg.addTimeOnUnlock;
       timeDisplay.textContent = remainingTime.toFixed(1);
       timeAddedAnim.textContent = `+${modeCfg.addTimeOnUnlock.toFixed(1)}s`;
-      timeAddedAnim.classList.remove('animate');
-      void timeAddedAnim.offsetWidth;
-      timeAddedAnim.classList.add('animate');
+      restartCssAnimation(timeAddedAnim, 'animate', [
+        { opacity: 1, transform: 'translateX(-50%) translateY(0) scale(1)' },
+        { opacity: 0, transform: 'translateX(-50%) translateY(14px) scale(1.15)' }
+      ], { duration: 600, easing: 'ease-out', fill: 'forwards' });
     }
 
     // スコア加算 (新ルール: 基本100pt固定 + 10個ごとに300pt + コンボ数×10)
@@ -3252,22 +3279,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scoreAddedAnim) {
       const addedText = isTenBonus ? `+${basePts}+${comboBonus}+${tenBonus}` : `+${basePts}+${comboBonus}`;
       scoreAddedAnim.textContent = addedText;
-      scoreAddedAnim.classList.remove('animate');
-      void scoreAddedAnim.offsetWidth;
-      scoreAddedAnim.classList.add('animate');
+      restartCssAnimation(scoreAddedAnim, 'animate', [
+        { opacity: 1, transform: 'translateX(-50%) translateY(0) scale(1)' },
+        { opacity: 0, transform: 'translateX(-50%) translateY(14px) scale(1.15)' }
+      ], { duration: 600, easing: 'ease-out', fill: 'forwards' });
     }
 
-    // スコアバウンス
+    // スコアバウンス (強制リフローを排しWeb Animations APIで高速実行)
     const scoreBox = document.querySelector('.score-box');
     if (scoreBox) {
-      scoreBox.classList.remove('pop');
-      void scoreBox.offsetWidth;
-      scoreBox.classList.add('pop');
+      restartCssAnimation(scoreBox, 'pop', [
+        { transform: 'scale(1)' },
+        { transform: 'scale(1.14)' },
+        { transform: 'scale(1)' }
+      ], { duration: 180, easing: 'cubic-bezier(0.18, 0.89, 0.32, 1.28)' });
     }
 
-    const cardRect = currentCard.getBoundingClientRect();
-    const centerX = cardRect.left + cardRect.width / 2;
-    const centerY = cardRect.top + cardRect.height / 2;
+    // 毎解錠の getBoundingClientRect() を排し、画面基準で高速算出
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight * 0.44;
+    const cardTop = window.innerHeight * 0.22;
 
     // 軽量モードでない場合のみ背景演出を実行
     if (!isLiteMode) {
@@ -3281,23 +3312,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 50);
       }
       if (gameApp && !isPaused) {
-        gameApp.classList.remove('impact-shake');
-        void gameApp.offsetWidth;
-        gameApp.classList.add('impact-shake');
-        if (impactShakeTimer) clearTimeout(impactShakeTimer);
-        impactShakeTimer = setTimeout(() => {
-          gameApp.classList.remove('impact-shake');
-          impactShakeTimer = null;
-        }, 280);
+        restartCssAnimation(gameApp, 'impact-shake', [
+          { transform: 'translate(0, 0)' },
+          { transform: 'translate(-2px, 3px)' },
+          { transform: 'translate(3px, -2px)' },
+          { transform: 'translate(0, 0)' }
+        ], { duration: 220, easing: 'ease-out' });
       }
     }
 
     // フローティングテキスト
     if (isTenBonus) {
-      spawnFloatingText(`BONUS +300pt!`, centerX, cardRect.top + 10);
+      spawnFloatingText(`BONUS +300pt!`, centerX, cardTop + 10);
     } else {
       const comboLabel = comboCount > 1 ? `COMBO x${comboCount} (+${comboBonus}pt)` : '+100pt';
-      spawnFloatingText(comboLabel, centerX, cardRect.top + 30);
+      spawnFloatingText(comboLabel, centerX, cardTop + 30);
     }
 
     // 軽量モードでない場合のみクリアパーティクル＆背景メカニズム連動を実行
@@ -3482,9 +3511,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const sec = Math.ceil(remainingTime);
         if (urgentNum && urgentNum.textContent !== String(sec)) {
           urgentNum.textContent = String(sec);
-          urgentNum.style.animation = 'none';
-          void urgentNum.offsetWidth; // reflow
-          urgentNum.style.animation = 'urgent-pulse 0.9s infinite cubic-bezier(0.25, 1, 0.5, 1)';
+          restartCssAnimation(urgentNum, 'urgent-pulse', [
+            { transform: 'scale(0.8)', opacity: 0.4 },
+            { transform: 'scale(1.15)', opacity: 1 },
+            { transform: 'scale(1)', opacity: 0.9 }
+          ], { duration: 400, easing: 'cubic-bezier(0.25, 1, 0.5, 1)' });
         }
       } else {
         if (urgentOverlay) urgentOverlay.classList.remove('active');
@@ -3629,8 +3660,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (finishOverlay) {
       finishOverlay.classList.remove('active');
-      void finishOverlay.offsetWidth; // アニメーションをリセット
-      finishOverlay.classList.add('active');
+      requestAnimationFrame(() => {
+        finishOverlay.classList.add('active');
+      });
     }
 
     const resultModeBadge = document.getElementById('result-mode-badge');
@@ -3896,13 +3928,15 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.classList.add('is-holding');
       if (countdownNum) {
         countdownNum.textContent = '3';
-        countdownNum.style.animation = 'none';
-        void countdownNum.offsetWidth;
-        countdownNum.style.animation = 'count-pop 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards';
+        restartCssAnimation(countdownNum, 'pop', [
+          { transform: 'scale(0.5)', opacity: 0 },
+          { transform: 'scale(1.25)', opacity: 1 },
+          { transform: 'scale(1)', opacity: 1 }
+        ], { duration: 300, easing: 'cubic-bezier(0.18, 0.89, 0.32, 1.28)', fill: 'forwards' });
       }
 
       playBeep(3);
-      if (navigator.vibrate) { try { navigator.vibrate(25); } catch (err) {} }
+      safeVibrate(20);
 
       function loop(now) {
         if (!isHolding) return;
@@ -3918,22 +3952,26 @@ document.addEventListener('DOMContentLoaded', () => {
           currentStep = 1;
           if (countdownNum) {
             countdownNum.textContent = '1';
-            countdownNum.style.animation = 'none';
-            void countdownNum.offsetWidth;
-            countdownNum.style.animation = 'count-pop 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards';
+            restartCssAnimation(countdownNum, 'pop', [
+              { transform: 'scale(0.5)', opacity: 0 },
+              { transform: 'scale(1.25)', opacity: 1 },
+              { transform: 'scale(1)', opacity: 1 }
+            ], { duration: 300, easing: 'cubic-bezier(0.18, 0.89, 0.32, 1.28)', fill: 'forwards' });
           }
           playBeep(1);
-          if (navigator.vibrate) { try { navigator.vibrate(35); } catch (err) {} }
+          safeVibrate(25);
         } else if (progress >= 0.33 && currentStep > 2) {
           currentStep = 2;
           if (countdownNum) {
             countdownNum.textContent = '2';
-            countdownNum.style.animation = 'none';
-            void countdownNum.offsetWidth;
-            countdownNum.style.animation = 'count-pop 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards';
+            restartCssAnimation(countdownNum, 'pop', [
+              { transform: 'scale(0.5)', opacity: 0 },
+              { transform: 'scale(1.25)', opacity: 1 },
+              { transform: 'scale(1)', opacity: 1 }
+            ], { duration: 300, easing: 'cubic-bezier(0.18, 0.89, 0.32, 1.28)', fill: 'forwards' });
           }
           playBeep(2);
-          if (navigator.vibrate) { try { navigator.vibrate(30); } catch (err) {} }
+          safeVibrate(20);
         }
 
         if (elapsed >= TOTAL_HOLD_MS) {
@@ -4139,9 +4177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleDebug();
         initAudio();
         playSound('unlock');
-        if (navigator.vibrate) {
-          try { navigator.vibrate([40, 60, 40]); } catch (err) {}
-        }
+        safeVibrate(30);
       }, HOLD_TIME_MS);
     }
 
@@ -4218,9 +4254,10 @@ document.addEventListener('DOMContentLoaded', () => {
     remainingTime += 10.0;
     timeDisplay.textContent = remainingTime.toFixed(1);
     timeAddedAnim.textContent = '+10s';
-    timeAddedAnim.classList.remove('animate');
-    void timeAddedAnim.offsetWidth;
-    timeAddedAnim.classList.add('animate');
+    restartCssAnimation(timeAddedAnim, 'animate', [
+      { opacity: 1, transform: 'translateX(-50%) translateY(0) scale(1)' },
+      { opacity: 0, transform: 'translateX(-50%) translateY(14px) scale(1.15)' }
+    ], { duration: 600, easing: 'ease-out', fill: 'forwards' });
     setTimeout(() => { timeAddedAnim.textContent = '+1.0s'; }, 700);
     playSound('unlock');
   });
