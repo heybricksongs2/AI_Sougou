@@ -273,6 +273,9 @@ body {
 }
 
 .level-badge {
+  display: inline-block;
+  min-width: 64px;
+  text-align: center;
   background: #f1f2f6;
   border: 2px solid var(--text-dark);
   border-radius: 12px;
@@ -2986,17 +2989,63 @@ body.lite-mode #particle-canvas {
   }
 }
 
-/* 4. フローティング・コンボテキスト */
+/* 4. フローティング・コンボテキスト（淡黄色の鍵枠や銀シャックル上でもくっきり見える高コントラスト配色） */
 .floating-combo-text {
   position: absolute;
-  font-size: 1.5rem;
+  font-size: 1.55rem;
   font-weight: 900;
-  color: #ffd32a;
-  text-shadow: 0 3px 0 #2f3542, 0 0 12px rgba(255, 211, 42, 0.8);
+  color: #ff4757;
+  text-shadow:
+    -1.5px -1.5px 0 #ffffff,
+     1.5px -1.5px 0 #ffffff,
+    -1.5px  1.5px 0 #ffffff,
+     1.5px  1.5px 0 #ffffff,
+    -3px -3px 0 #1e272e,
+     3px -3px 0 #1e272e,
+    -3px  3px 0 #1e272e,
+     3px  3px 0 #1e272e,
+     0 5px 10px rgba(0, 0, 0, 0.45);
   pointer-events: none;
+  white-space: nowrap;
   z-index: 30;
   transform: translate(-50%, -50%);
   animation: float-combo-up 0.65s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+/* 黄色の鍵枠のすぐ下に表示する継続コンボ表記 (例: 3COMBO) */
+.combo-chain-display {
+  position: absolute;
+  top: calc(50% + (max(280px, min(400px, calc(100dvh - 120px))) / 2) + 8px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  font-size: 1.25rem;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 1.5px;
+  color: #ffd32a;
+  text-shadow:
+    -2px -2px 0 #1e272e,
+     2px -2px 0 #1e272e,
+    -2px  2px 0 #1e272e,
+     2px  2px 0 #1e272e,
+     0 4px 10px rgba(0, 0, 0, 0.55);
+  padding: 2px 14px;
+  border-radius: 14px;
+  background: rgba(30, 39, 46, 0.78);
+  border: 2px solid #ffd32a;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 10;
+  transition: opacity 0.14s ease, transform 0.14s cubic-bezier(0.18, 0.89, 0.32, 1.28), visibility 0.14s ease;
+}
+
+.combo-chain-display.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) scale(1);
 }
 
 @keyframes float-combo-up {

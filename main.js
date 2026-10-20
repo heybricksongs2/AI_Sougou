@@ -620,8 +620,62 @@ document.addEventListener('DOMContentLoaded', () => {
       lock.wheelTurnMultiplier = isSecondLap ? (0.5 + Math.random() * 1.0) : 1.0;
     } else if (lock.type === 'irira_key_maze') {
       lock.iriraTrackIndex = Math.floor(Math.random() * 3);
+    } else if (lock.type === 'key_drag') {
+      lock.keyInitX = null;
+      lock.keyInitY = null;
     }
     return lock;
+  }
+
+  function applyKeyDragRandomPosition(lock, container, targetHole, keyItem) {
+    if (!container || !targetHole || !keyItem) return;
+    if (lock && typeof lock.keyInitX === 'number' && typeof lock.keyInitY === 'number') {
+      keyItem.style.position = 'absolute';
+      keyItem.style.left = `${lock.keyInitX}px`;
+      keyItem.style.top = `${lock.keyInitY}px`;
+      keyItem.style.bottom = 'auto';
+      return;
+    }
+
+    const cWidth = container.clientWidth || container.offsetWidth || 280;
+    const cHeight = container.clientHeight || container.offsetHeight || 190;
+    const hCenterX = targetHole.offsetWidth > 0
+      ? (targetHole.offsetLeft + targetHole.offsetWidth / 2)
+      : (cWidth / 2);
+    const hCenterY = targetHole.offsetHeight > 0
+      ? (targetHole.offsetTop + targetHole.offsetHeight / 2)
+      : 42;
+
+    let initX = Math.round((cWidth - 64) / 2);
+    let initY = Math.round(cHeight - 64 - 12);
+
+    const minX = 12;
+    const maxX = Math.max(minX, cWidth - 64 - 12);
+    const minY = 12;
+    const maxY = Math.max(minY, cHeight - 64 - 12);
+
+    for (let attempt = 0; attempt < 50; attempt++) {
+      const testX = Math.floor(minX + Math.random() * (maxX - minX));
+      const testY = Math.floor(minY + Math.random() * (maxY - minY));
+      const testCenterX = testX + 32;
+      const testCenterY = testY + 32;
+      const d = Math.hypot(testCenterX - hCenterX, testCenterY - hCenterY);
+      if (d >= 90) {
+        initX = testX;
+        initY = testY;
+        break;
+      }
+    }
+
+    if (lock) {
+      lock.keyInitX = initX;
+      lock.keyInitY = initY;
+    }
+
+    keyItem.style.position = 'absolute';
+    keyItem.style.left = `${initX}px`;
+    keyItem.style.top = `${initY}px`;
+    keyItem.style.bottom = 'auto';
   }
 
   function getNextLockFromQueue() {
@@ -887,43 +941,7 @@ document.addEventListener('DOMContentLoaded', () => {
       container.appendChild(keyItem);
       gimmickContainer.appendChild(container);
 
-      // 鍵の初期位置をランダム配置（鍵穴から近すぎない位置を保証）
-      const cRect = container.getBoundingClientRect();
-      const holeRect = targetHole.getBoundingClientRect();
-      const cWidth = cRect.width > 0 ? cRect.width : (container.offsetWidth || 280);
-      const cHeight = cRect.height > 0 ? cRect.height : (container.offsetHeight || 190);
-      const hCenterX = holeRect.width > 0 && cRect.width > 0
-        ? (holeRect.left + holeRect.width / 2 - cRect.left)
-        : (cWidth / 2);
-      const hCenterY = holeRect.height > 0 && cRect.height > 0
-        ? (holeRect.top + holeRect.height / 2 - cRect.top)
-        : 42;
-
-      let initX = Math.round((cWidth - 64) / 2);
-      let initY = Math.round(cHeight - 64 - 12);
-
-      const minX = 12;
-      const maxX = Math.max(minX, cWidth - 64 - 12);
-      const minY = 12;
-      const maxY = Math.max(minY, cHeight - 64 - 12);
-
-      for (let attempt = 0; attempt < 50; attempt++) {
-        const testX = Math.floor(minX + Math.random() * (maxX - minX));
-        const testY = Math.floor(minY + Math.random() * (maxY - minY));
-        const testCenterX = testX + 32;
-        const testCenterY = testY + 32;
-        const d = Math.hypot(testCenterX - hCenterX, testCenterY - hCenterY);
-        if (d >= 90) {
-          initX = testX;
-          initY = testY;
-          break;
-        }
-      }
-
-      keyItem.style.position = 'absolute';
-      keyItem.style.left = `${initX}px`;
-      keyItem.style.top = `${initY}px`;
-      keyItem.style.bottom = 'auto';
+      applyKeyDragRandomPosition(lock, container, targetHole, keyItem);
 
       let isDragging = false;
       let startMouseY = 0;
@@ -2732,10 +2750,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Juice & Combo State
   let comboCount = 0;
+  let comboStreak = 0;
+  let comboWindowRemainingMs = 0;
   let lastUnlockTime = 0;
   const gameApp = document.getElementById('game-app');
   const screenFlashOverlay = document.getElementById('screen-flash-overlay');
   const dangerVignette = document.getElementById('danger-vignette');
+  const comboChainDisplay = document.getElementById('combo-chain-display');
+
+  function updateComboChainUI(pop = false) {
+    if (!comboChainDisplay) return;
+    if (isPlaying && comboStreak >= 2 && comboWindowRemainingMs > 0) {
+      comboChainDisplay.textContent = `${comboStreak}COMBO`;
+      comboChainDisplay.classList.add('active');
+      if (pop) {
+        restartCssAnimation(comboChainDisplay, 'combo-pop', [
+          { transform: 'translateX(-50%) scale(0.85)' },
+          { transform: 'translateX(-50%) scale(1.18)' },
+          { transform: 'translateX(-50%) scale(1)' }
+        ], { duration: 180, easing: 'cubic-bezier(0.18, 0.89, 0.32, 1.28)' });
+      }
+    } else {
+      comboChainDisplay.classList.remove('active');
+      comboChainDisplay.textContent = '';
+    }
+  }
 
   // ショックウェーブ生成
   function triggerShockwave(x, y) {
@@ -2763,7 +2802,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!nextGimmickContainer || !lock) return;
     nextGimmickContainer.innerHTML = '';
     if (isLiteMode) return; // 軽量モード時は奥の鍵の描画・計算をスキップ
-    if (nextLockBadge) nextLockBadge.textContent = `NEXT: Lv.${lock.level}`;
+    if (nextLockBadge) nextLockBadge.textContent = `Lv.${lock.level}`;
 
     const t = lock.type;
     // 1. 特大ボタン
@@ -2806,6 +2845,7 @@ document.addEventListener('DOMContentLoaded', () => {
       container.appendChild(targetHole);
       container.appendChild(keyItem);
       nextGimmickContainer.appendChild(container);
+      applyKeyDragRandomPosition(lock, container, targetHole, keyItem);
 
     // 4. ダブルタップ (光る2つの大ドット & クリーンボタン)
     } else if (t === 'double_tap') {
@@ -3306,6 +3346,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function triggerMistake() {
     if (isPaused || !isPlaying) return;
     comboCount = 0; // コンボ途切れ
+    comboStreak = 0;
+    comboWindowRemainingMs = 0;
+    updateComboChainUI(false);
     playSound('mistake');
     safeVibrate(30);
 
@@ -3339,12 +3382,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // コンボ判定 (3.0秒以内の連続解錠でコンボ継続)
     const now = Date.now();
-    if (now - lastUnlockTime < 3000) {
+    if (comboWindowRemainingMs > 0) {
+      comboStreak++;
       comboCount = Math.min(8, comboCount + 1);
     } else {
+      comboStreak = 1;
       comboCount = 1;
     }
+    comboWindowRemainingMs = 3000;
     lastUnlockTime = now;
+    updateComboChainUI(true);
 
     // 音響 (コンボピッチ上昇)
     playSound('unlock', comboCount);
@@ -3433,7 +3480,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isTenBonus) {
         spawnFloatingText(`BONUS +300pt!`, centerX, cardTop + 10);
       } else {
-        const comboLabel = comboCount > 1 ? `COMBO x${comboCount} (+${comboBonus}pt)` : '+100pt';
+        const comboLabel = comboStreak > 1 ? `COMBO x${comboStreak} (+${comboBonus}pt)` : '+100pt';
         spawnFloatingText(comboLabel, centerX, cardTop + 30);
       }
     }
@@ -3561,6 +3608,10 @@ document.addEventListener('DOMContentLoaded', () => {
   setupActionButton(pauseTitleBtn, () => {
     resumeGame();
     isPlaying = false;
+    comboCount = 0;
+    comboStreak = 0;
+    comboWindowRemainingMs = 0;
+    updateComboChainUI(false);
     cleanupCurrentGimmick();
     if (timerInterval) {
       clearInterval(timerInterval);
@@ -3588,6 +3639,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     timerInterval = setInterval(() => {
       if (isTimeFrozen || isPaused) return;
+
+      if (comboWindowRemainingMs > 0) {
+        comboWindowRemainingMs = Math.max(0, comboWindowRemainingMs - 100);
+        if (comboWindowRemainingMs === 0) {
+          comboCount = 0;
+          comboStreak = 0;
+          updateComboChainUI(false);
+        }
+      }
 
       const modeCfg = GAME_MODES[currentMode] || GAME_MODES.normal;
 
@@ -3690,7 +3750,10 @@ document.addEventListener('DOMContentLoaded', () => {
     warningBeepTimer = 0;
     roundNumber = 1;
     comboCount = 0;
+    comboStreak = 0;
+    comboWindowRemainingMs = 0;
     lastUnlockTime = 0;
+    updateComboChainUI(false);
     if (dangerVignette) dangerVignette.classList.remove('active-danger');
     if (confettiRainInterval) {
       clearInterval(confettiRainInterval);
@@ -3724,6 +3787,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isPlaying) return;
     isPlaying = false;
     isPaused = false;
+    comboCount = 0;
+    comboStreak = 0;
+    comboWindowRemainingMs = 0;
+    updateComboChainUI(false);
     document.body.classList.remove('game-paused');
     if (pauseOverlay) pauseOverlay.classList.remove('active');
     if (timerInterval) {
@@ -4391,37 +4458,19 @@ document.addEventListener('DOMContentLoaded', () => {
     return trimmed;
   }
 
-  // モード別初期モックデータ
-  const DEFAULT_MOCK_BOARDS_BY_MODE = {
-    normal: [
-      { id: 'bot_1', name: 'MasterKey', score: 4520, locks: 28 },
-      { id: 'bot_2', name: 'SpeedyLock', score: 3860, locks: 24 },
-      { id: 'bot_3', name: 'CipherZero', score: 3120, locks: 19 },
-      { id: 'bot_4', name: 'LockSmith', score: 2480, locks: 16 },
-      { id: 'bot_5', name: 'QuickFinger', score: 1850, locks: 12 },
-      { id: 'bot_6', name: 'NoviceThief', score: 1200, locks: 8 }
-    ],
-    fixed_1min: [
-      { id: 'bot_1m_1__fixed_1min', name: 'ChronoKing', score: 6240, locks: 38 },
-      { id: 'bot_1m_2__fixed_1min', name: 'MinuteRush', score: 5180, locks: 32 },
-      { id: 'bot_1m_3__fixed_1min', name: 'SixtySec', score: 4320, locks: 27 },
-      { id: 'bot_1m_4__fixed_1min', name: 'BlitzOpener', score: 3450, locks: 22 },
-      { id: 'bot_1m_5__fixed_1min', name: 'SteadyHand', score: 2610, locks: 17 }
-    ],
-    sudden_death: [
-      { id: 'bot_sd_1__sudden_death', name: 'NoMissPro', score: 4120, locks: 26 },
-      { id: 'bot_sd_2__sudden_death', name: 'SniperLock', score: 3380, locks: 21 },
-      { id: 'bot_sd_3__sudden_death', name: 'ZeroFault', score: 2640, locks: 17 },
-      { id: 'bot_sd_4__sudden_death', name: 'CalmTouch', score: 1920, locks: 13 },
-      { id: 'bot_sd_5__sudden_death', name: 'CarefulOne', score: 1180, locks: 8 }
-    ],
-    time_attack_5000: [
-      { id: 'bot_ta_1__time_attack_5000', name: 'SonicKey', score: 32400, locks: 31 },
-      { id: 'bot_ta_2__time_attack_5000', name: 'FlashUnlocker', score: 38800, locks: 32 },
-      { id: 'bot_ta_3__time_attack_5000', name: 'TurboDial', score: 44500, locks: 33 },
-      { id: 'bot_ta_4__time_attack_5000', name: 'Sprint5000', score: 52100, locks: 34 },
-      { id: 'bot_ta_5__time_attack_5000', name: 'RapidRunner', score: 61800, locks: 35 }
-    ]
+  // モード別キャッシュ（一度読み込んだモードはタブ切替時に再通信せず即座に表示）
+  const cachedLeaderboardByMode = {
+    normal: null,
+    fixed_1min: null,
+    sudden_death: null,
+    time_attack_5000: null
+  };
+  const inFlightFetchByMode = {};
+  const loadErrorByMode = {
+    normal: false,
+    fixed_1min: false,
+    sudden_death: false,
+    time_attack_5000: false
   };
 
   function sortRecordsForMode(list, modeId) {
@@ -4437,28 +4486,32 @@ document.addEventListener('DOMContentLoaded', () => {
     return copied;
   }
 
-  function getLocalMockLeaderboard(modeId = activeLeaderboardMode) {
+  function getLocalSubmittedRecords(modeId = activeLeaderboardMode) {
     const cfg = GAME_MODES[modeId] || GAME_MODES.normal;
     try {
       const saved = localStorage.getItem(cfg.boardStorageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return sortRecordsForMode(parsed, modeId);
+        if (Array.isArray(parsed)) {
+          // 過去に保存されたbotモックデータは除外し、実プレイヤーの記録のみ保持
+          const realOnly = parsed.filter(item => item && item.id && !String(item.id).startsWith('bot_'));
+          return sortRecordsForMode(realOnly, modeId);
+        }
       }
     } catch (e) {}
-    const defaults = DEFAULT_MOCK_BOARDS_BY_MODE[modeId] || DEFAULT_MOCK_BOARDS_BY_MODE.normal;
-    return sortRecordsForMode(defaults, modeId);
+    return [];
   }
 
-  function saveLocalMockLeaderboard(list, modeId = activeLeaderboardMode) {
+  function saveLocalSubmittedRecords(list, modeId = activeLeaderboardMode) {
     const cfg = GAME_MODES[modeId] || GAME_MODES.normal;
     try {
-      localStorage.setItem(cfg.boardStorageKey, JSON.stringify(sortRecordsForMode(list, modeId)));
+      const realOnly = list.filter(item => item && item.id && !String(item.id).startsWith('bot_'));
+      localStorage.setItem(cfg.boardStorageKey, JSON.stringify(sortRecordsForMode(realOnly, modeId)));
     } catch (e) {}
   }
 
   function upsertLocalRecord(modeId, record) {
-    const list = getLocalMockLeaderboard(modeId);
+    const list = getLocalSubmittedRecords(modeId);
     const cfg = GAME_MODES[modeId] || GAME_MODES.normal;
     const existingIdx = list.findIndex(item => item.id === record.id);
     if (existingIdx >= 0) {
@@ -4474,7 +4527,7 @@ document.addEventListener('DOMContentLoaded', () => {
       list.push({ ...record });
     }
     const sorted = sortRecordsForMode(list, modeId);
-    saveLocalMockLeaderboard(sorted, modeId);
+    saveLocalSubmittedRecords(sorted, modeId);
     return sorted;
   }
 
@@ -4507,14 +4560,20 @@ document.addEventListener('DOMContentLoaded', () => {
     lbSubmitMsg.textContent = text;
     lbSubmitMsg.className = 'lb-submit-msg ' + type;
     if (lbMsgTimeout) clearTimeout(lbMsgTimeout);
-    lbMsgTimeout = setTimeout(() => {
-      if (lbSubmitMsg) lbSubmitMsg.textContent = '';
-    }, 4500);
+    if (type !== 'loading') {
+      lbMsgTimeout = setTimeout(() => {
+        if (lbSubmitMsg) lbSubmitMsg.textContent = '';
+      }, 4500);
+    }
   }
 
   // JSONP通信ヘルパー（CORS制限を完全回避）
   function fetchJsonp(url, timeoutMs = 7000) {
     return new Promise((resolve, reject) => {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        reject(new Error('Offline'));
+        return;
+      }
       const cbName = 'onLbCb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
       const script = document.createElement('script');
       const timer = setTimeout(() => {
@@ -4544,15 +4603,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // GAS返却データから該当モードのレコードのみを厳密抽出＋ローカル保存分とマージ
+  // GAS返却データから該当モードのレコードのみを厳密抽出＋ローカル送信済み分とマージ
   function filterAndMergeModeRecords(remoteRecords, modeId) {
-    const localList = getLocalMockLeaderboard(modeId);
-    if (!Array.isArray(remoteRecords)) return localList;
+    const localList = getLocalSubmittedRecords(modeId);
+    if (!Array.isArray(remoteRecords)) return [];
 
     const suffix = `__${modeId}`;
     const filteredRemote = remoteRecords.filter((row) => {
       if (!row) return false;
       const rid = String(row.id || '');
+      if (rid.startsWith('bot_')) return false;
       const rmode = row.mode ? String(row.mode) : '';
       if (rmode) {
         return rmode === modeId;
@@ -4562,10 +4622,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return rid.endsWith(suffix);
     });
-
-    if (filteredRemote.length === 0) {
-      return localList;
-    }
 
     const mergedMap = new Map();
     for (const item of filteredRemote) {
@@ -4592,32 +4648,66 @@ document.addEventListener('DOMContentLoaded', () => {
     return sortRecordsForMode(Array.from(mergedMap.values()), modeId);
   }
 
-  // リーダーボードの取得
-  async function fetchLeaderboardData(modeId = activeLeaderboardMode) {
-    if (!LEADERBOARD_API_URL) {
-      return getLocalMockLeaderboard(modeId);
+  // 指定モードのランキングをサーバーから取得してキャッシュを更新（重複通信防止付き）
+  async function fetchModeLeaderboardData(modeId = activeLeaderboardMode, force = false) {
+    const targetMode = GAME_MODES[modeId] ? modeId : 'normal';
+    if (!force && Array.isArray(cachedLeaderboardByMode[targetMode])) {
+      return true;
+    }
+    if (!force && inFlightFetchByMode[targetMode]) {
+      return inFlightFetchByMode[targetMode];
     }
 
-    try {
-      const res = await fetch(`${LEADERBOARD_API_URL}?action=get_scores&mode=${encodeURIComponent(modeId)}&t=${Date.now()}`);
-      if (!res.ok) throw new Error('Network error: ' + res.status);
-      const data = await res.json();
-      const raw = Array.isArray(data) ? data : (data && Array.isArray(data.records) ? data.records : null);
-      if (raw) return filterAndMergeModeRecords(raw, modeId);
-    } catch (err) {
-      console.warn('Direct fetch failed, falling back to JSONP:', err);
-      try {
-        const jsonpData = await fetchJsonp(`${LEADERBOARD_API_URL}?action=get_scores&mode=${encodeURIComponent(modeId)}`);
-        const raw = (jsonpData && Array.isArray(jsonpData.records)) ? jsonpData.records : (Array.isArray(jsonpData) ? jsonpData : null);
-        if (raw) return filterAndMergeModeRecords(raw, modeId);
-      } catch (jsonpErr) {
-        console.warn('JSONP fetch also failed, using local cache:', jsonpErr);
+    const promise = (async () => {
+      if (!LEADERBOARD_API_URL || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
+        loadErrorByMode[targetMode] = true;
+        return false;
       }
+
+      let rawRecords = null;
+      try {
+        const res = await fetch(`${LEADERBOARD_API_URL}?action=get_scores&mode=${encodeURIComponent(targetMode)}&t=${Date.now()}`);
+        if (!res.ok) throw new Error('Network error: ' + res.status);
+        const data = await res.json();
+        rawRecords = Array.isArray(data) ? data : (data && Array.isArray(data.records) ? data.records : null);
+      } catch (err) {
+        console.warn('Direct fetch failed, falling back to JSONP:', err);
+        try {
+          const jsonpData = await fetchJsonp(`${LEADERBOARD_API_URL}?action=get_scores&mode=${encodeURIComponent(targetMode)}`);
+          rawRecords = (jsonpData && Array.isArray(jsonpData.records)) ? jsonpData.records : (Array.isArray(jsonpData) ? jsonpData : null);
+        } catch (jsonpErr) {
+          console.warn('JSONP fetch also failed:', jsonpErr);
+        }
+      }
+
+      if (!Array.isArray(rawRecords)) {
+        loadErrorByMode[targetMode] = true;
+        return false;
+      }
+
+      cachedLeaderboardByMode[targetMode] = filterAndMergeModeRecords(rawRecords, targetMode);
+      loadErrorByMode[targetMode] = false;
+      return true;
+    })();
+
+    inFlightFetchByMode[targetMode] = promise;
+    try {
+      return await promise;
+    } finally {
+      delete inFlightFetchByMode[targetMode];
     }
-    return getLocalMockLeaderboard(modeId);
   }
 
-  // スコア・タイムの送信（モード別ID＆ローカル同期で完全分離）
+  // 他モードも裏で事前取得してタブ切替時の待ち時間をゼロにする
+  function prefetchAllLeaderboardModes(force = false) {
+    Object.keys(GAME_MODES).forEach((mKey) => {
+      if (force || !Array.isArray(cachedLeaderboardByMode[mKey])) {
+        fetchModeLeaderboardData(mKey, force).catch(() => {});
+      }
+    });
+  }
+
+  // スコア・タイムの送信（送信開始から完了まで「送信中...」を維持し、仮ランキングを表示しない）
   async function submitLeaderboardScore(scoreToSend, locksToSend, isSilent = false, modeId = lastPlayedMode) {
     if (isDebugMode || isDebugUsed) return;
     const targetMode = GAME_MODES[modeId] ? modeId : 'normal';
@@ -4632,26 +4722,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isSilent) {
       if (lbSubmitScoreBtn) lbSubmitScoreBtn.disabled = true;
       showLeaderboardMessage('送信中...', 'loading');
+      if (lbRankingList) {
+        lbRankingList.innerHTML = '<div class="lb-loading-spinner">送信中...</div>';
+      }
     }
 
-    // まずモード別ローカルリーダーボードへ確実に反映し、画面へ即時描画
-    const updatedLocalList = upsertLocalRecord(targetMode, {
-      id: scopedId,
-      name: myName,
-      score: scoreToSend,
-      locks: locksToSend,
-      mode: targetMode
-    });
-
-    if (!isSilent && activeLeaderboardMode === targetMode) {
-      renderLeaderboardTable(updatedLocalList, targetMode);
-    }
-
-    if (!LEADERBOARD_API_URL) {
+    if (!LEADERBOARD_API_URL || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
       if (!isSilent) {
-        showLeaderboardMessage('送信完了！');
-        playSound('unlock');
-        await loadAndRenderLeaderboard(activeLeaderboardMode);
+        showLeaderboardMessage('送信に失敗しました', 'error');
+        if (lbRankingList) {
+          lbRankingList.innerHTML = '<div class="lb-empty-msg">ランキングを読み込めませんでした</div>';
+        }
         if (lbSubmitScoreBtn) lbSubmitScoreBtn.disabled = false;
       }
       return;
@@ -4660,28 +4741,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const postUrl = `${LEADERBOARD_API_URL}?action=submit&mode=${encodeURIComponent(targetMode)}&id=${encodeURIComponent(scopedId)}&name=${encodeURIComponent(myName)}&score=${encodeURIComponent(scoreToSend)}&locks=${encodeURIComponent(locksToSend)}`;
 
     try {
-      await Promise.race([
-        fetch(postUrl, { method: 'GET', mode: 'no-cors' }),
-        fetchJsonp(postUrl, 3500).catch(() => {})
-      ]);
+      try {
+        await fetch(postUrl, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
+      } catch (fetchErr) {
+        await fetchJsonp(postUrl, 4000);
+      }
+
+      // 送信成功後に自分の送信記録をローカルへ保持し、キャッシュにも反映
+      upsertLocalRecord(targetMode, {
+        id: scopedId,
+        name: myName,
+        score: scoreToSend,
+        locks: locksToSend,
+        mode: targetMode
+      });
 
       if (!isSilent) {
-        showLeaderboardMessage('送信完了！');
-        playSound('unlock');
-        setTimeout(async () => {
-          await loadAndRenderLeaderboard(activeLeaderboardMode);
-          if (lbSubmitScoreBtn) lbSubmitScoreBtn.disabled = false;
-        }, 1000);
+        // サーバー反映待ちの間も「送信中...」を維持し、完了後に最新ランキングを描画
+        await new Promise(resolve => setTimeout(resolve, 800));
+        const ok = await fetchModeLeaderboardData(activeLeaderboardMode, true);
+        if (targetMode !== activeLeaderboardMode) {
+          fetchModeLeaderboardData(targetMode, true).catch(() => {});
+        }
+        if (ok) {
+          renderLeaderboardTable(cachedLeaderboardByMode[activeLeaderboardMode], activeLeaderboardMode);
+          showLeaderboardMessage('送信完了！');
+          playSound('unlock');
+        } else {
+          if (lbRankingList) {
+            lbRankingList.innerHTML = '<div class="lb-empty-msg">ランキングを読み込めませんでした</div>';
+          }
+          showLeaderboardMessage('ランキングを読み込めませんでした', 'error');
+        }
+        if (lbSubmitScoreBtn) lbSubmitScoreBtn.disabled = false;
+      } else {
+        fetchModeLeaderboardData(targetMode, true).catch(() => {});
       }
     } catch (err) {
-      console.warn('Submit fallback:', err);
+      console.warn('Submit error:', err);
       if (!isSilent) {
-        showLeaderboardMessage('送信完了！');
-        playSound('unlock');
-        setTimeout(async () => {
-          await loadAndRenderLeaderboard(activeLeaderboardMode);
-          if (lbSubmitScoreBtn) lbSubmitScoreBtn.disabled = false;
-        }, 1000);
+        if (lbRankingList) {
+          lbRankingList.innerHTML = '<div class="lb-empty-msg">ランキングを読み込めませんでした</div>';
+        }
+        showLeaderboardMessage('送信に失敗しました', 'error');
+        if (lbSubmitScoreBtn) lbSubmitScoreBtn.disabled = false;
       }
     }
   }
@@ -4703,7 +4806,12 @@ document.addEventListener('DOMContentLoaded', () => {
       lbColScoreHeader.textContent = cfg.isCountUp ? 'タイム' : 'スコア';
     }
 
-    if (!records || records.length === 0) {
+    if (loadErrorByMode[modeId] || !Array.isArray(records)) {
+      lbRankingList.innerHTML = '<div class="lb-empty-msg">ランキングを読み込めませんでした</div>';
+      return;
+    }
+
+    if (records.length === 0) {
       lbRankingList.innerHTML = '<div class="lb-empty-msg">まだ記録がありません</div>';
       return;
     }
@@ -4793,8 +4901,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // リーダーボードの読み込み＆描画
-  async function loadAndRenderLeaderboard(modeId = activeLeaderboardMode) {
+  // リーダーボードの読み込み＆描画（forceFetch=false かつ読込済みの場合は通信せずキャッシュを即時表示）
+  async function loadAndRenderLeaderboard(modeId = activeLeaderboardMode, forceFetch = false) {
     if (!lbRankingList) return;
     const requestedMode = GAME_MODES[modeId] ? modeId : 'normal';
     activeLeaderboardMode = requestedMode;
@@ -4804,10 +4912,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     syncLeaderboardModeTabs();
     updateLeaderboardSubmitRow();
+
+    if (!forceFetch && Array.isArray(cachedLeaderboardByMode[requestedMode])) {
+      renderLeaderboardTable(cachedLeaderboardByMode[requestedMode], requestedMode);
+      return;
+    }
+
     lbRankingList.innerHTML = '<div class="lb-loading-spinner">ランキング読込中...</div>';
-    const records = await fetchLeaderboardData(requestedMode);
+    if (forceFetch) {
+      prefetchAllLeaderboardModes(true);
+    }
+    const ok = await fetchModeLeaderboardData(requestedMode, forceFetch);
     if (activeLeaderboardMode !== requestedMode) return;
-    renderLeaderboardTable(records, requestedMode);
+    if (!ok) {
+      lbRankingList.innerHTML = '<div class="lb-empty-msg">ランキングを読み込めませんでした</div>';
+      return;
+    }
+    renderLeaderboardTable(cachedLeaderboardByMode[requestedMode], requestedMode);
   }
 
   // リーダーボードモーダルを開く
@@ -4831,7 +4952,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (lbSubmitMsg) lbSubmitMsg.textContent = '';
     leaderboardOverlay.classList.add('active');
-    loadAndRenderLeaderboard(activeLeaderboardMode);
+    prefetchAllLeaderboardModes(false);
+    loadAndRenderLeaderboard(activeLeaderboardMode, false);
   }
 
   function closeLeaderboard() {
@@ -4840,14 +4962,14 @@ document.addEventListener('DOMContentLoaded', () => {
     leaderboardOverlay.classList.remove('active');
   }
 
-  // モード切替タブのクリック処理
+  // モード切替タブのクリック処理（再通信せず読込済みデータを即時表示）
   lbModeTabs.forEach((tab) => {
     setupActionButton(tab, () => {
       const modeId = tab.dataset.mode;
       if (!modeId || !GAME_MODES[modeId]) return;
       playSound('tap');
       if (lbSubmitMsg) lbSubmitMsg.textContent = '';
-      loadAndRenderLeaderboard(modeId);
+      loadAndRenderLeaderboard(modeId, false);
     });
   });
 
@@ -4920,7 +5042,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupActionButton(lbRefreshBtn, async () => {
       playSound('tap');
       lbRefreshBtn.classList.add('rotating');
-      await loadAndRenderLeaderboard(activeLeaderboardMode);
+      await loadAndRenderLeaderboard(activeLeaderboardMode, true);
       setTimeout(() => {
         lbRefreshBtn.classList.remove('rotating');
       }, 500);
