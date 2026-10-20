@@ -3380,24 +3380,24 @@ document.addEventListener('DOMContentLoaded', () => {
     cleanActiveListeners();
     cleanActiveTimeouts();
 
-    // コンボ判定 (3.0秒以内の連続解錠でコンボ継続)
+    // コンボ判定 (3.0秒以内の連続解錠でコンボ継続・上限なし)
     const now = Date.now();
     if (comboWindowRemainingMs > 0) {
       comboStreak++;
-      comboCount = Math.min(8, comboCount + 1);
+      comboCount = comboStreak - 1;
     } else {
       comboStreak = 1;
-      comboCount = 1;
+      comboCount = 0;
     }
     comboWindowRemainingMs = 3000;
     lastUnlockTime = now;
     updateComboChainUI(true);
 
     // 音響 (コンボピッチ上昇)
-    playSound('unlock', comboCount);
+    playSound('unlock', comboStreak);
 
     // 触覚振動 (非同期・スロットル制御)
-    safeVibrate(comboCount > 2 ? 22 : 16);
+    safeVibrate(comboStreak > 2 ? 22 : 16);
 
     // シャックルスプリングオープン
     currentShackle.classList.add('open');
@@ -3414,7 +3414,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ], { duration: 600, easing: 'ease-out', fill: 'forwards' });
     }
 
-    // スコア加算 (新ルール: 基本100pt固定 + 10個ごとに300pt + コンボ数×10 / デバッグモード進入後は更新停止)
+    // スコア加算 (基本100pt固定 + 2コンボ目から上限なしで+10ptずつ増加 + 10個ごとに300pt / デバッグモード進入後は更新停止)
     unlockedCountNum++;
     unlockedCount.textContent = unlockedCountNum;
 
@@ -3427,10 +3427,12 @@ document.addEventListener('DOMContentLoaded', () => {
       score += (basePts + comboBonus + tenBonus);
       scoreDisplay.textContent = score;
 
-      // スコア真下に増加点を表示 ("+基礎点+コンボボーナス")
+      // スコア真下に増加点を表示 ("+基礎点+コンボボーナス+10個ボーナス")
       const scoreAddedAnim = document.getElementById('score-added-anim');
       if (scoreAddedAnim) {
-        const addedText = isTenBonus ? `+${basePts}+${comboBonus}+${tenBonus}` : `+${basePts}+${comboBonus}`;
+        let addedText = `+${basePts}`;
+        if (comboBonus > 0) addedText += `+${comboBonus}`;
+        if (isTenBonus) addedText += `+${tenBonus}`;
         scoreAddedAnim.textContent = addedText;
         restartCssAnimation(scoreAddedAnim, 'animate', [
           { opacity: 1, transform: 'translateX(-50%) translateY(0) scale(1)' },
@@ -3475,13 +3477,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // フローティングテキスト
+    // フローティングテキスト (10個ごとのボーナス時もコンボ加算・表示を邪魔しない)
     if (!isDebugMode && !isDebugUsed) {
+      const comboLabel = comboStreak > 1 ? `COMBO x${comboStreak} (+${comboBonus}pt)` : '+100pt';
+      spawnFloatingText(comboLabel, centerX, cardTop + 32);
       if (isTenBonus) {
-        spawnFloatingText(`BONUS +300pt!`, centerX, cardTop + 10);
-      } else {
-        const comboLabel = comboStreak > 1 ? `COMBO x${comboStreak} (+${comboBonus}pt)` : '+100pt';
-        spawnFloatingText(comboLabel, centerX, cardTop + 30);
+        spawnFloatingText(`BONUS +300pt!`, centerX, cardTop - 2);
       }
     }
 
