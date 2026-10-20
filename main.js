@@ -713,6 +713,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeAnimationId = null;
   let activeWindowListeners = [];
   let activeGimmickTimeouts = [];
+  let isDebugMode = false;
+  let isDebugUsed = false;
 
   function getModeBestRecord(modeId) {
     const cfg = GAME_MODES[modeId] || GAME_MODES.normal;
@@ -720,6 +722,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setModeBestRecord(modeId, val) {
+    if (isDebugMode || isDebugUsed) return;
     const cfg = GAME_MODES[modeId] || GAME_MODES.normal;
     localStorage.setItem(cfg.storageHighKey, String(val));
     if (modeId === 'normal') {
@@ -3352,9 +3355,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // シャックルスプリングオープン
     currentShackle.classList.add('open');
 
-    // モードに応じた時間追加アニメ (通常モード・1ミス即終了モードのみ +1.0s)
+    // モードに応じた時間追加アニメ (通常モード・1ミス即終了モードのみ +1.0s / デバッグモード中は時間完全停止)
     const modeCfg = GAME_MODES[currentMode] || GAME_MODES.normal;
-    if (modeCfg.addTimeOnUnlock > 0 && !modeCfg.isCountUp) {
+    if (!isTimeFrozen && !isDebugMode && modeCfg.addTimeOnUnlock > 0 && !modeCfg.isCountUp) {
       remainingTime += modeCfg.addTimeOnUnlock;
       timeDisplay.textContent = remainingTime.toFixed(1);
       timeAddedAnim.textContent = `+${modeCfg.addTimeOnUnlock.toFixed(1)}s`;
@@ -3364,7 +3367,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ], { duration: 600, easing: 'ease-out', fill: 'forwards' });
     }
 
-    // スコア加算 (新ルール: 基本100pt固定 + 10個ごとに300pt + コンボ数×10)
+    // スコア加算 (新ルール: 基本100pt固定 + 10個ごとに300pt + コンボ数×10 / デバッグモード進入後は更新停止)
     unlockedCountNum++;
     unlockedCount.textContent = unlockedCountNum;
 
@@ -3373,28 +3376,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const isTenBonus = (unlockedCountNum % 10 === 0);
     const tenBonus = isTenBonus ? 300 : 0;
 
-    score += (basePts + comboBonus + tenBonus);
-    scoreDisplay.textContent = score;
+    if (!isDebugMode && !isDebugUsed) {
+      score += (basePts + comboBonus + tenBonus);
+      scoreDisplay.textContent = score;
 
-    // スコア真下に増加点を表示 ("+基礎点+コンボボーナス")
-    const scoreAddedAnim = document.getElementById('score-added-anim');
-    if (scoreAddedAnim) {
-      const addedText = isTenBonus ? `+${basePts}+${comboBonus}+${tenBonus}` : `+${basePts}+${comboBonus}`;
-      scoreAddedAnim.textContent = addedText;
-      restartCssAnimation(scoreAddedAnim, 'animate', [
-        { opacity: 1, transform: 'translateX(-50%) translateY(0) scale(1)' },
-        { opacity: 0, transform: 'translateX(-50%) translateY(14px) scale(1.15)' }
-      ], { duration: 600, easing: 'ease-out', fill: 'forwards' });
-    }
+      // スコア真下に増加点を表示 ("+基礎点+コンボボーナス")
+      const scoreAddedAnim = document.getElementById('score-added-anim');
+      if (scoreAddedAnim) {
+        const addedText = isTenBonus ? `+${basePts}+${comboBonus}+${tenBonus}` : `+${basePts}+${comboBonus}`;
+        scoreAddedAnim.textContent = addedText;
+        restartCssAnimation(scoreAddedAnim, 'animate', [
+          { opacity: 1, transform: 'translateX(-50%) translateY(0) scale(1)' },
+          { opacity: 0, transform: 'translateX(-50%) translateY(14px) scale(1.15)' }
+        ], { duration: 600, easing: 'ease-out', fill: 'forwards' });
+      }
 
-    // スコアバウンス (強制リフローを排しWeb Animations APIで高速実行)
-    const scoreBox = document.querySelector('.score-box');
-    if (scoreBox) {
-      restartCssAnimation(scoreBox, 'pop', [
-        { transform: 'scale(1)' },
-        { transform: 'scale(1.14)' },
-        { transform: 'scale(1)' }
-      ], { duration: 180, easing: 'cubic-bezier(0.18, 0.89, 0.32, 1.28)' });
+      // スコアバウンス (強制リフローを排しWeb Animations APIで高速実行)
+      const scoreBox = document.querySelector('.score-box');
+      if (scoreBox) {
+        restartCssAnimation(scoreBox, 'pop', [
+          { transform: 'scale(1)' },
+          { transform: 'scale(1.14)' },
+          { transform: 'scale(1)' }
+        ], { duration: 180, easing: 'cubic-bezier(0.18, 0.89, 0.32, 1.28)' });
+      }
     }
 
     // 毎解錠の getBoundingClientRect() を排し、画面基準で高速算出
@@ -3424,11 +3429,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // フローティングテキスト
-    if (isTenBonus) {
-      spawnFloatingText(`BONUS +300pt!`, centerX, cardTop + 10);
-    } else {
-      const comboLabel = comboCount > 1 ? `COMBO x${comboCount} (+${comboBonus}pt)` : '+100pt';
-      spawnFloatingText(comboLabel, centerX, cardTop + 30);
+    if (!isDebugMode && !isDebugUsed) {
+      if (isTenBonus) {
+        spawnFloatingText(`BONUS +300pt!`, centerX, cardTop + 10);
+      } else {
+        const comboLabel = comboCount > 1 ? `COMBO x${comboCount} (+${comboBonus}pt)` : '+100pt';
+        spawnFloatingText(comboLabel, centerX, cardTop + 30);
+      }
     }
 
     // 軽量モードでない場合のみクリアパーティクル＆背景メカニズム連動を実行
@@ -3447,7 +3454,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 5000ポイントタイムアタック等で目標スコアに到達した場合は即座にクリア終了
-    if (modeCfg.targetScore && score >= modeCfg.targetScore) {
+    if (!isDebugMode && !isDebugUsed && modeCfg.targetScore && score >= modeCfg.targetScore) {
       endGame('clear');
       return;
     }
@@ -3742,12 +3749,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const modeCfg = GAME_MODES[currentMode] || GAME_MODES.normal;
 
-    // 実際に取った記録を直前プレイ記録として保存
+    // 実際に取った記録を直前プレイ記録として保存 (デバッグモード進入後は記録しない)
     lastPlayedMode = currentMode;
-    lastPlayedScore = score;
-    lastPlayedLocks = unlockedCountNum;
+    lastPlayedScore = (!isDebugMode && !isDebugUsed) ? score : 0;
+    lastPlayedLocks = (!isDebugMode && !isDebugUsed) ? unlockedCountNum : 0;
     lastPlayedTimeMs = Math.max(100, Math.round(elapsedTime * 1000));
-    lastPlayedCleared = (reason === 'clear');
+    lastPlayedCleared = (!isDebugMode && !isDebugUsed && reason === 'clear');
 
     // 1. 終了ホイッスル音
     playSound('whistle_finish');
@@ -3797,7 +3804,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let bestTimeMs = getModeBestRecord('time_attack_5000');
       if (reason === 'clear') {
-        const isNewBestTime = (bestTimeMs === 0 || lastPlayedTimeMs < bestTimeMs);
+        const isNewBestTime = (!isDebugMode && !isDebugUsed) && (bestTimeMs === 0 || lastPlayedTimeMs < bestTimeMs);
         if (isNewBestTime) {
           bestTimeMs = lastPlayedTimeMs;
           setModeBestRecord('time_attack_5000', bestTimeMs);
@@ -3858,7 +3865,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (highScoreLabelEl) highScoreLabelEl.textContent = 'ハイスコア:';
 
       let modeHigh = getModeBestRecord(currentMode);
-      if (score > modeHigh) {
+      if (!isDebugMode && !isDebugUsed && score > modeHigh) {
         modeHigh = score;
         setModeBestRecord(currentMode, modeHigh);
         autoSubmitScoreIfRegistered(score, unlockedCountNum, currentMode);
@@ -4240,9 +4247,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const debugLevelSelect = document.getElementById('debug-level-select');
   const debugJumpBtn = document.getElementById('debug-jump-btn');
   const debugPassBtn = document.getElementById('debug-pass-btn');
-  const debugFreezeBtn = document.getElementById('debug-freeze-btn');
-  const debugAddTimeBtn = document.getElementById('debug-add-time-btn');
-  const debugGameoverBtn = document.getElementById('debug-gameover-btn');
 
   function populateDebugSelect() {
     if (!debugLevelSelect) return;
@@ -4258,7 +4262,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function toggleDebug() {
     if (!debugPanel) return;
-    debugPanel.classList.toggle('active');
+    const isNowActive = debugPanel.classList.toggle('active');
+    isDebugMode = isNowActive;
+    isTimeFrozen = isNowActive;
+    if (isNowActive) {
+      isDebugUsed = true;
+    }
   }
 
   setupActionButton(debugBtn, toggleDebug);
@@ -4317,6 +4326,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupActionButton(debugJumpBtn, () => {
     initAudio();
+    isDebugUsed = true;
     const targetLevel = parseInt(debugLevelSelect.value, 10);
     const targetDef = LOCK_DEFINITIONS.find(d => d.level === targetLevel);
     if (!targetDef) return;
@@ -4338,35 +4348,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupActionButton(debugPassBtn, () => {
     if (!isPlaying) return;
+    isDebugUsed = true;
     resolveLockSuccess();
-  });
-
-  setupActionButton(debugFreezeBtn, () => {
-    isTimeFrozen = !isTimeFrozen;
-    if (isTimeFrozen) {
-      debugFreezeBtn.textContent = 'FROZEN';
-      debugFreezeBtn.classList.add('frozen');
-    } else {
-      debugFreezeBtn.textContent = 'FREEZE';
-      debugFreezeBtn.classList.remove('frozen');
-    }
-  });
-
-  setupActionButton(debugAddTimeBtn, () => {
-    remainingTime += 10.0;
-    timeDisplay.textContent = remainingTime.toFixed(1);
-    timeAddedAnim.textContent = '+10s';
-    restartCssAnimation(timeAddedAnim, 'animate', [
-      { opacity: 1, transform: 'translateX(-50%) translateY(0) scale(1)' },
-      { opacity: 0, transform: 'translateX(-50%) translateY(14px) scale(1.15)' }
-    ], { duration: 600, easing: 'ease-out', fill: 'forwards' });
-    setTimeout(() => { timeAddedAnim.textContent = '+1.0s'; }, 700);
-    playSound('unlock');
-  });
-
-  setupActionButton(debugGameoverBtn, () => {
-    if (!isPlaying) return;
-    endGame();
   });
 
   // =========================================================================
@@ -4636,6 +4619,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // スコア・タイムの送信（モード別ID＆ローカル同期で完全分離）
   async function submitLeaderboardScore(scoreToSend, locksToSend, isSilent = false, modeId = lastPlayedMode) {
+    if (isDebugMode || isDebugUsed) return;
     const targetMode = GAME_MODES[modeId] ? modeId : 'normal';
     const scopedId = getModeScopedPlayerId(targetMode);
     const myName = getPlayerName();
@@ -4704,6 +4688,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ハイスコア・ベストタイム更新時の自動送信（名前登録済みの場合のみ）
   function autoSubmitScoreIfRegistered(newRecordVal, newLocks, modeId = currentMode) {
+    if (isDebugMode || isDebugUsed) return;
     const myName = getPlayerName();
     if (myName && newRecordVal > 0) {
       submitLeaderboardScore(newRecordVal, newLocks, true, modeId);
@@ -4770,7 +4755,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateLeaderboardSubmitRow() {
     if (!lbSubmitActionRow) return;
-    if (!isLeaderboardOpenedFromResult || activeLeaderboardMode !== lastPlayedMode) {
+    if (isDebugMode || isDebugUsed || !isLeaderboardOpenedFromResult || activeLeaderboardMode !== lastPlayedMode) {
       lbSubmitActionRow.style.display = 'none';
       return;
     }
